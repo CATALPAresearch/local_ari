@@ -1,0 +1,5 @@
+{ 
+    "watch": ["amd/src"],
+    "exec": "tsc" ,
+    "ext": "js json ts proto"
+}
