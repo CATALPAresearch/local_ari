@@ -1,0 +1,23 @@
+{
+  "name": "ari",
+  "version": "1.0.0",
+  "description": "An Adaption Rule Interface",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.pi6.fernuni-hagen.de:aple/entwicklung/ari.git"
+  },
+  "keywords": [
+    "adaption",
+    "rule",
+    "interface"
+  ],
+  "author": "Dr. Niels Seidel & Marc Burchart",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^3.8.2"
+  }
+}
