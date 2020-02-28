@@ -22,7 +22,7 @@
  
 defined('MOODLE_INTERNAL') || die();
  
-$plugin->version = 2020022623;
+$plugin->version = 2020022633;
 $plugin->requires = 2017050500;
 $plugin->component = 'local_ari';
 /*$plugin->supported = TODO;   // Available as of Moodle 3.9.0 or later.

@@ -1,5 +1,5 @@
 { 
-    "watch": ["amd/src"],
+    "watch": ["tsc"],
     "exec": "tsc" ,
     "ext": "js json ts proto"
 }
