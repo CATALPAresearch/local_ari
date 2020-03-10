@@ -1,5 +1,3 @@
-export class Toolbox{
+export default class Toolbox{
     
-    
-
 }

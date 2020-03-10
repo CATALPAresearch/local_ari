@@ -1,27 +1,19 @@
-/**
- * @author Marc Burchart
- * @version 1.0.0
- * @description The Controller
- */
-
-import { Toolbox } from "./toolbox";
-import Chatbot from "./tool_chatbot";
-import { IConfig, Config } from "./ari_config";
-import ActivityIndicator from "./tool_activityindicator";
+import { IConfig } from "./config";
 
 export default class Controller{
+    
+    private _config:IConfig;
+    private readonly _location = window.location.href;
 
-    private _config:IConfig = Config;
-    private _chatbot:Chatbot;
-
-    constructor(){   
-        console.log("=== CONTROLLER ===");   
-        new ActivityIndicator({});
-        this._chatbot = new Chatbot(this._config.chatbot);     
-        
-                  
+    constructor(config:IConfig){
+        this._config = config;
     }
 
-    public chatbot(){}
+    private async pull(){
 
+    }
+
+    private async push(){
+
+    }
 }
