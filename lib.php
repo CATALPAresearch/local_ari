@@ -1,22 +1,17 @@
 <?php
 
-/**
- * @package ARI
- * @author Marc Burchart <marc.burchart@fernuni-hagen.de>
- * @copyright FernUniversität Hagen
- * @license http://www.gnu.org/copyleft/gpl.html
- */
+    /**
+     * 
+     * @author Marc Burchart
+     * @email marc.burchart@fernuni-hagen.de
+     * @version 1.0
+     * @description The config for this plugin.
+     * 
+    */
 
-defined('MOODLE_INTERNAL') || exit(0);
+    defined('MOODLE_INTERNAL') || die();
+    $CFG->showcrondebugging = true;
+    $CFG->cachejs = false;
 
-require_once($CFG->libdir.'/filelib.php');
-require_once($CFG->libdir.'/completionlib.php');
-
-global $PAGE;
-
-function local_ari_extend_navigation() {
-    global $PAGE;
-    $PAGE->requires->js_call_amd("local_ari/loader", "init");
-}
 
 ?>

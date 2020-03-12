@@ -11,6 +11,7 @@ import { Config } from "./config";
 
 export function init(){
     try{
+        //alert("ARI");
        new Controller(Config);
     } catch(error){
         console.log(error);

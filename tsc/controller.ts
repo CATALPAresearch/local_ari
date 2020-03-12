@@ -1,19 +1,18 @@
 import { IConfig } from "./config";
+//@ts-ignore
+import $ from "jquery";
+
+/**
+ * 
+ * @author Marc Burchart
+ * @email marc.burchart@fernuni-hagen.de
+ * @version 1.0
+ * @description The controller handling the plugin and all features.
+ * 
+ */
 
 export default class Controller{
+
+   
     
-    private _config:IConfig;
-    private readonly _location = window.location.href;
-
-    constructor(config:IConfig){
-        this._config = config;
-    }
-
-    private async pull(){
-
-    }
-
-    private async push(){
-
-    }
 }
