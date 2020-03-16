@@ -10,9 +10,8 @@ import { Config } from "./config";
 
 
 export function init(){
-    try{
-        //alert("ARI");
-       new Controller(Config);
+    try{      
+        alert("MARC");      
     } catch(error){
         console.log(error);
     }    

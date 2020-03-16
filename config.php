@@ -1,9 +1,7 @@
 <?php
 
-defined('MOODLE_INTERNAL') || die();
-global $CFG;
-
-$CFG->cachejs = false;
+    defined('MOODLE_INTERNAL') || die();
+    $CFG->cachejs = false;
 
 
 ?>

@@ -13,6 +13,8 @@ import $ from "jquery";
 
 export default class Controller{
 
-   
+   constructor(config:IConfig){
+       alert("marc");
+   }
     
 }
