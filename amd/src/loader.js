@@ -1,14 +1,13 @@
-define(["require", "exports"], function (require, exports) {
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+define(["require", "exports", "./controller", "./config"], function (require, exports, controller_1, config_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Marc Burchart
-     * @version 1.0.0
-     * @description The Controller
-     */
+    controller_1 = __importDefault(controller_1);
     function init() {
         try {
-            alert("MARC");
+            new controller_1.default(config_1.Config);
         }
         catch (error) {
             console.log(error);

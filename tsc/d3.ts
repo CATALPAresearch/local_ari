@@ -8,7 +8,7 @@
  */
 
 //@ts-ignore
-define(['local_chatbot/thirdParty', 'd3'],
+define(['local_ari/thirdParty', 'd3'],
     //@ts-ignore 
     function(unused,d3) {
         return d3;

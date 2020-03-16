@@ -13,9 +13,9 @@ define([], function () {
     window.requirejs.config({
         paths: {
             //@ts-ignore
-            "d3": M.cfg.wwwroot + '/local/chatbot/lib/d3',
+            "d3": M.cfg.wwwroot + '/local/ari/lib/d3',
             //@ts-ignore
-            "moment": M.cfg.wwwroot + '/local/chatbot/lib/moment',
+            "moment": M.cfg.wwwroot + '/local/ari/lib/moment',
         },
         shim: {
             "d3": {exports: "d3"},

@@ -1,6 +1,5 @@
 import { IConfig } from "./config";
-//@ts-ignore
-import $ from "jquery";
+import { IToolUsage, ETool } from "./toolbox";
 
 /**
  * 
@@ -12,9 +11,30 @@ import $ from "jquery";
  */
 
 export default class Controller{
-
-   constructor(config:IConfig){
-       alert("marc");
-   }
     
+    private _config:IConfig;   
+    private _query:IToolUsage[] = [];
+
+    constructor(config:IConfig){
+      this._config = config;
+    }
+
+    private async useTool(type:ETool, data:object):Promise<number>{   
+        let obj = <IQuery>{
+            type: type,
+            data: data,
+            pos: 0,
+            prom: Promise.resolve()            
+        }     
+        let pos = this._query.push(obj) - 1;
+        obj.pos = pos;     
+        return;   
+    }    
+}
+
+interface IQuery{
+    type: ETool;
+    pos: number;
+    prom: Promise<void>;
+    data: object;
 }
