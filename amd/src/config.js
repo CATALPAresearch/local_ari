@@ -12,5 +12,12 @@ define(["require", "exports"], function (require, exports) {
     /**
      * The Configuration you can edit.
      */
-    exports.Config = {};
+    exports.Config = {
+        tools: {
+            denies: {
+                unknownTool: "Unknown Tool",
+                wrongData: "wrong data",
+            }
+        }
+    };
 });

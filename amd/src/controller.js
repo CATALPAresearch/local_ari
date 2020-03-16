@@ -10,8 +10,7 @@ define(["require", "exports"], function (require, exports) {
      *
      */
     var Controller = /** @class */ (function () {
-        function Controller(config) {
-            alert("marc");
+        function Controller() {
         }
         return Controller;
     }());

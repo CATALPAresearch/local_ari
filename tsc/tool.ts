@@ -1,11 +1,13 @@
-import { Config } from "./config";
+import { IConfig } from "./config";
 //@ts-ignore
 import notification from 'core/notification';
+//@ts-ignore
+import $ from 'jquery';
 
 export class Tool {
 
     private static _counter = 0;
-    private static _config = Config;
+    public static config:IConfig;
     public readonly id:number;
     private _prev?: Tool;
     private _next?: Tool;   
@@ -17,17 +19,17 @@ export class Tool {
         this._data = data;
         if(typeof prev === "object") this._prev = prev;
         switch(this._data.tool){
-            case EToolType.Notification:    this._promise = this.notification(data);
+            case EToolType.Notification:    this._promise = this.notification(<IToolNotificationData>data);
                                             break;
             case EToolType.SystemMessage:   this._promise = this.systemMessage(data);
                                             break;
             case EToolType.ChatMessage:     this._promise = this.chatMessage(data);
                                             break;
-            default: this._promise = Promise.reject(Tool._config.tools.denies.unknownTool);
+            default: this._promise = Promise.reject(Tool.config.tools.denies.unknownTool);
         }
     }
 
-    // ============================================== COLLECTION OF TOOLS ==============================================
+    // ======================== COLLECTION OF TOOLS ========================
 
     /**
      * 
@@ -41,7 +43,7 @@ export class Tool {
         if(typeof data !== "object" || 
             typeof data.message !== "string" || 
             data.message.length <= 0 || 
-            !(data.type in ENotificationType)) throw new Error(Tool._config.tools.denies.wrongData);
+            !(data.type in ENotificationType)) throw new Error(Tool.config.tools.denies.wrongData);
             let type = "info";
             switch(data.type){ 
                 case ENotificationType.error:   type = "error"; break;
@@ -82,14 +84,26 @@ export class Tool {
 
     /**
      * 
-     * @param data 
+     * Change some css properties of an object.
+     * @param data IToolCSSData
+     * 
      */
 
-    public async css(data:IToolData):Promise<void>{
-
+    public async css(data:IToolCSSData):Promise<void>{
+        this._promise = new Promise(
+            (resolve, reject) => {
+                if(typeof data.selector !== "string" || data.selector.length <= 0 || typeof data.css !== "object") return reject(Tool.config.tools.denies.wrongData);
+                $(document).ready(
+                    function(){
+                        $(data.selector).css(data.css);
+                        return resolve();
+                    }
+                );
+            }            
+        );
     }
 
-    // ============================================== MANAGMENT OF USED TOOLS ==============================================
+    // ======================== MANAGMENT OF USED TOOLS ========================
 
     /**
      * Create a new tool usage.
@@ -252,6 +266,11 @@ export interface IToolData{
 export interface IToolNotificationData extends IToolData{
     message: string;
     type: ENotificationType;   
+}
+
+export interface IToolCSSData extends IToolData{
+    selector: string;
+    css: object;
 }
 
 export enum EToolType {
