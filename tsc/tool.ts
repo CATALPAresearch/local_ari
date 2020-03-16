@@ -27,6 +27,8 @@ export class Tool {
         }
     }
 
+    // ============================================== COLLECTION OF TOOLS ==============================================
+
     /**
      * 
      * Send a Notification to the user. (https://docs.moodle.org/dev/Notifications)
@@ -86,6 +88,8 @@ export class Tool {
     public async css(data:IToolData):Promise<void>{
 
     }
+
+    // ============================================== MANAGMENT OF USED TOOLS ==============================================
 
     /**
      * Create a new tool usage.
