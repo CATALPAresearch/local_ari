@@ -13,7 +13,12 @@
   */
 
 export const Config:IConfig = {
-    
+  tools: {
+    denies: {
+      unknownTool: "Unknown Tool",
+      wrongData: "wrong data",
+    }
+  }
 }
 
 /**
@@ -21,5 +26,10 @@ export const Config:IConfig = {
  */
 
 export interface IConfig{
-   
+  tools:{
+    denies: {
+      unknownTool: string;
+      wrongData:string;
+    }
+   }
 }
