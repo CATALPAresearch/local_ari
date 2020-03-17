@@ -5,10 +5,12 @@
      * @author Marc Burchart
      * @email marc.burchart@fernuni-hagen.de
      * @version 1.0
-     * @description The language file for the plugin.
+     * @description Delete the chatbot.
      * 
     */
 
-    $string['pluginname'] = "ari";
+    defined('MOODLE_INTERNAL') || die();   
+    require_once($CFG->dirroot.'/user/lib.php');
+  
 
 ?>

@@ -5,16 +5,15 @@
      * @author Marc Burchart
      * @email marc.burchart@fernuni-hagen.de
      * @version 1.0
-     * @description The config for this plugin.
+     * @description Load the JS files.
      * 
     */
 
     defined('MOODLE_INTERNAL') || exit(0);
 
     function local_ari_extend_navigation() {
-        global $PAGE;       
-        $PAGE->requires->js_call_amd("local_ari/loader", "init");
-    }      
-
+        global $PAGE;        
+        $PAGE->requires->js_call_amd("local_ari/loader", "init");       
+    }    
 
 ?>

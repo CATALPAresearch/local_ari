@@ -1,6 +1,1 @@
-hooks/
 node_modules/
-platforms/
-amd/dist/
-
-./**/*.js
