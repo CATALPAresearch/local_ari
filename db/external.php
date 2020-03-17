@@ -13,8 +13,6 @@
      
     require_once($CFG->libdir . "/externallib.php");
 
-    class local_ari_external extends external_api {
-
-    }
+    class local_ari_external extends external_api {}
 
 ?>

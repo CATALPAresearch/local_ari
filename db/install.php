@@ -10,12 +10,10 @@
     */
 
     defined('MOODLE_INTERNAL') || die();    
-    require_once($CFG->dirroot.'/user/lib.php');  
 
     function xmldb_local_ari_install() {
         global $CFG;    
-    }
-    
+    }    
 
 ?>
     

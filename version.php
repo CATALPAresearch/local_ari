@@ -11,8 +11,8 @@
  
     defined('MOODLE_INTERNAL') || die();
     
-    $plugin->version = 2020031705;
-    $plugin->requires = 2017050500;
     $plugin->component = 'local_ari';
+    $plugin->version = 2020031711;
+    $plugin->requires = 2017050500;    
 
 ?>
