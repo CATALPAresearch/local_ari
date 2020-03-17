@@ -7,6 +7,7 @@ define(["require", "exports", "./controller", "./config"], function (require, ex
     controller_1 = __importDefault(controller_1);
     function init() {
         try {
+            console.log("init ari");
             new controller_1.default(config_1.Config);
         }
         catch (error) {

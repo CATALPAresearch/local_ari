@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "./messages"], function (require, exports, messages_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -10,7 +10,13 @@ define(["require", "exports"], function (require, exports) {
      *
      */
     var Controller = /** @class */ (function () {
-        function Controller() {
+        function Controller(config) {
+            var test = new messages_1.SystemMessage({ message: "Dies ist mein Test" });
+            test.run().then(function (resolve) {
+                console.log(resolve);
+            }, function (reject) {
+                console.log(reject);
+            });
         }
         return Controller;
     }());

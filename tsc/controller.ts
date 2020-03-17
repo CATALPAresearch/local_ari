@@ -1,4 +1,5 @@
 import { IConfig } from "./config";
+import { SystemMessage } from "./messages";
 
 /**
  * 
@@ -12,7 +13,15 @@ import { IConfig } from "./config";
 export default class Controller{
 
     constructor(config:IConfig){
-
+        let test = new SystemMessage({message: "Dies ist mein Test"});
+        test.run().then(
+            (resolve) => {
+                console.log(resolve);
+            },
+            (reject) => {
+                console.log(reject);
+            }
+        )
     }
 
 }
