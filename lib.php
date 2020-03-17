@@ -13,7 +13,7 @@
 
     function local_ari_extend_navigation() {
         global $PAGE;       
-        $PAGE->requires->js_call_amd('local_ari/loader', 'init');     
+        $PAGE->requires->js_call_amd("local_ari/loader", "init");
     }      
 
 
