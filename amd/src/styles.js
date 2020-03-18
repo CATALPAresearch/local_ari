@@ -93,6 +93,8 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
                 return false;
             if (typeof this._data.hidden !== "boolean")
                 return false;
+            if (typeof this._data.removeOld !== "boolean")
+                return false;
             if (typeof this._data.position !== "number" || !(this._data.position in EModalPosition))
                 return false;
             return true;
@@ -101,7 +103,7 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
             return __awaiter(this, void 0, void 0, function () {
                 var content, dom, _this;
                 return __generator(this, function (_a) {
-                    content = "\n            <div class=\"modal-header\">" + (this._data.header ? this._data.header : "") + " \n                <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n                    <span aria-hidden=\"true\">&times;</span>\n                </button>\n            </div>";
+                    content = "\n            <div class=\"modal-header\">" + (this._data.header ? this._data.header : "") + " \n                <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"close\">\n                    <span aria-hidden=\"true\">&times;</span>\n                </button>\n            </div>";
                     if (this._data.body)
                         content += "<div class=\"modal-body\">" + this._data.body + "</div>";
                     if (this._data.footer)
@@ -111,13 +113,18 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
                     _this = this;
                     return [2 /*return*/, new Promise(function (resolve, reject) {
                             jquery_1.default(document).ready(function () {
+                                var selector = jquery_1.default(_this._data.selector);
+                                if (_this._data.removeOld && selector.length > 0) {
+                                    selector.remove();
+                                }
                                 switch (_this._data.position) {
                                     case EModalPosition.append:
-                                        jquery_1.default(_this._data.selector).append(dom);
+                                        selector.append(dom);
                                         return resolve();
                                     case EModalPosition.prepend:
-                                        jquery_1.default(_this._data.selector).prepend(dom);
+                                        selector.prepend(dom);
                                         return resolve();
+                                    default: break;
                                 }
                                 return reject("Unknown position.");
                             });

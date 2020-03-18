@@ -54,6 +54,7 @@ export class Modal{
         if(typeof this._data.body !== "undefined" && (typeof this._data.body !== "string" || this._data.body.length <= 0)) return false;
         if(typeof this._data.footer !== "undefined" && (typeof this._data.footer !== "string" || this._data.footer.length <= 0)) return false;
         if(typeof this._data.hidden !== "boolean") return false;
+        if(typeof this._data.removeOld !== "boolean") return false;
         if(typeof this._data.position !== "number" || !(this._data.position in EModalPosition)) return false;
         return true;
     }
@@ -61,7 +62,7 @@ export class Modal{
     public async run():Promise<void>{       
         let content = `
             <div class="modal-header">${this._data.header?this._data.header:""} 
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>`;       
@@ -82,11 +83,16 @@ export class Modal{
             (resolve, reject) => {
                 $(document).ready(
                     function(){
+                        let selector = $(_this._data.selector);
+                        if(_this._data.removeOld && selector.length > 0){
+                            selector.remove();
+                        }
                         switch(_this._data.position){
-                            case EModalPosition.append:     $(_this._data.selector).append(dom);
+                            case EModalPosition.append:     selector.append(dom);
                                                             return resolve();
-                            case EModalPosition.prepend:    $(_this._data.selector).prepend(dom);
+                            case EModalPosition.prepend:    selector.prepend(dom);
                                                             return resolve();
+                            default: break;
                         }                        
                         return reject("Unknown position.");
                     }
@@ -104,6 +110,7 @@ export interface IModal{
     footer?: string;
     hidden: boolean;
     position: EModalPosition;
+    removeOld: boolean;
 }
 
 export enum EModalPosition{
