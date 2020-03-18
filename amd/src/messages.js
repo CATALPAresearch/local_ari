@@ -102,12 +102,21 @@ define(["require", "exports", "core/notification", "./communication"], function 
         ENotificationType[ENotificationType["problem"] = 3] = "problem";
         ENotificationType[ENotificationType["success"] = 4] = "success";
     })(ENotificationType = exports.ENotificationType || (exports.ENotificationType = {}));
+    /**
+     *
+     * Send a system message to the user.
+     * @param data ISystemMessage
+     * @note You can use html at the message string.
+     *
+     */
     var SystemMessage = /** @class */ (function () {
         function SystemMessage(data) {
             this._data = data;
         }
         SystemMessage.prototype.validate = function () {
             if (typeof this._data !== "object")
+                return false;
+            if (typeof this._data.subject !== "string" || this._data.subject.length <= 0)
                 return false;
             if (typeof this._data.message !== "string" || this._data.message.length <= 0)
                 return false;
@@ -117,12 +126,51 @@ define(["require", "exports", "core/notification", "./communication"], function 
             return __awaiter(this, void 0, void 0, function () {
                 var result;
                 return __generator(this, function (_a) {
-                    result = communication_1.default.webservice('method', {});
-                    return [2 /*return*/];
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, communication_1.default.webservice('sendSystemMessage', { subject: this._data.subject, message: this._data.message })];
+                        case 1:
+                            result = _a.sent();
+                            console.log(result);
+                            return [2 /*return*/];
+                    }
                 });
             });
         };
         return SystemMessage;
     }());
     exports.SystemMessage = SystemMessage;
+    /**
+     *
+     * Send a chat message to the user.
+     * @param data IChatMessage
+     *
+     */
+    var ChatMessage = /** @class */ (function () {
+        function ChatMessage(data) {
+            this._data = data;
+        }
+        ChatMessage.prototype.validate = function () {
+            if (typeof this._data !== "object")
+                return false;
+            if (typeof this._data.message !== "string" || this._data.message.length <= 0)
+                return false;
+            return true;
+        };
+        ChatMessage.prototype.run = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var result;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, communication_1.default.webservice('sendChatMessage', { message: this._data.message })];
+                        case 1:
+                            result = _a.sent();
+                            console.log(result);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        return ChatMessage;
+    }());
+    exports.ChatMessage = ChatMessage;
 });
