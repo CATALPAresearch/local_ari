@@ -47,12 +47,12 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
         }
         CSS.prototype.validate = function () {
             if (typeof this._data !== "object")
-                return 1;
+                return false;
             if (typeof this._data.selector !== "string" || this._data.selector.length <= 0)
-                return 2;
+                return false;
             if (typeof this._data.properties !== "object")
-                return 3;
-            return 4;
+                return false;
+            return true;
         };
         CSS.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {

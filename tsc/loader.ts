@@ -1,18 +1,9 @@
-//@ts-ignore
-import $ from "jquery"
-import { Notification, INotification, ENotificationType } from "./messages";
-import { CSS, ICSS } from "./styles";
+import { Controller } from "./controller";
+import { Config } from "./config";
 
 export function init(){
 	try{		
-		$(document).ready(
-			function(){
-				let data = <ICSS>{selector: "body", properties: {"background-color": "red"}};
-				let css = new CSS(data);
-				alert(css.validate());
-				css.run();
-			}
-		);
+		new Controller(Config);
 	} catch(error){
 		console.log(error);
 	}
