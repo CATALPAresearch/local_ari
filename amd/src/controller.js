@@ -1,15 +1,19 @@
-define(["require", "exports", "./messages"], function (require, exports, messages_1) {
+define(["require", "exports", "./styles"], function (require, exports, styles_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Controller = /** @class */ (function () {
         function Controller(config) {
             this._config = config;
-            var sm = new messages_1.SystemMessage({ subject: "Mein Subject", message: "Lets go!" });
-            sm.run().then(function (resolve) {
-                console.log(resolve);
-            }, function (reject) {
-                console.log(reject);
-            });
+            var mod = {
+                id: "mymodal",
+                header: "<div class=\"modal-title\">Mein Titel</div>",
+                hidden: false,
+                position: styles_1.EModalPosition.prepend,
+                selector: "body"
+            };
+            var modal = new styles_1.Modal(mod);
+            modal.run();
+            console.log("done");
         }
         return Controller;
     }());
