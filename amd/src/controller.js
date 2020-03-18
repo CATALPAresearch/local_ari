@@ -1,4 +1,4 @@
-define(["require", "exports", "./styles"], function (require, exports, styles_1) {
+define(["require", "exports", "./dom"], function (require, exports, dom_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Controller = /** @class */ (function () {
@@ -8,10 +8,10 @@ define(["require", "exports", "./styles"], function (require, exports, styles_1)
                 id: "mymodal",
                 header: "<div class=\"modal-title\">Mein Titel</div>",
                 hidden: false,
-                position: styles_1.EModalPosition.prepend,
+                position: dom_1.EDOMPosition.prepend,
                 selector: "body"
             };
-            var modal = new styles_1.Modal(mod);
+            var modal = new dom_1.CreateModal(mod);
             modal.run();
             console.log("done");
         }

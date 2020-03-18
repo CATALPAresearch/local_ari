@@ -1,6 +1,5 @@
 import { IConfig } from "./config";
-import { SystemMessage } from "./messages";
-import { Modal, IModal, EModalPosition } from "./styles";
+import { EDOMPosition, CreateModal, ICreateModal } from "./dom";
 
 export class Controller{
 
@@ -8,16 +7,15 @@ export class Controller{
 
     constructor(config:IConfig){
         this._config = config;
-        let mod = <IModal>{
+        let mod = <ICreateModalt>{
             id: "mymodal",
             header: `<div class="modal-title">Mein Titel</div>`,
             hidden: false,
-            position: EModalPosition.prepend,
+            position: EDOMPosition.prepend,
             selector: "body"
         }
-        let modal = new Modal(mod);
-        modal.run();
-        console.log("done");
+        let modal = new CreateModal(mod);
+        modal.run();        
     }
 
 }
