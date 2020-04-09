@@ -5,6 +5,7 @@ define(["require", "exports"], function (require, exports) {
         function Cookie() {
         }
         Cookie.set = function (name, value, expires, path) {
+            name = name.replace(" ", "");
             name = name.replace(";", "");
             if (typeof name !== "string" || name.length <= 0)
                 throw Error("Invalide cookie name");
@@ -36,6 +37,13 @@ define(["require", "exports"], function (require, exports) {
                 object[name_1] = value;
             }
             return object;
+        };
+        Cookie.get = function (name) {
+            name = name.replace(" ", "");
+            var all = Cookie.getAll();
+            if (typeof all[name] !== "undefined")
+                return all[name];
+            return undefined;
         };
         Cookie.remove = function (name, path) {
             var date = new Date(new Date().setDate(new Date().getDate() - 100));

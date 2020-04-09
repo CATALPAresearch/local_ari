@@ -1,6 +1,7 @@
 export default class Cookie{
     
     public static set(name:string, value:any, expires?:Date, path?:string):void{
+        name = name.replace(" ", "");
         name = name.replace(";", "");        
         if(typeof name !== "string" || name.length <= 0) throw Error("Invalide cookie name");   
         if(typeof path === "string") path = path.replace(";", "");  
@@ -29,6 +30,13 @@ export default class Cookie{
         }        
         return object;
     } 
+
+    public static get(name:string):any{
+        name = name.replace(" ", "");
+        let all:any = Cookie.getAll();
+        if(typeof all[name] !== "undefined") return all[name];
+        return undefined;
+    }
 
     public static remove(name:string, path?:string):void{
         let date = new Date(new Date().setDate(new Date().getDate() - 100));
