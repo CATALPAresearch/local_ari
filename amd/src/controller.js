@@ -5,6 +5,13 @@ define(["require", "exports", "./sensor"], function (require, exports, sensor_1)
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     sensor_1 = __importDefault(sensor_1);
+    /**
+     *
+     * @author Marc Burchart
+     * @version 1.0-20200409
+     * @description xxx
+     *
+     */
     var Controller = /** @class */ (function () {
         function Controller(config) {
             this._config = config;

@@ -44,8 +44,9 @@ define(["require", "exports", "core/notification", "./communication"], function 
     communication_1 = __importDefault(communication_1);
     /**
      *
-     * Send a notification toe the user.
-     * @param data INotification
+     * @author Marc Burchart
+     * @version 1.0-20200409
+     * @description xxx
      *
      */
     var Notification = /** @class */ (function () {

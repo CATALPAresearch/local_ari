@@ -1,11 +1,3 @@
-/**
- *
- * @author Marc Burchart
- * @email marc.burchart@fernuni-hagen.de
- * @version 1.0
- * @description A class for basic communication.
- *
- */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -13,6 +5,13 @@ define(["require", "exports", "core/ajax"], function (require, exports, ajax_1) 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     ajax_1 = __importDefault(ajax_1);
+    /**
+     *
+     * @author Marc Burchart
+     * @version 1.0-20200409
+     * @description xxx
+     *
+     */
     var Communication = /** @class */ (function () {
         function Communication() {
         }

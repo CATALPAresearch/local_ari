@@ -41,6 +41,13 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     jquery_1 = __importDefault(jquery_1);
+    /**
+     *
+     * @author Marc Burchart
+     * @version 1.0-20200409
+     * @description xxx
+     *
+     */
     var CreateModal = /** @class */ (function () {
         function CreateModal(data) {
             this._data = data;

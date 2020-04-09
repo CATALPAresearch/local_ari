@@ -1,3 +1,10 @@
+/**
+ *
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
+ *
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

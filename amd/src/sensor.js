@@ -1,3 +1,10 @@
+/**
+ *
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
+ *
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -8,6 +15,20 @@ define(["require", "exports"], function (require, exports) {
             this.window = {};
             this.deviceOrientation = Sensor.deviceOrientation;
             this.os = navigator && navigator.userAgent ? navigator.userAgent : undefined;
+            // Das Öffnen einer Webseite in einem neuen Tab oder Browserfenster erzeugt jedoch eine neue Sitzung im sessionStorage;
+            if (typeof sessionStorage === "object") {
+                if (typeof sessionStorage.tabID === "undefined") {
+                    // uniqid                
+                    var rand = Date.now() / 1000;
+                    var pre = rand.toString(16).split(".").join("");
+                    while (pre.length < 14) {
+                        pre += "0";
+                    }
+                    var post = Math.round(Math.random() * 100000000);
+                    sessionStorage.tabID = pre + "." + post;
+                }
+                this.tabID = sessionStorage.tabID;
+            }
             if (typeof navigator === "object") {
                 if (navigator.appName)
                     this.browser.name = navigator.appName;
@@ -69,21 +90,6 @@ define(["require", "exports"], function (require, exports) {
                     this.window.outerHeight = window.outerHeight;
                 if (window.outerWidth)
                     this.window.outerWidth = window.outerWidth;
-            }
-            if (typeof sessionStorage === "object") {
-                if (typeof sessionStorage.tabID === "undefined") {
-                    var c = Date.now() / 1000;
-                    var d = c.toString(16).split(".").join("");
-                    while (d.length < 14) {
-                        d += "0";
-                    }
-                    var e = "";
-                    e = ".";
-                    var f = Math.round(Math.random() * 100000000);
-                    e += f;
-                    sessionStorage.tabID = d + e;
-                }
-                this.tabID = sessionStorage.tabID;
             }
         }
         Sensor.prototype.getOrientation = function () {
