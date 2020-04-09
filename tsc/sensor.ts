@@ -13,6 +13,20 @@ export default class Sensor{
     public readonly tabID?:string;
 
     constructor(){
+        // Das Öffnen einer Webseite in einem neuen Tab oder Browserfenster erzeugt jedoch eine neue Sitzung im sessionStorage;
+        if(typeof sessionStorage === "object"){
+            if(typeof sessionStorage.tabID === "undefined"){
+                // uniqid                
+                let rand = Date.now()/1000;
+                let pre = rand.toString(16).split(".").join("");
+                while(pre.length < 14){
+                    pre += "0";
+                }                            
+                let post = Math.round(Math.random()*100000000);               
+                sessionStorage.tabID = `${pre}.${post}`;                
+            }
+            this.tabID = sessionStorage.tabID;
+        }
         if(typeof navigator === "object"){
             if(navigator.appName) this.browser.name = navigator.appName;
             if(navigator.appCodeName) this.browser.codeName = navigator.appCodeName;
@@ -54,20 +68,7 @@ export default class Sensor{
             if(window.innerWidth) this.window.innerWidth = window.innerWidth;
             if(window.outerHeight) this.window.outerHeight = window.outerHeight;
             if(window.outerWidth) this.window.outerWidth = window.outerWidth;
-        }  
-        if(typeof sessionStorage === "object"){
-            if(typeof sessionStorage.tabID === "undefined"){
-                // uniqid
-                let rand = Date.now()/1000;
-                let pre = rand.toString(16).split(".").join("");
-                while(pre.length < 14){
-                    pre += "0";
-                }                            
-                let post = Math.round(Math.random()*100000000);               
-                sessionStorage.tabID = `${pre}.${post}`;                
-            }
-            this.tabID = sessionStorage.tabID;
-        }
+        }          
     }
 
     public getOrientation():EOrientation {
