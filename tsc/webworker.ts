@@ -16,6 +16,12 @@ export class Webworker{
             this._worker = new window.Worker(url, options);
         }
     }
+    
+    public sendMessage(message:any):boolean{
+        if(typeof this._worker === "undefined") return false;
+        this._worker.postMessage(message);
+        return true;
+    }
 
     public addMessageEventListener(callback: (event:MessageEvent) => void):boolean{
         if(typeof this._worker === "undefined") return false;
