@@ -3,6 +3,14 @@ import { EDOMPosition, CreateModal, ICreateModal } from "./dom";
 import Sensor from "./sensor";
 import Cookie from "./cookie";
 
+/**
+ * 
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
+ * 
+ */
+
 export class Controller{
 
     private readonly _config:IConfig;

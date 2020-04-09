@@ -1,3 +1,11 @@
+/**
+ * 
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description With web storage, web applications can store data locally within the user's browser.
+ * 
+ */
+
 export default class Webstorage{
 
     private static tryToParse(data:string){

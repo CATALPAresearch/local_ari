@@ -4,8 +4,9 @@ import Communication from './communication';
 
 /**
  * 
- * Send a notification toe the user.
- * @param data INotification
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
  * 
  */
 

@@ -1,3 +1,12 @@
+
+/**
+ * 
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
+ * 
+ */
+
 export class Popup{
     public alert(text:string):Promise<void>{
         return new Promise(

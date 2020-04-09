@@ -1,4 +1,11 @@
 
+/**
+ * 
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
+ * 
+ */
 
 export default class Sensor{   
 

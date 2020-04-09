@@ -1,3 +1,12 @@
+
+/**
+ * 
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
+ * 
+ */
+
 export default class Cookie{
     
     public static set(name:string, value:any, expires?:Date, path?:string):void{

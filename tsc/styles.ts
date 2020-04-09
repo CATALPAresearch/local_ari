@@ -1,6 +1,14 @@
 //@ts-ignore
 import $ from "jquery";
 
+/**
+ * 
+ * @author Marc Burchart
+ * @version 1.0-20200409
+ * @description xxx
+ * 
+ */
+
 export class CSS{
 
     private _data:ICSS;

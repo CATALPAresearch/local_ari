@@ -1,14 +1,13 @@
+//@ts-ignore
+import ajax from 'core/ajax';
+
 /**
  * 
  * @author Marc Burchart
- * @email marc.burchart@fernuni-hagen.de
- * @version 1.0
- * @description A class for basic communication.
+ * @version 1.0-20200409
+ * @description xxx
  * 
  */
-
-//@ts-ignore
-import ajax from 'core/ajax';
 
 export default class Communication{
     
