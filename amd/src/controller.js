@@ -1,19 +1,19 @@
-define(["require", "exports", "./dom"], function (require, exports, dom_1) {
+define(["require", "exports", "./sensor"], function (require, exports, sensor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Controller = /** @class */ (function () {
         function Controller(config) {
             this._config = config;
-            var mod = {
+            var sensor = new sensor_1.Sensor();
+            /*let mod = <ICreateModal>{
                 id: "mymodal",
-                header: "<div class=\"modal-title\">Mein Titel</div>",
+                header: `<div class="modal-title">Mein Titel</div>`,
                 hidden: false,
-                position: dom_1.EDOMPosition.prepend,
+                position: EDOMPosition.prepend,
                 selector: "body"
-            };
-            var modal = new dom_1.CreateModal(mod);
-            modal.run();
-            console.log("done");
+            }
+            let modal = new CreateModal(mod);
+            modal.run();*/
         }
         return Controller;
     }());

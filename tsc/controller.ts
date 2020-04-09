@@ -1,5 +1,6 @@
 import { IConfig } from "./config";
 import { EDOMPosition, CreateModal, ICreateModal } from "./dom";
+import { Sensor } from "./sensor";
 
 export class Controller{
 
@@ -7,7 +8,10 @@ export class Controller{
 
     constructor(config:IConfig){
         this._config = config;
-        let mod = <ICreateModalt>{
+
+        let sensor = new Sensor();
+
+        /*let mod = <ICreateModal>{
             id: "mymodal",
             header: `<div class="modal-title">Mein Titel</div>`,
             hidden: false,
@@ -15,7 +19,7 @@ export class Controller{
             selector: "body"
         }
         let modal = new CreateModal(mod);
-        modal.run();        
+        modal.run();*/        
     }
 
 }
