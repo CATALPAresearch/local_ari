@@ -3,7 +3,7 @@
  * 
  * @author Marc Burchart
  * @version 1.0-20200409
- * @description A class that pulses the vibration hardware on the device, if such hardware exists
+ * @description A class that pulses the vibration hardware on the device, if such hardware exists.
  * 
  */
 

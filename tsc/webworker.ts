@@ -7,7 +7,7 @@
  * 
  */
 
-export class Webworker{
+export default class Webworker{
 
     private _worker?:Worker;
 
@@ -56,4 +56,10 @@ export class Webworker{
             return false;
         }        
     }
+}
+
+export function func_to_url(func:any):string{
+    let imp = func.toString().replace(/^[^{]*{\s*/, '').replace(/\s*}[^}]*$/, '');
+    let blob = new Blob([imp], {type: "text/javascript"});
+    return URL.createObjectURL(blob);
 }

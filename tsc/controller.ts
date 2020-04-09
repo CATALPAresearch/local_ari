@@ -2,6 +2,7 @@ import { IConfig } from "./config";
 import { EDOMPosition, CreateModal, ICreateModal } from "./dom";
 import Sensor from "./sensor";
 import Cookie from "./cookie";
+import PushNotifications from "./push";
 
 /**
  * 
@@ -10,22 +11,40 @@ import Cookie from "./cookie";
  * @description xxx
  * 
  */
+//@ts-ignore
+import $ from "jquery";
 
 export class Controller{
 
     private readonly _config:IConfig;
+    private readonly _path:string;
 
-    constructor(config:IConfig){
+    constructor(config:IConfig, path:string){
         this._config = config;
+        this._path = path;
 
-        //let sensor = new Sensor();
+        //let sensor = new Sensor();    
+        $("body").append(
+            "<button id=\"mytest\">Meintest</button>"
+        );    
 
 
-        let today = new Date()
-        let tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-      
-        console.log(new Sensor());
+        let test = new PushNotifications(this._path);
+
+        $("#mytest").on("click", function(){
+            test.subscribe().then(
+                (resolve) => {
+                    console.log("resolve");
+                },
+                (reject) => {
+                    console.log(reject);
+                }
+            );
+        });
+
+        
+
+
         /*let mod = <ICreateModal>{
             id: "mymodal",
             header: `<div class="modal-title">Mein Titel</div>`,

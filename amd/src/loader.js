@@ -8,9 +8,9 @@ define(["require", "exports", "./controller", "./config"], function (require, ex
      * @description xxx
      *
      */
-    function init() {
+    function init(path) {
         try {
-            new controller_1.Controller(config_1.Config);
+            new controller_1.Controller(config_1.Config, path);
         }
         catch (error) {
             console.log(error);

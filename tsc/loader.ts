@@ -9,9 +9,9 @@ import { Config } from "./config";
  * 
  */
 
-export function init(){
-	try{		
-		new Controller(Config);
+export function init(path:string){
+	try{	
+		new Controller(Config, path);
 	} catch(error){
 		console.log(error);
 	}

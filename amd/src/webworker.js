@@ -57,5 +57,11 @@ define(["require", "exports"], function (require, exports) {
         };
         return Webworker;
     }());
-    exports.Webworker = Webworker;
+    exports.default = Webworker;
+    function func_to_url(func) {
+        var imp = func.toString().replace(/^[^{]*{\s*/, '').replace(/\s*}[^}]*$/, '');
+        var blob = new Blob([imp], { type: "text/javascript" });
+        return URL.createObjectURL(blob);
+    }
+    exports.func_to_url = func_to_url;
 });
