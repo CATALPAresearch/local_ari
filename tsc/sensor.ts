@@ -57,15 +57,14 @@ export default class Sensor{
         }  
         if(typeof sessionStorage === "object"){
             if(typeof sessionStorage.tabID === "undefined"){
-                let c = Date.now()/1000;
-                let d = c.toString(16).split(".").join("");
-                while(d.length < 14){
-                    d += "0";
-                }
-                let e = ".";               
-                let f = Math.round(Math.random()*100000000);
-                e += f;
-                sessionStorage.tabID = d + e;                
+                // uniqid
+                let rand = Date.now()/1000;
+                let pre = rand.toString(16).split(".").join("");
+                while(pre.length < 14){
+                    pre += "0";
+                }                            
+                let post = Math.round(Math.random()*100000000);               
+                sessionStorage.tabID = `${pre}.${post}`;                
             }
             this.tabID = sessionStorage.tabID;
         }
