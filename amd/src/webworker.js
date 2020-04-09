@@ -14,6 +14,12 @@ define(["require", "exports"], function (require, exports) {
                 this._worker = new window.Worker(url, options);
             }
         }
+        Webworker.prototype.sendMessage = function (message) {
+            if (typeof this._worker === "undefined")
+                return false;
+            this._worker.postMessage(message);
+            return true;
+        };
         Webworker.prototype.addMessageEventListener = function (callback) {
             if (typeof this._worker === "undefined")
                 return false;
