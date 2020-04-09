@@ -1,6 +1,6 @@
 import { IConfig } from "./config";
 import { EDOMPosition, CreateModal, ICreateModal } from "./dom";
-import { Sensor } from "./sensor";
+import Sensor from "./sensor";
 import Cookie from "./cookie";
 
 export class Controller{
@@ -16,11 +16,8 @@ export class Controller{
         let today = new Date()
         let tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-
-
-        Cookie.set("heinz", 12, tomorrow);
-        console.log(Cookie.getAll());
-
+      
+        console.log(new Sensor());
         /*let mod = <ICreateModal>{
             id: "mymodal",
             header: `<div class="modal-title">Mein Titel</div>`,
