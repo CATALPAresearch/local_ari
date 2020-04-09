@@ -37,6 +37,11 @@ define(["require", "exports"], function (require, exports) {
             }
             return object;
         };
+        Cookie.remove = function (name, path) {
+            var date = new Date(new Date().setDate(new Date().getDate() - 100));
+            Cookie.set(name, "", date, path);
+            return;
+        };
         return Cookie;
     }());
     exports.default = Cookie;

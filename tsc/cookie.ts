@@ -29,4 +29,10 @@ export default class Cookie{
         }        
         return object;
     } 
+
+    public static remove(name:string, path?:string):void{
+        let date = new Date(new Date().setDate(new Date().getDate() - 100));
+        Cookie.set(name, "", date, path);
+        return;
+    }
 }
