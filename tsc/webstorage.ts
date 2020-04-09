@@ -1,3 +1,4 @@
+
 /**
  * 
  * @author Marc Burchart
@@ -25,7 +26,7 @@ export default class Webstorage{
     }
 
     public static getLocalStorage(name:string):any{
-        if(typeof window !== "object" || typeof window.localStorage !== "object") return null;
+        if(typeof window !== "object" || typeof window.localStorage !== "object") return null;       
         let result = window.localStorage.getItem(name);
         if(result === null) return null;
         return Webstorage.tryToParse(result);

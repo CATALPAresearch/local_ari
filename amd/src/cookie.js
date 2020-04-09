@@ -2,7 +2,7 @@
  *
  * @author Marc Burchart
  * @version 1.0-20200409
- * @description xxx
+ * @description Cookies let you store user information in web pages.
  *
  */
 define(["require", "exports"], function (require, exports) {
