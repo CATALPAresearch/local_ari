@@ -1,8 +1,5 @@
 import { IConfig } from "./config";
-import { EDOMPosition, CreateModal, ICreateModal } from "./dom";
-import Sensor from "./sensor";
-import Cookie from "./cookie";
-import PushNotifications from "./push";
+import SW from "./serviceworker";
 
 /**
  * 
@@ -29,17 +26,20 @@ export class Controller{
         );    
 
 
-        let test = new PushNotifications(this._path);
+        let sw = new SW("https://127.0.0.1/moodle/local/ari/lib/worker.js");     
+        
+        sw.update();
+        
 
         $("#mytest").on("click", function(){
-            test.subscribe().then(
-                (resolve) => {
-                    console.log("resolve");
-                },
-                (reject) => {
-                    console.log(reject);
-                }
-            );
+           sw.create().then(
+               (resolve) => {
+                    console.log("Resolve");
+               }, 
+               (reject) => {
+                   console.log(reject);
+               }
+           );
         });
 
         

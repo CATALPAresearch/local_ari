@@ -5,6 +5,9 @@
  * @version 1.0-20200409
  * @description A web worker is a JavaScript running in the background, without affecting the performance of the page.
  * 
+ * Web workers, on the other hand, have a different purpose. They offer multi-threading to the single-threaded JavaScript language and are used for 
+ * performing computation heavy tasks that should not interfere with the responsiveness of the UI. They are limited to only one tab.
+ * 
  */
 
 export default class Webworker{

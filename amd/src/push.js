@@ -38,9 +38,32 @@ define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PushNotifications = /** @class */ (function () {
-        function PushNotifications(path) {
-            this._path = path;
+        function PushNotifications(workerJSPath) {
+            this._path = workerJSPath;
         }
+        PushNotifications.prototype.update = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var worker;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (typeof navigator !== "object" || typeof navigator.serviceWorker !== "object")
+                                throw Error("Browser does not support service worker.");
+                            if (!(typeof this._worker !== "object")) return [3 /*break*/, 3];
+                            return [4 /*yield*/, navigator.serviceWorker.getRegistration(this._path)];
+                        case 1:
+                            worker = _a.sent();
+                            if (!(typeof worker === "object")) return [3 /*break*/, 3];
+                            this._worker = worker;
+                            return [4 /*yield*/, this._worker.update()];
+                        case 2:
+                            _a.sent();
+                            _a.label = 3;
+                        case 3: return [2 /*return*/];
+                    }
+                });
+            });
+        };
         /**
          * Subscribe the user to get push notifications.
          * @important Must always be called from inside a short running user-generated event handler, such as click or keydown
@@ -58,12 +81,39 @@ define(["require", "exports"], function (require, exports) {
                             return [4 /*yield*/, this.requestPermission()];
                         case 1:
                             _b.sent();
-                            console.log(this._path + "/local/ari/lib/worker.js");
-                            _a = this;
-                            return [4 /*yield*/, navigator.serviceWorker.register(this._path + "/local/ari/lib/worker.js")];
+                            return [4 /*yield*/, this.update()];
                         case 2:
+                            _b.sent();
+                            console.log(this._worker);
+                            if (typeof this._worker === "object")
+                                return [2 /*return*/];
+                            _a = this;
+                            return [4 /*yield*/, navigator.serviceWorker.register(this._path)];
+                        case 3:
                             _a._worker = _b.sent();
-                            return [2 /*return*/];
+                            if (typeof this._worker === "object")
+                                return [2 /*return*/];
+                            throw Error("Could not register worker");
+                    }
+                });
+            });
+        };
+        PushNotifications.prototype.unsubscribe = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var del;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, this.update()];
+                        case 1:
+                            _a.sent();
+                            if (!(typeof this._worker === "object")) return [3 /*break*/, 3];
+                            return [4 /*yield*/, this._worker.unregister()];
+                        case 2:
+                            del = _a.sent();
+                            if (del)
+                                return [2 /*return*/];
+                            _a.label = 3;
+                        case 3: throw Error("Could not unregister worker.");
                     }
                 });
             });
