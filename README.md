@@ -9,3 +9,9 @@
 * Create webworker to increase the performance
 * Use the webstorage to cache data
 * Use the browser's db to cache data
+* Communicate with moodle over a standard communication class
+* Change the style of any DOM object
+
+## ToDo ##
+* Connect ARI to the backend
+* Extend the controller to let the backend access the different classes over the communication
