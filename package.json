@@ -24,8 +24,11 @@
   },
   "dependencies": {
     "grunt-contrib-clean": "^2.0.0",
+    "grunt-contrib-jshint": "^2.1.0",
     "grunt-contrib-less": "^2.0.0",
     "grunt-contrib-watch": "^1.1.0",
-    "grunt-load-gruntfile": "0.0.2"
+    "grunt-load-gruntfile": "0.0.2",
+    "grunt-terser": "^1.0.0",
+    "grunt-ts": "^6.0.0-beta.22"
   }
 }
