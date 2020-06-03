@@ -1,5 +1,3 @@
-import { func_to_url } from "./webworker";
-
 export default class PushNotifications{  
 
     private _worker?:ServiceWorkerRegistration;

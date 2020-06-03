@@ -1,31 +1,22 @@
-/**
- *
- * @author Marc Burchart
- * @version 1.0-20200409
- * @description xxx
- *
- */
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Sensor = /** @class */ (function () {
-        function Sensor() {
+    class Sensor {
+        constructor() {
             this.browser = {};
             this.screen = {};
             this.window = {};
             this.deviceOrientation = Sensor.deviceOrientation;
             this.os = navigator && navigator.userAgent ? navigator.userAgent : undefined;
-            // Das Öffnen einer Webseite in einem neuen Tab oder Browserfenster erzeugt jedoch eine neue Sitzung im sessionStorage;
             if (typeof sessionStorage === "object") {
                 if (typeof sessionStorage.tabID === "undefined") {
-                    // uniqid                
-                    var rand = Date.now() / 1000;
-                    var pre = rand.toString(16).split(".").join("");
+                    let rand = Date.now() / 1000;
+                    let pre = rand.toString(16).split(".").join("");
                     while (pre.length < 14) {
                         pre += "0";
                     }
-                    var post = Math.round(Math.random() * 100000000);
-                    sessionStorage.tabID = pre + "." + post;
+                    let post = Math.round(Math.random() * 100000000);
+                    sessionStorage.tabID = `${pre}.${post}`;
                 }
                 this.tabID = sessionStorage.tabID;
             }
@@ -92,16 +83,16 @@ define(["require", "exports"], function (require, exports) {
                     this.window.outerWidth = window.outerWidth;
             }
         }
-        Sensor.prototype.getOrientation = function () {
+        getOrientation() {
             if (window.matchMedia("(orientation: portrait)").matches)
                 return EOrientation.portrait;
             if (window.matchMedia("(orientation: landscape)").matches)
                 return EOrientation.landscape;
             if (screen.orientation) {
-                var orientation_1 = screen.orientation.type;
-                if (orientation_1.indexOf("portrait") !== -1)
+                let orientation = screen.orientation.type;
+                if (orientation.indexOf("portrait") !== -1)
                     return EOrientation.portrait;
-                if (orientation_1.indexOf("landscape") !== -1)
+                if (orientation.indexOf("landscape") !== -1)
                     return EOrientation.landscape;
             }
             if (typeof window !== "object" || typeof window.innerHeight !== "number" || typeof window.innerWidth)
@@ -111,14 +102,14 @@ define(["require", "exports"], function (require, exports) {
             if (window.innerWidth > window.innerHeight || (typeof window.orientation === "number" && (window.orientation === 90 || window.orientation === -90)))
                 return EOrientation.landscape;
             return EOrientation.undefined;
-        };
-        Sensor.prototype.getGeolocation = function () {
+        }
+        getGeolocation() {
             if (navigator && navigator.geolocation && typeof navigator.geolocation.getCurrentPosition === "function") {
                 return Promise.reject(new Error("Browser does not support Geolocation."));
             }
-            var _this = this;
-            return new Promise(function (resolve, reject) {
-                navigator.geolocation.getCurrentPosition(function (coords) {
+            let _this = this;
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition((coords) => {
                     if (typeof coords.coords === "object") {
                         _this.geolocation = coords.coords;
                         return resolve();
@@ -126,27 +117,26 @@ define(["require", "exports"], function (require, exports) {
                     return reject(new Error("Could not get Coordinates."));
                 });
             });
-        };
-        Sensor.prototype.startDeviceOrientationTracking = function () {
+        }
+        startDeviceOrientationTracking() {
             if (typeof window !== "object" || typeof window.DeviceOrientationEvent === "undefined")
                 return Promise.reject("Browser does not support device orientation.");
-            Sensor.deviceOrientationFunction = function (event) {
+            Sensor.deviceOrientationFunction = (event) => {
                 Sensor.deviceOrientation.azimuth = event.alpha;
                 Sensor.deviceOrientation.pitch = event.beta;
                 Sensor.deviceOrientation.roll = event.gamma;
             };
             window.addEventListener("deviceorientation", Sensor.deviceOrientationFunction);
             return;
-        };
-        Sensor.prototype.stopDeviceOrientationTracking = function () {
+        }
+        stopDeviceOrientationTracking() {
             if (typeof Sensor.deviceOrientationFunction === "function" && typeof window === "object")
                 window.removeEventListener("deviceorientation", Sensor.deviceOrientationFunction);
             return true;
-        };
-        Sensor.deviceOrientation = {};
-        return Sensor;
-    }());
+        }
+    }
     exports.default = Sensor;
+    Sensor.deviceOrientation = {};
     var EOrientation;
     (function (EOrientation) {
         EOrientation[EOrientation["landscape"] = 0] = "landscape";

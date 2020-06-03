@@ -1,53 +1,43 @@
-/**
- *
- * @author Marc Burchart
- * @version 1.0-20200409
- * @description A web worker is a JavaScript running in the background, without affecting the performance of the page.
- *
- * Web workers, on the other hand, have a different purpose. They offer multi-threading to the single-threaded JavaScript language and are used for
- * performing computation heavy tasks that should not interfere with the responsiveness of the UI. They are limited to only one tab.
- *
- */
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Webworker = /** @class */ (function () {
-        function Webworker(url, options) {
+    class Webworker {
+        constructor(url, options) {
             if (typeof window.Worker === "function") {
                 this._worker = new window.Worker(url, options);
             }
         }
-        Webworker.prototype.sendMessage = function (message) {
+        sendMessage(message) {
             if (typeof this._worker === "undefined")
                 return false;
             this._worker.postMessage(message);
             return true;
-        };
-        Webworker.prototype.addMessageEventListener = function (callback) {
+        }
+        addMessageEventListener(callback) {
             if (typeof this._worker === "undefined")
                 return false;
             this._worker.addEventListener("message", callback);
             return true;
-        };
-        Webworker.prototype.removeMessageEventListener = function (callback) {
+        }
+        removeMessageEventListener(callback) {
             if (typeof this._worker === "undefined")
                 return false;
             this._worker.removeEventListener("message", callback);
             return true;
-        };
-        Webworker.prototype.addErrorEventListener = function (callback) {
+        }
+        addErrorEventListener(callback) {
             if (typeof this._worker === "undefined")
                 return false;
             this._worker.addEventListener("error", callback);
             return true;
-        };
-        Webworker.prototype.removeErrorEventListener = function (callback) {
+        }
+        removeErrorEventListener(callback) {
             if (typeof this._worker === "undefined")
                 return false;
             this._worker.removeEventListener("error", callback);
             return true;
-        };
-        Webworker.prototype.terminate = function () {
+        }
+        terminate() {
             if (typeof this._worker === "undefined")
                 return false;
             try {
@@ -57,13 +47,12 @@ define(["require", "exports"], function (require, exports) {
             catch (error) {
                 return false;
             }
-        };
-        return Webworker;
-    }());
+        }
+    }
     exports.default = Webworker;
     function func_to_url(func) {
-        var imp = func.toString().replace(/^[^{]*{\s*/, '').replace(/\s*}[^}]*$/, '');
-        var blob = new Blob([imp], { type: "text/javascript" });
+        let imp = func.toString().replace(/^[^{]*{\s*/, '').replace(/\s*}[^}]*$/, '');
+        let blob = new Blob([imp], { type: "text/javascript" });
         return URL.createObjectURL(blob);
     }
     exports.func_to_url = func_to_url;

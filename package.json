@@ -19,8 +19,8 @@
   "license": "ISC",
   "devDependencies": {
     "eslint": "^6.8.0",
-    "nodemon": "^2.0.2",
-    "typescript": "^3.8.2"
+    "nodemon": "^2.0.4",
+    "typescript": "^3.9.3"
   },
   "dependencies": {
     "grunt-contrib-clean": "^2.0.0",

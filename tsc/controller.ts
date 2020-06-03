@@ -1,5 +1,4 @@
 import { IConfig } from "./config";
-import SW from "./serviceworker";
 
 /**
  * 
@@ -8,12 +7,6 @@ import SW from "./serviceworker";
  * @description xxx
  * 
  */
-//@ts-ignore
-import $ from "jquery";
-import { IndexDB } from "./indexdb";
-import MediaStream from "./media";
-import { Notification, INotification, ENotificationType, ISystemMessage, SystemMessage, IChatMessage, ChatMessage } from "./messages";
-import { Popup } from "./popup";
 
 export class Controller{
 
@@ -24,6 +17,8 @@ export class Controller{
         this._config = config;
         this._path = path;
 
+
+        alert("marc");
         //Popup.prompt("Bitte geben Sie einen Wert ein!", "Der Wert");
         
         /*try{      
