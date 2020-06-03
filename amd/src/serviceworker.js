@@ -160,7 +160,7 @@ define(["require", "exports"], function (require, exports) {
                 });
             });
         };
-        SW.prototype._getState = function () {
+        SW.prototype._setState = function () {
             if (this._registration.installing) {
                 this._state = EServiceWorkerState.installing;
                 return;
@@ -176,7 +176,7 @@ define(["require", "exports"], function (require, exports) {
             this._state = EServiceWorkerState.undefined;
             return;
         };
-        SW.prototype.state = function () {
+        SW.prototype.getState = function () {
             return this._state;
         };
         SW.prototype._getServiceWorker = function () {
@@ -205,7 +205,7 @@ define(["require", "exports"], function (require, exports) {
                         if (this._onError)
                             this._worker.addEventListener("error", this._onError);
                         this._worker.addEventListener("statechange", onStateChange);
-                        this._getState();
+                        this._setState();
                         return [2 /*return*/];
                     }
                     else if (this._registration.waiting) {
@@ -213,7 +213,7 @@ define(["require", "exports"], function (require, exports) {
                         if (this._onError)
                             this._worker.addEventListener("error", this._onError);
                         this._worker.addEventListener("statechange", onStateChange);
-                        this._getState();
+                        this._setState();
                         return [2 /*return*/];
                     }
                     else if (this._registration.active) {
@@ -221,7 +221,7 @@ define(["require", "exports"], function (require, exports) {
                         if (this._onError)
                             this._worker.addEventListener("error", this._onError);
                         this._worker.addEventListener("statechange", onStateChange);
-                        this._getState();
+                        this._setState();
                         return [2 /*return*/];
                     }
                     throw Error("Could not find the service worker of the registration.");

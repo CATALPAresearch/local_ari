@@ -73,7 +73,7 @@
             );
         }
 
-        public static function sendChatMessageMessage($msg){            
+        public static function sendChatMessage($msg){            
             $return = array();
             $return['result'] = false;
             try{                

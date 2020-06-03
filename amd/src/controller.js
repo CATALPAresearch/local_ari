@@ -1,26 +1,67 @@
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-define(["require", "exports", "./serviceworker", "jquery"], function (require, exports, serviceworker_1, jquery_1) {
+define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    serviceworker_1 = __importDefault(serviceworker_1);
-    jquery_1 = __importDefault(jquery_1);
     var Controller = /** @class */ (function () {
         function Controller(config, path) {
             this._config = config;
             this._path = path;
-            //let sensor = new Sensor();    
-            jquery_1.default("body").append("<button id=\"mytest\">Meintest</button>");
-            var sw = new serviceworker_1.default("https://127.0.0.1/moodle/local/ari/lib/worker.js");
+            //Popup.prompt("Bitte geben Sie einen Wert ein!", "Der Wert");
+            /*try{
+                console.log("chat start");
+                let chat_data:IChatMessage = {
+                    message: "Hier kommt eine Nachricht!"
+                }
+                let chat = new ChatMessage(chat_data);
+                chat.run().then(
+                    (resolve) => {
+                        console.log("resolve");
+                    },
+                    (reject) => {
+                        console.log(reject);
+                    }
+                );
+                console.log("chat end");
+            } catch(error){
+                console.log(error);
+            }*/
+            /*
+            //let sensor = new Sensor();
+            $("body").append(
+                "<button id=\"mytest\">Meintest</button>"
+            );
+    
+    
+            let sw = new SW("https://127.0.0.1/moodle/local/ari/lib/worker.js");
+            
             sw.update();
-            jquery_1.default("#mytest").on("click", function () {
-                sw.create().then(function (resolve) {
-                    console.log("Resolve");
-                }, function (reject) {
+            
+    
+            $("#mytest").on("click", function(){
+               sw.create().then(
+                   (resolve) => {
+                        console.log("Resolve");
+                   },
+                   (reject) => {
+                       console.log(reject);
+                   }
+               );
+            });*/
+            //let id = new IndexDB("mydb");
+            /*$('body').append("<video autoplay=\"true\" id=\"videoElement\"></video>");
+    
+            let webcam  = new MediaStream({video: true});
+            webcam.start().then(
+                (resolve) => {
+                    let video = document.querySelector("#videoElement");
+                    //@ts-ignore
+                    video.srcObject = webcam._mediaStream;
+                },
+                (reject) => {
                     console.log(reject);
-                });
-            });
+                }
+            )
+    
+            */
             /*let mod = <ICreateModal>{
                 id: "mymodal",
                 header: `<div class="modal-title">Mein Titel</div>`,

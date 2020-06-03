@@ -123,6 +123,6 @@ export class ChatMessage{
     }
 }
 
-export interface IChatMessage{
+export interface IChatMessage{   
     message: string;
 }

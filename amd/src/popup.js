@@ -11,19 +11,19 @@ define(["require", "exports"], function (require, exports) {
     var Popup = /** @class */ (function () {
         function Popup() {
         }
-        Popup.prototype.alert = function (text) {
+        Popup.alert = function (text) {
             return new Promise(function (resolve, reject) {
                 window.alert(text);
                 return resolve();
             });
         };
-        Popup.prototype.confirm = function (text) {
+        Popup.confirm = function (text) {
             return new Promise(function (resolve, reject) {
                 window.confirm(text);
                 return resolve();
             });
         };
-        Popup.prototype.prompt = function (text, defaultAnswer) {
+        Popup.prompt = function (text, defaultAnswer) {
             return new Promise(function (resolve, reject) {
                 var response = window.prompt(text, defaultAnswer);
                 return resolve(response);

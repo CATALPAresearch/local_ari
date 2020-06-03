@@ -10,7 +10,7 @@
  * 
  */
 
-export default class SW{
+export default class SW {
 
     private _path:string;
     private _registration?:ServiceWorkerRegistration;
@@ -18,18 +18,18 @@ export default class SW{
     private _onError?:(event:ErrorEvent) => any;
     private _state:EServiceWorkerState = EServiceWorkerState.undefined;    
 
-    constructor(path:string, onError?:(event:ErrorEvent) => any){
+    constructor(path:string, onError?:(event:ErrorEvent) => any) {
         this._path = path;
         this._onError = onError;
     }
 
-    public static async supported():Promise<void>{        
+    public static async supported():Promise<void> {        
         if(!navigator || !navigator.serviceWorker || !navigator.serviceWorker.register) throw Error("Browser does not support service worker.");  
         if(location.protocol !== 'https:') throw Error("Service Worker can only run with https.");      
         return;
     }
 
-    public async register():Promise<void>{
+    public async register():Promise<void> {
         if(typeof this._path !== "string" || this._path.length <= 0) throw Error("No valid path to javascript file.");        
         var http = new XMLHttpRequest();
         http.open('HEAD', this._path, false);
@@ -44,7 +44,7 @@ export default class SW{
         return;
     }
 
-    public async create():Promise<void>{
+    public async create():Promise<void> {
         await SW.supported();
         if(typeof this._registration === "object") return;
         let worker = await navigator.serviceWorker.getRegistration(this._path);
@@ -58,7 +58,7 @@ export default class SW{
         return;
     }
 
-    public async unregister():Promise<void>{
+    public async unregister():Promise<void> {
         await this.register();
         if(typeof this._worker === "object") delete this._worker;
         await this._registration.unregister();
@@ -66,13 +66,13 @@ export default class SW{
         return;
     }
 
-    public async update(){
+    public async update() {
         await this.register();
         await this._registration.update();         
         return;
     }    
 
-    private _getState():void{
+    private _setState():void {
         if(this._registration.installing){
             this._state = EServiceWorkerState.installing;
             return;
@@ -87,11 +87,11 @@ export default class SW{
         return; 
     }
 
-    public state():EServiceWorkerState{
+    public getState():EServiceWorkerState {
         return this._state;       
     }
 
-    private async _getServiceWorker():Promise<void>{
+    private async _getServiceWorker():Promise<void> {
         let _this = this;
         let onStateChange = function(){
             if(_this._registration.installing){
@@ -111,19 +111,19 @@ export default class SW{
             this._worker = this._registration.installing;
             if(this._onError) this._worker.addEventListener("error", this._onError);  
             this._worker.addEventListener("statechange", onStateChange);
-            this._getState();          
+            this._setState();          
             return;
         } else if(this._registration.waiting){
             this._worker = this._registration.waiting;
             if(this._onError) this._worker.addEventListener("error", this._onError);
             this._worker.addEventListener("statechange", onStateChange);
-            this._getState();
+            this._setState();
             return;
         } else if(this._registration.active){
             this._worker = this._registration.active;
             if(this._onError) this._worker.addEventListener("error", this._onError);
             this._worker.addEventListener("statechange", onStateChange);
-            this._getState();
+            this._setState();
             return;
         }
         throw Error("Could not find the service worker of the registration.");        
@@ -143,7 +143,7 @@ export default class SW{
      * 
      */
 
-    public async addListener(event:string, callback:any){
+    public async addListener(event:string, callback:any) {
         if(typeof callback !== "function") throw Error("Callback is not a function.")
         if(typeof event !== "string" || event.length <= 0) throw Error("Please enter a valid event name.");
         await this.register();
@@ -151,7 +151,7 @@ export default class SW{
         return;
     }
 
-    public async removeListener(event:string, callback:any){
+    public async removeListener(event:string, callback:any) {
         if(typeof callback !== "function") throw Error("Callback is not a function.")
         if(typeof event !== "string" || event.length <= 0) throw Error("Please enter a valid event name.");
         await this.register();
@@ -160,7 +160,7 @@ export default class SW{
     } 
 }
 
-export enum EServiceWorkerState{
+export enum EServiceWorkerState {
     installing,
     waiting,
     active,

@@ -10,6 +10,10 @@ import SW from "./serviceworker";
  */
 //@ts-ignore
 import $ from "jquery";
+import { IndexDB } from "./indexdb";
+import MediaStream from "./media";
+import { Notification, INotification, ENotificationType, ISystemMessage, SystemMessage, IChatMessage, ChatMessage } from "./messages";
+import { Popup } from "./popup";
 
 export class Controller{
 
@@ -20,6 +24,31 @@ export class Controller{
         this._config = config;
         this._path = path;
 
+        //Popup.prompt("Bitte geben Sie einen Wert ein!", "Der Wert");
+        
+        /*try{      
+            console.log("chat start");      
+            let chat_data:IChatMessage = {               
+                message: "Hier kommt eine Nachricht!"
+            }
+            let chat = new ChatMessage(chat_data);
+            chat.run().then(
+                (resolve) => {
+                    console.log("resolve");
+                },
+                (reject) => {
+                    console.log(reject);
+                }
+            );
+            console.log("chat end");
+        } catch(error){
+            console.log(error);
+        }*/
+
+       
+        
+
+        /*
         //let sensor = new Sensor();    
         $("body").append(
             "<button id=\"mytest\">Meintest</button>"
@@ -40,7 +69,26 @@ export class Controller{
                    console.log(reject);
                }
            );
-        });
+        });*/
+
+        //let id = new IndexDB("mydb");
+
+
+        /*$('body').append("<video autoplay=\"true\" id=\"videoElement\"></video>");
+
+        let webcam  = new MediaStream({video: true});
+        webcam.start().then(
+            (resolve) => {
+                let video = document.querySelector("#videoElement");
+                //@ts-ignore
+                video.srcObject = webcam._mediaStream;
+            },
+            (reject) => {
+                console.log(reject);
+            }
+        )
+
+        */
 
         
 
