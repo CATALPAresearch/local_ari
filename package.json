@@ -4,7 +4,8 @@
   "description": "An Adaption Rule Interface",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon"
+    "test": "tsc",
+    "compile": "tsc && grunt build-plugin"
   },
   "repository": {
     "type": "git",

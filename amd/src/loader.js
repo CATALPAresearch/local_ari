@@ -1,9 +1,9 @@
-define(["require", "exports", "./controller", "./config"], function (require, exports, controller_1, config_1) {
+define(["require", "exports", "./controller"], function (require, exports, controller_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function init(path) {
         try {
-            new controller_1.Controller(config_1.Config, path);
+            new controller_1.Controller();
         }
         catch (error) {
             console.log(error);
@@ -11,3 +11,4 @@ define(["require", "exports", "./controller", "./config"], function (require, ex
     }
     exports.init = init;
 });
+//# sourceMappingURL=loader.js.map

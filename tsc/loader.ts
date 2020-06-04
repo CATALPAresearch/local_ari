@@ -1,5 +1,4 @@
 import { Controller } from "./controller";
-import { Config } from "./config";
 
 /**
  * 
@@ -11,7 +10,7 @@ import { Config } from "./config";
 
 export function init(path:string){
 	try{	
-		new Controller(Config, path);
+		new Controller();
 	} catch(error){
 		console.log(error);
 	}
