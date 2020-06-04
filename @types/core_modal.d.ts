@@ -39,6 +39,7 @@ export interface IModalConfig {
         animate?: boolean;
         centerVertically?: boolean;
         size?: EModalSize;
+        showCloseButton: boolean;
     };
 }
 //# sourceMappingURL=core_modal.d.ts.map

@@ -10,8 +10,18 @@ define(["require", "exports", "jquery", "jqueryui"], function (require, exports,
             this._id = config.id;
             let content = "";
             if (typeof config.content === "object") {
-                if (typeof config.content.header === "string" && config.content.header.length > 0)
-                    content += `<div class="modal-header">${config.content.header}</div>`;
+                if (typeof config.content.header === "string" && config.content.header.length > 0) {
+                    let header = config.content.header;
+                    if (typeof config.options === "object" && config.options.showCloseButton === true) {
+                        header += `<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+                    }
+                    content += `<div class="modal-header">${header}</div>`;
+                }
+                else {
+                    if (typeof config.options === "object" && config.options.showCloseButton === true) {
+                        content += `<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>`;
+                    }
+                }
                 if (typeof config.content.body === "string" && config.content.body.length > 0)
                     content += `<div class="modal-body">${config.content.body}</div>`;
                 if (typeof config.content.footer === "string" && config.content.footer.length > 0)
