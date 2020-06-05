@@ -4,8 +4,9 @@
   "description": "An Adaption Rule Interface",
   "main": "index.js",
   "scripts": {
+    "install": "npm install & npm update",
     "test": "tsc -p amd && tsc -p lib",
-    "compile": "tsc -p amd && tsc -p lib && grunt build-plugin"
+    "build": "tsc -p amd && tsc -p lib && grunt build-plugin"
   },
   "repository": {
     "type": "git",
