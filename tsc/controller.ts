@@ -1,4 +1,4 @@
-import { Modal, IModalConfig, EModalSize } from './core_modal';
+import { ServiceWorker } from './core_worker';
 
 /**
  * 
@@ -11,30 +11,39 @@ import { Modal, IModalConfig, EModalSize } from './core_modal';
 export class Controller{  
 
     constructor(){           
-        try{
-          let modalConfig = <IModalConfig>{
-            id: "myfield",
-            content: {
-              header: "<h5 class=\"modal-title\">Title</h5>",
-              body: "<p>Hier könnte Deine Werbung stehen</p>",
-              footer: "<p>Das ist der Footer</p>"
-            },
-            options:{
-              centerVertically: true,
-              show: true,
-              focus: true,
-              keyboard: true,
-              backdrop: true,
-              animate: true,
-              size: EModalSize.small,
-              showCloseButton: true
-            }
-          }
-          console.log("lets go");
-          let modal = new Modal(modalConfig);  
-        } catch(error){
-          console.log(error);
-        }        
+      this.go().then(
+        (resolve) => {
+          console.log(`Resolve: ${resolve}`);
+        },
+        (reject) => {
+          console.log(`Reject: ${reject}`);
+        }
+      );
     }
 
+    public async go(){
+      //@ts-ignore
+      let worker = new ServiceWorker(M.cfg.wwwroot+"/local/ari/lib/src/worker.js", "/"); 
+      //@ts-ignore
+      await worker.create(M.cfg.wwwroot+"/local/ari/lib/src/worker.js", 
+        (error:ErrorEvent) => {
+          console.log(error);
+        }, 
+        (state:any) => {
+          console.log(state.target.state)
+        }
+      );  
+      await worker.update();
+      let notificationOptions = <NotificationOptions> {
+        body: "Hier steht der Body",
+        icon: 'images/example.png',
+        vibrate: [100, 50, 100],
+        data: {
+          dateOfArrival: Date.now(),
+          primaryKey: 1
+        }
+      };
+      await worker.sendNotification("Headline", notificationOptions);
+      return;
+    }
 }
