@@ -8,9 +8,13 @@ import { ServiceWorker } from './core_worker';
  * 
  */
 
-export class Controller{  
+export class Controller{
+  
+    private _path:string;
 
-    constructor(){           
+    constructor(path:string){   
+      this._path = path;  
+      console.log(this._path);      
       this.go().then(
         (resolve) => {
           console.log(`Resolve: ${resolve}`);

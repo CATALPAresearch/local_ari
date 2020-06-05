@@ -37,6 +37,8 @@ define(["require", "exports"], function (require, exports) {
                     throw new Error("Could not create ServiceWorker.");
                 this._registration = registration;
                 this._worker = this._getWorker(registration);
+                if (typeof this._worker !== "object")
+                    throw new Error("No ServiceWorker found.");
                 if (error)
                     this._worker.onerror = error;
                 if (stateChange)
@@ -51,6 +53,8 @@ define(["require", "exports"], function (require, exports) {
                     throw new Error("Could not register ServiceWorker.");
                 this._registration = registration;
                 this._worker = this._getWorker(registration);
+                if (typeof this._worker !== "object")
+                    throw new Error("No ServiceWorker found.");
                 if (error)
                     this._worker.onerror = error;
                 if (stateChange)

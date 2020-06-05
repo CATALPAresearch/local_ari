@@ -17,7 +17,7 @@ export class Modal {
 
     constructor(config:IModalConfig){
         if(!this._guard(config)) throw new Error(`[Modal-${config.id}] Incomplete or incorrect configuration.`);
-        if($(`#${this._id}`).length > 0) throw new Error(`[Modal-${config.id}] ID is already used.`);
+        if($(`#${config.id}`).length > 0) throw new Error(`[Modal-${config.id}] ID is already used.`);
         this._id = config.id;        
         let content = "";
         if(typeof config.content === "object"){            

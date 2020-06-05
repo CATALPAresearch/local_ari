@@ -16,6 +16,8 @@ define(["require", "exports"], function (require, exports) {
         }
         static getAll() {
             let cookies = document.cookie.split(";");
+            if (typeof cookies !== "object")
+                throw new Error("Could not read cookies");
             let object = {};
             let tryToObjectify = function (input) {
                 try {
@@ -30,7 +32,12 @@ define(["require", "exports"], function (require, exports) {
                 let cookie = cookies[i].split("=");
                 if (cookie.length < 2)
                     continue;
-                let name = cookie.shift().replace(" ", "");
+                let shift = cookie.shift();
+                if (typeof shift !== "string")
+                    continue;
+                let name = shift.replace(" ", "");
+                if (typeof name !== "string" || name.length <= 0)
+                    continue;
                 let value = tryToObjectify(cookie.join("=").replace(" ", ""));
                 object[name] = value;
             }

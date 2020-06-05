@@ -11,7 +11,9 @@ define(["require", "exports", "./core_worker"], function (require, exports, core
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class Controller {
-        constructor() {
+        constructor(path) {
+            this._path = path;
+            console.log(this._path);
             this.go().then((resolve) => {
                 console.log(`Resolve: ${resolve}`);
             }, (reject) => {

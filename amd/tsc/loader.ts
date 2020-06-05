@@ -10,7 +10,7 @@ import { Controller } from "./controller";
 
 export function init(path:string){
 	try{	
-		new Controller();
+		new Controller(path);
 	} catch(error){
 		console.log(error);
 	}

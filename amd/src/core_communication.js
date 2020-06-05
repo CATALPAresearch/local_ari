@@ -1,11 +1,11 @@
-define(["require", "exports", "core/ajax"], function (require, exports, ajax_1) {
+define(["require", "exports", "core/ajax", "./config"], function (require, exports, ajax_1, config_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class Communication {
         static webservice(method, param) {
             return new Promise((resolve, reject) => {
                 ajax_1.default.call([{
-                        methodname: Config.plugin.name + method,
+                        methodname: config_1.Config.plugin.name + method,
                         args: param ? param : {},
                         timeout: 3000,
                         done: function (data) {

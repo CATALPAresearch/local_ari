@@ -21,6 +21,7 @@ export default class Cookie{
 
     public static getAll():object{
         let cookies = document.cookie.split(";");
+        if(typeof cookies !== "object") throw new Error("Could not read cookies");
         let object:any = {};
         let tryToObjectify = function(input:string):any{
             try{
@@ -32,8 +33,11 @@ export default class Cookie{
         }
         for(let i in cookies){
             let cookie = cookies[i].split("=");
-            if(cookie.length < 2) continue;
-            let name = cookie.shift().replace(" ", "");
+            if(cookie.length < 2) continue;   
+            let shift = cookie.shift();
+            if(typeof shift !== "string") continue;         
+            let name = shift.replace(" ", "");
+            if(typeof name !== "string" || name.length <= 0) continue;
             let value = tryToObjectify(cookie.join("=").replace(" ", ""));                   
             object[name] = value;
         }        

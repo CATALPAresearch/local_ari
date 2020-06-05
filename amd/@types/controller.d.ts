@@ -1,5 +1,6 @@
 export declare class Controller {
-    constructor();
+    private _path;
+    constructor(path: string);
     go(): Promise<void>;
 }
 //# sourceMappingURL=../tsc/@maps/controller.d.ts.map

@@ -1,5 +1,6 @@
 //@ts-ignore
 import ajax from 'core/ajax';
+import { Config } from './config';
 
 /**
  * 

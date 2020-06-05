@@ -55,7 +55,8 @@ export class ServiceWorker extends Worker{
         let registration = await navigator.serviceWorker.register(this._path, {scope: scope});
         if(typeof registration !== "object") throw new Error("Could not create ServiceWorker.");
         this._registration = registration;
-        this._worker = this._getWorker(registration);     
+        this._worker = this._getWorker(registration);  
+        if(typeof this._worker !== "object") throw new Error("No ServiceWorker found.");   
         if(error) this._worker.onerror = error;
         if(stateChange) this._worker.onstatechange = stateChange;   
         return;
@@ -71,6 +72,7 @@ export class ServiceWorker extends Worker{
         if(typeof registration !== "object") throw new Error("Could not register ServiceWorker.");
         this._registration = registration;
         this._worker = this._getWorker(registration); 
+        if(typeof this._worker !== "object") throw new Error("No ServiceWorker found.");
         if(error) this._worker.onerror = error;
         if(stateChange) this._worker.onstatechange = stateChange;
         return;
