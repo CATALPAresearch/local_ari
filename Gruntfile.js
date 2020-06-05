@@ -53,7 +53,7 @@ module.exports = function (grunt) { // jshint ignore:line
     console.log(moodleroot);
 
     
-    grunt.initConfig({        
+    grunt.initConfig({                
         jshint: {
             options: { jshintrc: './.jshintrc' },
             files: ['./amd/src/*.js']
@@ -95,6 +95,6 @@ module.exports = function (grunt) { // jshint ignore:line
     grunt.loadNpmTasks('grunt-terser');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
-    grunt.registerTask("build-plugin", ["ts", "terser"]);
+    grunt.registerTask("build-plugin", ["terser"]);
     grunt.registerTask("check", ["jshint"]);
 };

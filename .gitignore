@@ -1,8 +1,8 @@
 node_modules/
-amd/@types/**/*
-amd/build/**/*
+amd/@types/*
+amd/build/*
 amd/src/**/*
-lib/@types/**/*
-lib/build/**/*
-lib/src/**/*
+lib/@types/*
+lib/build/*
+lib/src/*
 
