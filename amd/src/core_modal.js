@@ -1,6 +1,7 @@
 define(["require", "exports", "jquery", "jqueryui"], function (require, exports, $) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.EModalSize = exports.EModalEvent = exports.Modal = void 0;
     class Modal {
         constructor(config) {
             if (!this._guard(config))
@@ -126,4 +127,4 @@ define(["require", "exports", "jquery", "jqueryui"], function (require, exports,
         EModalSize[EModalSize["small"] = 1] = "small";
     })(EModalSize = exports.EModalSize || (exports.EModalSize = {}));
 });
-//# sourceMappingURL=core_modal.js.map
+//# sourceMappingURL=../tsc/@maps/core_modal.js.map

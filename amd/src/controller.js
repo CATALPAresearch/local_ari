@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 define(["require", "exports", "./core_worker"], function (require, exports, core_worker_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Controller = void 0;
     class Controller {
         constructor() {
             this.go().then((resolve) => {
@@ -27,20 +28,10 @@ define(["require", "exports", "./core_worker"], function (require, exports, core
                     console.log(state.target.state);
                 });
                 yield worker.update();
-                let notificationOptions = {
-                    body: "Hier steht der Body",
-                    icon: 'images/example.png',
-                    vibrate: [100, 50, 100],
-                    data: {
-                        dateOfArrival: Date.now(),
-                        primaryKey: 1
-                    }
-                };
-                yield worker.sendNotification("Headline", notificationOptions);
                 return;
             });
         }
     }
     exports.Controller = Controller;
 });
-//# sourceMappingURL=controller.js.map
+//# sourceMappingURL=../tsc/@maps/controller.js.map

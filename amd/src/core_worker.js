@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.WebWorker = exports.ServiceWorker = void 0;
     class Worker {
         constructor(scriptURL) {
             if (typeof scriptURL !== "string" || scriptURL.length <= 0)
@@ -66,27 +67,21 @@ define(["require", "exports"], function (require, exports) {
                 return;
             });
         }
-        sendNotification(message, options) {
-            return __awaiter(this, void 0, void 0, function* () {
-                if (typeof this._worker !== "object")
-                    throw new Error("No ServiceWorker found.");
-                yield Notification.requestPermission();
-                console.log(Notification.permission);
-                if (Notification.permission !== "granted")
-                    throw new Error("No notification permission.");
-                this._registration.showNotification(message, options);
-                return;
-            });
+        getWorker() {
+            return this._worker;
+        }
+        getRegistration() {
+            return this._registration;
         }
         _getWorker(registration) {
-            if (this._registration.installing) {
-                return this._registration.installing;
+            if (registration.installing) {
+                return registration.installing;
             }
-            else if (this._registration.waiting) {
-                return this._registration.waiting;
+            else if (registration.waiting) {
+                return registration.waiting;
             }
-            else if (this._registration.active) {
-                return this._registration.active;
+            else if (registration.active) {
+                return registration.active;
             }
             throw new Error("No ServiceWorker found.");
         }
@@ -99,4 +94,4 @@ define(["require", "exports"], function (require, exports) {
     }
     exports.WebWorker = WebWorker;
 });
-//# sourceMappingURL=core_worker.js.map
+//# sourceMappingURL=../tsc/@maps/core_worker.js.map

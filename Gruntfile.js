@@ -53,13 +53,7 @@ module.exports = function (grunt) { // jshint ignore:line
     console.log(moodleroot);
 
     
-    grunt.initConfig({
-        ts: {
-            amd: {
-                //tsconfig: moodleroot + '/format/ladtopics/amd/src/tsconfig.json',
-                src: ["amd/src/*.ts", "!node_modules/**"]
-            }
-        },
+    grunt.initConfig({        
         jshint: {
             options: { jshintrc: './.jshintrc' },
             files: ['./amd/src/*.js']

@@ -51,4 +51,4 @@ define(["require", "exports"], function (require, exports) {
     }
     exports.default = Cookie;
 });
-//# sourceMappingURL=core_cookie.js.map
+//# sourceMappingURL=../tsc/@maps/core_cookie.js.map
