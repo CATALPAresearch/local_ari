@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 define(["require", "exports", "./core_worker"], function (require, exports, core_worker_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Controller = void 0;
     class Controller {
         constructor(path) {
             this._path = path;

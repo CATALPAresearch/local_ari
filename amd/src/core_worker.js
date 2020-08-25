@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.WebWorker = exports.ServiceWorker = void 0;
     class Worker {
         constructor(scriptURL) {
             if (typeof scriptURL !== "string" || scriptURL.length <= 0)

@@ -1,11 +1,11 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Config = void 0;
-    exports.Config = {
-        plugin: {
-            name: "local_ari_"
+    class LearnerModelManeger {
+        constructor() {
         }
-    };
+        load() { }
+        update() { }
+    }
 });
-//# sourceMappingURL=../tsc/@maps/config.js.map
+//# sourceMappingURL=../tsc/@maps/learner_model.js.map

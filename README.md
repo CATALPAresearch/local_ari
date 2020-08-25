@@ -1,4 +1,9 @@
-## Functionalities ##
+
+
+
+
+
+## Functionalities
 * Management of cookies
 * Navigation through the history
 * Send notifications or messages over Moodle API
@@ -12,6 +17,6 @@
 * Communicate with moodle over a standard communication class
 * Change the style of any DOM object
 
-## To-Do ##
+## To-Do
 * Connect ARI to the backend
 * Extend the controller to let the backend access the different classes over the communication
