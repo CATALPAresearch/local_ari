@@ -5,6 +5,7 @@
   "scripts": {
     "install": "npm install & npm update",
     "test": "tsc -p amd && tsc -p lib",
+    "t": "tsc -p amd",
     "prod": "tsc -p amd && tsc -p lib && grunt build-plugin"
   },
   "repository": {

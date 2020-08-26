@@ -1,4 +1,5 @@
 import { ServiceWorker } from './core_worker';
+import { LearnerModelManager } from './learner_model';
 
 /**
  * 
@@ -26,6 +27,7 @@ export class Controller{
     }
 
     public async go(){
+      new LearnerModelManager();
       //@ts-ignore
       let worker = new ServiceWorker(M.cfg.wwwroot+"/local/ari/lib/src/worker.js", "/"); 
       //@ts-ignore

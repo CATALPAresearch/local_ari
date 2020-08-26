@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-define(["require", "exports", "./core_worker"], function (require, exports, core_worker_1) {
+define(["require", "exports", "./core_worker", "./learner_model"], function (require, exports, core_worker_1, learner_model_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Controller = void 0;
@@ -23,6 +23,7 @@ define(["require", "exports", "./core_worker"], function (require, exports, core
         }
         go() {
             return __awaiter(this, void 0, void 0, function* () {
+                new learner_model_1.LearnerModelManager();
                 let worker = new core_worker_1.ServiceWorker(M.cfg.wwwroot + "/local/ari/lib/src/worker.js", "/");
                 yield worker.create(M.cfg.wwwroot + "/local/ari/lib/src/worker.js", (error) => {
                     console.log(error);
