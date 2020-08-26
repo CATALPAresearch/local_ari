@@ -55,8 +55,7 @@ export class DOMVPTracker {
     }
 
     constructor(jQuerySelector:string, index:number = 0){
-        const e = $(jQuerySelector).get(index);
-        e.style.backgroundColor = "red"; 
+        const e = $(jQuerySelector).get(index);         
         this._element = e;                 
     }
 
