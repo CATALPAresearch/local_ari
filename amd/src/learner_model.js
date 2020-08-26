@@ -7,7 +7,7 @@ define(["require", "exports"], function (require, exports) {
             this.lm = {
                 userid: 101,
                 semester_planing: {
-                    initial_view_ms_list: 1
+                    initial_view_ms_list: 0
                 }
             };
             this.checkRules(this.lm);
@@ -34,6 +34,11 @@ define(["require", "exports"], function (require, exports) {
                         case RuleMethod.Alert:
                             console.log(tmp.Action.text);
                             break;
+                        case RuleMethod.Modal:
+                            console.log(tmp.Action.text);
+                            break;
+                        default:
+                            console.error('Undefined rule action called');
                     }
                 }
             }
@@ -49,13 +54,12 @@ define(["require", "exports"], function (require, exports) {
         }
         evaluateConditions(cons) {
             let x = this.lm;
-            console.log(x);
             let result = true;
             for (var i = 0; i < cons.length; i++) {
                 let condition = cons[i];
                 switch (condition.operator) {
                     case Operators.Equal:
-                        result = result && this.getLearnerModelKey('semester_planing', condition.key) === condition.value ? true : false;
+                        result = result && this.getLearnerModelKey(condition.context, condition.key) === condition.value ? true : false;
                         break;
                     default:
                         result = false;

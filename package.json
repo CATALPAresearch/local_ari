@@ -1,7 +1,7 @@
 {
   "name": "ari",
   "version": "1.0.0",
-  "description": "An Adaption Rule Interface", 
+  "description": "An Adaption Rule Interface",
   "scripts": {
     "install": "npm install & npm update",
     "test": "tsc -p amd && tsc -p lib",
@@ -21,10 +21,12 @@
   "license": "ISC",
   "devDependencies": {
     "eslint": "^6.8.0",
+    "grunt": "^1.3.0",
     "nodemon": "^2.0.4",
     "typescript": "^3.9.3"
   },
   "dependencies": {
+    "grunt-cli": "^1.3.2",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-jshint": "^2.1.0",
     "grunt-contrib-less": "^2.0.0",

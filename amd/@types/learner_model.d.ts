@@ -20,6 +20,7 @@ export interface Rule {
     Action: RuleAction;
 }
 export interface RuleCondition {
+    context: string;
     key: string;
     value: number;
     operator: Operators;
