@@ -145,8 +145,7 @@ export interface IEData{
         centerX: number;
         centerY: number;    
     },   
-    isHidden: boolean,
-    overlayingElements?: any[];      
+    isHidden: boolean,    
     fullyInsideVP: boolean;
     visibility: number;
 }
