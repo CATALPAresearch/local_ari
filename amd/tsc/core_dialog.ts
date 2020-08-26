@@ -8,7 +8,7 @@
  */
 
  /**
-  * Displays an alert dialog with the optional specified content and an OK button.
+  * Displays an alert dialog (asynchronous) with the optional specified content and an OK button.
   * @param message A string you want to display in the alert dialog.
   * 
   */
@@ -23,7 +23,7 @@ export function Alert(message?:string):Promise<void>{
 }
 
 /**
-  * Displays a dialog with an optional message prompting the user to input some text.
+  * Displays a dialog (asynchronous) with an optional message prompting the user to input some text.
   * @param message A string of text to display to the user.
   * @param defAnswer A string containing the default value displayed in the text input field.
   * 
@@ -42,7 +42,7 @@ export function Prompt(message?:string, defAnswer?:string):Promise<string>{
 }
 
 /**
- * Displays a modal dialog with an optional message and two buttons: OK and Cancel.
+ * Displays a modal dialog (asynchronous) with an optional message and two buttons: OK and Cancel.
  * @param message A string you want to display in the alert dialog.
  * 
  */
