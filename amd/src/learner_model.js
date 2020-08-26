@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "./core_modal"], function (require, exports, core_modal_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.RuleMethod = exports.Operators = exports.LearnerModelManager = void 0;
@@ -23,8 +23,8 @@ define(["require", "exports"], function (require, exports) {
             this.lm = lm;
             let all_rules = [];
             all_rules.push({
-                Condition: [{ key: 'initial_view_ms_list', value: 0, operator: Operators.Equal }],
-                Action: { method: RuleMethod.Alert, text: 'hello world' }
+                Condition: [{ context: 'semester_planing', key: 'initial_view_ms_list', value: 0, operator: Operators.Equal }],
+                Action: { method: RuleMethod.Modal, text: 'hello world' }
             });
             let tmp;
             for (var i = 0; i < all_rules.length; i++) {
@@ -35,7 +35,8 @@ define(["require", "exports"], function (require, exports) {
                             console.log(tmp.Action.text);
                             break;
                         case RuleMethod.Modal:
-                            console.log(tmp.Action.text);
+                            this.initiateModal('Hinweis', tmp.Action.text);
+                            console.log('MODAL', tmp.Action.text);
                             break;
                         default:
                             console.error('Undefined rule action called');
@@ -53,7 +54,6 @@ define(["require", "exports"], function (require, exports) {
             return o[propertyName];
         }
         evaluateConditions(cons) {
-            let x = this.lm;
             let result = true;
             for (var i = 0; i < cons.length; i++) {
                 let condition = cons[i];
@@ -67,6 +67,28 @@ define(["require", "exports"], function (require, exports) {
             }
             return result;
         }
+        initiateModal(title, message) {
+            let config = {
+                id: "myfield",
+                content: {
+                    header: "<h5 class=\"modal-title\" id=\"exampleModalLabel\">" + title + "</h5>",
+                    body: "<p>" + message + "</p>",
+                    footer: "<button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Close</button> \
+            <button type=\"button\" class=\"btn btn-primary\">Save changes</button>"
+                },
+                options: {
+                    centerVertically: true,
+                    show: true,
+                    focus: true,
+                    keyboard: true,
+                    backdrop: true,
+                    animate: true,
+                    size: core_modal_1.EModalSize.small,
+                    showCloseButton: true
+                }
+            };
+            new core_modal_1.Modal(config);
+        }
     }
     ;
     var Operators;
@@ -78,6 +100,7 @@ define(["require", "exports"], function (require, exports) {
     var RuleMethod;
     (function (RuleMethod) {
         RuleMethod[RuleMethod["Alert"] = 0] = "Alert";
+        RuleMethod[RuleMethod["Modal"] = 1] = "Modal";
     })(RuleMethod = exports.RuleMethod || (exports.RuleMethod = {}));
 });
 //# sourceMappingURL=../tsc/@maps/learner_model.js.map

@@ -7,6 +7,13 @@
  *
  */
 
+
+import { Modal, IModalConfig, EModalSize } from './core_modal';
+
+
+/**
+ * Lädt und synchronisiert Learner Model
+ */
 //@ts-ignore
 export class LearnerModelManager {
     public lm: LearnerModel = {
@@ -51,11 +58,11 @@ class Rules {
         let all_rules = [];
         // initial rule as an example
         all_rules.push({
-            Condition: [{ key: 'initial_view_ms_list', value: 0, operator: Operators.Equal }],
-            Action: { method: RuleMethod.Alert, text: 'hello world' }
+            Condition: [{ context: 'semester_planing', key: 'initial_view_ms_list', value: 0, operator: Operators.Equal }],
+            Action: { method: RuleMethod.Modal, text: 'hello world' }
         });
 
-        //
+        // checks all rules
         let tmp;
         for (var i = 0; i < all_rules.length; i++) {
             tmp = all_rules[i];
@@ -65,7 +72,8 @@ class Rules {
                         console.log(tmp.Action.text);
                         break;
                     case RuleMethod.Modal:
-                        console.log(tmp.Action.text);
+                        this.initiateModal('Hinweis', tmp.Action.text)
+                        console.log('MODAL',tmp.Action.text);
                         break;
                     default:
                         console.error('Undefined rule action called');
@@ -83,16 +91,15 @@ class Rules {
         return this.lm[context][key];
     }
 
-    public getProperty<T, K extends keyof T>(o: T, propertyName: K): T[K] {
+    /*public getProperty<T, K extends keyof T>(o: T, propertyName: K): T[K] {
         return o[propertyName]; // o[propertyName] is of type T[K]
-    }
+    }*/
 
     /**
      * Evaluate each condition of a rule considering the data stored in the learner model
      * @param cons 
      */
     public evaluateConditions(cons: RuleCondition[]) {
-        let x = this.lm;
         let result = true;
         // iterate over all conditions and 
         for (var i = 0; i < cons.length; i++) {
@@ -107,17 +114,51 @@ class Rules {
         }
         return result;
     }
+
+    /**
+     * Triggers Action of a modal Window
+     * @param title 
+     * @param message 
+     */
+    public initiateModal(title:string, message:string):void{
+        let config = <IModalConfig>{
+            id: "myfield",
+            content: {
+                header: "<h5 class=\"modal-title\" id=\"exampleModalLabel\">"+ title +"</h5>",
+                body: "<p>"+ message +"</p>",
+                footer: "<button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Close</button> \
+            <button type=\"button\" class=\"btn btn-primary\">Save changes</button>"
+            },
+            options: {
+                centerVertically: true,
+                show: true,
+                focus: true,
+                keyboard: true,
+                backdrop: true,
+                animate: true,
+                size: EModalSize.small,
+                showCloseButton: true
+            }
+        }
+        new Modal(config);
+    }
 }
 
 export interface Rule {
     Condition: RuleCondition[];
     Action: RuleAction; // todo: think about enabling multiple actions per rule
 }
-export interface RuleCondition { context: string, key: string, value: number, operator: Operators };
+export interface RuleCondition {
+    context: string,
+    key: string,
+    value: number,
+    operator: Operators
+};
 export enum Operators {
     Smaller,
     Bigger,
     Equal,
 }
 export interface RuleAction { method: RuleMethod, text: string }
-export enum RuleMethod { Alert }
+//export interface ActionContexts { 'semester_planing':string, 'bam':string }
+export enum RuleMethod { Alert, Modal }

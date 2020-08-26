@@ -35,6 +35,7 @@ export interface RuleAction {
     text: string;
 }
 export declare enum RuleMethod {
-    Alert = 0
+    Alert = 0,
+    Modal = 1
 }
 //# sourceMappingURL=../tsc/@maps/learner_model.d.ts.map

@@ -1,4 +1,4 @@
-import { ServiceWorker } from './core_worker';
+//import { ServiceWorker } from './core_worker';
 import { LearnerModelManager } from './learner_model';
 /**
  * 
