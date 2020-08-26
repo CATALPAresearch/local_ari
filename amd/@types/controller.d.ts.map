@@ -1,1 +1,1 @@
-{"version":3,"file":"controller.d.ts","sourceRoot":"","sources":["../controller.ts"],"names":[],"mappings":"AAUA,qBAAa,UAAU;IAEnB,OAAO,CAAC,KAAK,CAAQ;gBAET,IAAI,EAAC,MAAM;IAaV,EAAE;CAelB"}
+{"version":3,"file":"controller.d.ts","sourceRoot":"","sources":["../controller.ts"],"names":[],"mappings":"AASA,qBAAa,UAAU;IAErB,OAAO,CAAC,OAAO,CAAQ;gBAEX,OAAO,EAAC,MAAM;CAK3B"}

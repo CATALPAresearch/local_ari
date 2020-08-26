@@ -1,7 +1,7 @@
 {
   "name": "ari",
   "version": "1.0.0",
-  "description": "An Adaption Rule Interface", 
+  "description": "An Adaption Rule Interface",
   "scripts": {
     "install": "npm install & npm update",
     "test": "tsc -p amd && tsc -p lib",
