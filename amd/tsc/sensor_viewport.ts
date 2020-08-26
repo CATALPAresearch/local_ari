@@ -7,7 +7,7 @@ import "jqueryui";
  * 
  * @author Marc Burchart
  * @version 1.0-20200409
- * @description xxx
+ * @description A class to observe a HTML object and it's visibility.
  * 
  */
 
