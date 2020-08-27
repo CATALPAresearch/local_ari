@@ -115,7 +115,7 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
             });
             for (var i = 0; i < localActions.length; i++) {
                 if (localActions[i].viewport_selector !== undefined) {
-                    let test = new sensor_viewport_1.DOMVPTracker(localActions[i].viewport_selector, 1);
+                    let test = new sensor_viewport_1.DOMVPTracker(localActions[i].viewport_selector);
                     test.get().then((resolve) => {
                         _this._executeAction(localActions[i]);
                         console.log(resolve);

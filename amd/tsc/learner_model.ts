@@ -224,7 +224,7 @@ class RuleManager {
         for (var i = 0; i < localActions.length; i++) {
             if (localActions[i].viewport_selector !== undefined){
                 // @ts-ignore
-                let test = new DOMVPTracker(localActions[i].viewport_selector, 1);
+                let test = new DOMVPTracker(localActions[i].viewport_selector);
 
                 test.get().then(
                     (resolve) => {
