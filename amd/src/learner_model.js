@@ -37,12 +37,14 @@ define(["require", "exports", "./core_modal"], function (require, exports, core_
             this.lm = lm;
             this.actionQueue = [];
             this.moodleContext = this._determineMoodleContext();
-            this.moodleInstanceID = this._determineURLParameters()[id] !== undefined ? this._determineURLParameters()[id] : -1;
+            this.moodleInstanceID = this._determineURLParameters('id');
+            console.log(this.moodleContext, this.moodleInstanceID);
             this.rules = this.example_rules;
             this._checkRules();
         }
         _determineMoodleContext() {
             let path = window.location.pathname;
+            path = path.replace('/moodle', '');
             switch (path) {
                 case "/login/index.php": return EMoodleContext.LOGIN_PAGE;
                 case "/": return EMoodleContext.HOME_PAGE;
@@ -56,17 +58,18 @@ define(["require", "exports", "./core_modal"], function (require, exports, core_
             }
             return EMoodleContext.UNKNOWN;
         }
-        _determineURLParameters() {
-            let params = {};
+        _determineURLParameters(param) {
             let parser = document.createElement('a');
             parser.href = window.location.href;
             var query = parser.search.substring(1);
             var vars = query.split('&');
             for (var i = 0; i < vars.length; i++) {
                 var pair = vars[i].split('=');
-                params[pair[0]] = decodeURIComponent(pair[1]);
+                if (pair[0] === param) {
+                    return decodeURIComponent(pair[1]);
+                }
             }
-            return params;
+            return -1;
         }
         _checkRules() {
             let tmp;
@@ -154,11 +157,11 @@ define(["require", "exports", "./core_modal"], function (require, exports, core_
         EMoodleContext[EMoodleContext["PROFILE_PAGE"] = 2] = "PROFILE_PAGE";
         EMoodleContext[EMoodleContext["COURSE_PARTICIPANTS"] = 3] = "COURSE_PARTICIPANTS";
         EMoodleContext[EMoodleContext["COURSE_OVERVIEW_PAGE"] = 4] = "COURSE_OVERVIEW_PAGE";
-        EMoodleContext[EMoodleContext["MOD_PAGE"] = 5] = "MOD_PAGE";
-        EMoodleContext[EMoodleContext["MOD_ASSIGNMENT"] = 6] = "MOD_ASSIGNMENT";
-        EMoodleContext[EMoodleContext["MOD_NEWSMOD"] = 7] = "MOD_NEWSMOD";
-        EMoodleContext[EMoodleContext["MOD_QUIZ"] = 8] = "MOD_QUIZ";
-        EMoodleContext[EMoodleContext["UNKNOWN"] = 9] = "UNKNOWN";
+        EMoodleContext["MOD_PAGE"] = "mod_page";
+        EMoodleContext["MOD_ASSIGNMENT"] = "mod_assignment";
+        EMoodleContext["MOD_NEWSMOD"] = "mod_newsmod";
+        EMoodleContext["MOD_QUIZ"] = "mod_quiz";
+        EMoodleContext["UNKNOWN"] = "unknown";
     })(EMoodleContext = exports.EMoodleContext || (exports.EMoodleContext = {}));
     var EOperators;
     (function (EOperators) {

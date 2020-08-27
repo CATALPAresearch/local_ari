@@ -59,6 +59,7 @@ class RuleManager {
     public actionQueue: IRuleAction[];
     private rules: IRule[] = [];
     private moodleContext: EMoodleContext;
+    private moodleInstanceID: number;
 
     private example_rules: IRule[] = [{
         Condition: [{
@@ -74,13 +75,14 @@ class RuleManager {
         }
     }];
 
+
     constructor(lm: ILearnerModel) {
         this.lm = lm;
         this.actionQueue = [];
         this.moodleContext = this._determineMoodleContext();
         // @ts-ignore
-        this.moodleInstanceID = this._determineURLParameters()[id] !== undefined ? this._determineURLParameters()[id] : -1;
-
+        this.moodleInstanceID = this._determineURLParameters('id');
+        console.log(this.moodleContext, this.moodleInstanceID);
         // initial rule as an example, only for testing
         this.rules = this.example_rules;
 
@@ -106,6 +108,7 @@ class RuleManager {
         https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
         https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
         */
+       path = path.replace('/moodle',''); // bad fix for my local installation
         switch (path) {
             case "/login/index.php": return EMoodleContext.LOGIN_PAGE;
             case "/": return EMoodleContext.HOME_PAGE;
@@ -121,8 +124,8 @@ class RuleManager {
     }
 
 
-    private _determineURLParameters(): Object {
-        let params = <any>{};
+    private _determineURLParameters(param:string):string|number {
+        // let params = <any>{};
         let parser = document.createElement('a');
         parser.href = window.location.href;
         var query = parser.search.substring(1);
@@ -130,9 +133,11 @@ class RuleManager {
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split('=');
             // @ts-ignore
-            params[pair[0]] = decodeURIComponent(pair[1]);
+            if (pair[0] === param){
+                return decodeURIComponent(pair[1])
+            }
         }
-        return params;
+        return -1;
     }
 
 
@@ -161,10 +166,6 @@ class RuleManager {
         // @ts-ignore
         return this.lm[context][key];
     }
-
-    /*public getProperty<T, K extends keyof T>(o: T, propertyName: K): T[K] {
-        return o[propertyName]; // o[propertyName] is of type T[K]
-    }*/
 
     /**
      * Evaluate each condition of a rule considering the data stored in the learner model
@@ -292,11 +293,11 @@ export enum EMoodleContext {
     PROFILE_PAGE,
     COURSE_PARTICIPANTS,
     COURSE_OVERVIEW_PAGE,
-    MOD_PAGE,
-    MOD_ASSIGNMENT,
-    MOD_NEWSMOD,
-    MOD_QUIZ,
-    UNKNOWN
+    MOD_PAGE  = 'mod_page',
+    MOD_ASSIGNMENT = 'mod_assignment',
+    MOD_NEWSMOD = 'mod_newsmod',
+    MOD_QUIZ = 'mod_quiz',
+    UNKNOWN = 'unknown'
 }
 export enum EOperators {
     Smaller,

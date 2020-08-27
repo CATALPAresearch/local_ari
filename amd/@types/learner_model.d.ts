@@ -40,11 +40,11 @@ export declare enum EMoodleContext {
     PROFILE_PAGE = 2,
     COURSE_PARTICIPANTS = 3,
     COURSE_OVERVIEW_PAGE = 4,
-    MOD_PAGE = 5,
-    MOD_ASSIGNMENT = 6,
-    MOD_NEWSMOD = 7,
-    MOD_QUIZ = 8,
-    UNKNOWN = 9
+    MOD_PAGE = "mod_page",
+    MOD_ASSIGNMENT = "mod_assignment",
+    MOD_NEWSMOD = "mod_newsmod",
+    MOD_QUIZ = "mod_quiz",
+    UNKNOWN = "unknown"
 }
 export declare enum EOperators {
     Smaller = 0,
