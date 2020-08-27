@@ -12,11 +12,11 @@ import { Modal, IModalConfig, EModalSize } from './core_modal';
 
 
 /**
- * Lädt und synchronisiert Learner Model
+ * Loads and synchronizes the Learner Model
  */
 //@ts-ignore
 export class LearnerModelManager {
-    public lm: LearnerModel = {
+    public static model: ILearnerModel = {
         userid: 101,
         semester_planing: {
             initial_view_ms_list: 0
@@ -24,21 +24,19 @@ export class LearnerModelManager {
     };
 
     constructor() {
-        this.checkRules(this.lm);
+        this.checkRules();
     }
 
-    public checkRules(lm: LearnerModel): void {
-        new Rules(lm);
+    public checkRules(): void {
+        new RuleManager(LearnerModelManager.model);
     }
 
     public update(): void { }
-
-
 }
 
 
 
-export interface LearnerModel {
+export interface ILearnerModel {
     userid: number;
     semester_planing?: {
         initial_view_ms_list?: number; // rezeptive NUtzung der MS Liste, open collapse
@@ -50,39 +48,112 @@ export interface LearnerModel {
     self_assessments?: {};
 }
 
-class Rules {
-    public lm: LearnerModel;
 
-    constructor(lm: LearnerModel) {
+
+
+/**
+ * RuleManger checks rule conditions and mangages the subsequent rule actions by considering context variables
+ */
+class RuleManager {
+    public lm: ILearnerModel;
+    public actionQueue: IRuleAction[];
+    private rules: IRule[] = [];
+    private moodleContext: EMoodleContext;
+
+    private example_rules: IRule[] = [{
+        Condition: [{
+            context: 'semester_planing', // better EMoodleContext ??
+            key: 'initial_view_ms_list',
+            value: 0,
+            operator: EOperators.Equal
+        }],
+        Action: {
+            method: ERuleMethod.Modal,
+            text: 'hello world',
+            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE
+        }
+    }];
+
+    constructor(lm: ILearnerModel) {
         this.lm = lm;
-        let all_rules = [];
-        // initial rule as an example
-        all_rules.push({
-            Condition: [{ context: 'semester_planing', key: 'initial_view_ms_list', value: 0, operator: Operators.Equal }],
-            Action: { method: RuleMethod.Modal, text: 'hello world' }
-        });
+        this.actionQueue = [];
+        this.moodleContext = this._determineMoodleContext();
+        // @ts-ignore
+        this.moodleInstanceID = this._determineURLParameters()[id] !== undefined ? this._determineURLParameters()[id] : -1;
+
+        // initial rule as an example, only for testing
+        this.rules = this.example_rules;
 
         // checks all rules
-        let tmp;
-        for (var i = 0; i < all_rules.length; i++) {
-            tmp = all_rules[i];
-            if (this.evaluateConditions(tmp.Condition)) {
-                switch (tmp.Action.method) {
-                    case RuleMethod.Alert:
-                        console.log(tmp.Action.text);
-                        break;
-                    case RuleMethod.Modal:
-                        this.initiateModal('Hinweis', tmp.Action.text)
-                        console.log('MODAL',tmp.Action.text);
-                        break;
-                    default:
-                        console.error('Undefined rule action called');
-                }
-            }
-        }
-
+        this._checkRules();
     }
 
+    /**
+     * 
+     */
+    private _determineMoodleContext(): EMoodleContext {
+        let path = window.location.pathname;
+        /*
+        /login/index.php ... Login Page
+        / ... home page
+        /user/profile.php?id=4
+        /user/index.php?id=5 ... user overview
+        /course/view.php?id=5
+        /mod/page/view.php?id=248 ... longpage
+        /mod/assign/view.php?id=249 ... EA
+        /mod/quiz/view.php?id=259 ... self-assessment
+        https://aple.fernuni-hagen.de/mod/quiz/attempt.php?attempt=7753&cmid=259 ... start of a quiz
+        https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
+        https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
+        */
+        switch (path) {
+            case "/login/index.php": return EMoodleContext.LOGIN_PAGE;
+            case "/": return EMoodleContext.HOME_PAGE;
+            case "/user/profile.php": return EMoodleContext.PROFILE_PAGE;
+            case "/user/index.php": return EMoodleContext.COURSE_PARTICIPANTS;
+            case "/course/view.php": return EMoodleContext.COURSE_OVERVIEW_PAGE;
+            case "/mod/page/view.php": return EMoodleContext.MOD_PAGE;
+            case "/mod/assign/view.php": return EMoodleContext.MOD_ASSIGNMENT;
+            case "/mod/quiz/view.php": return EMoodleContext.MOD_QUIZ;
+            case "/mod/newsmod/view.php": return EMoodleContext.MOD_NEWSMOD;
+        }
+        return EMoodleContext.UNKNOWN;
+    }
+
+
+    private _determineURLParameters(): Object {
+        let params = <any>{};
+        let parser = document.createElement('a');
+        parser.href = window.location.href;
+        var query = parser.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split('=');
+            // @ts-ignore
+            params[pair[0]] = decodeURIComponent(pair[1]);
+        }
+        return params;
+    }
+
+
+    /**
+     * Iterates over all rules in order to check whether thei condistions are fulfilled. If all conditions are met the rule actions are pushed to the ruleActionQueue.
+     */
+    private _checkRules(): void {
+        let tmp;
+        for (var i = 0; i < this.rules.length; i++) {
+            tmp = this.rules[i];
+            if (this.evaluateConditions(tmp.Condition)) {
+                this._addToActionQueue(tmp.Action);
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param context 
+     * @param key 
+     */
     public getLearnerModelKey(context: string, key: string): any {
         if (key === undefined) {
             return false;
@@ -99,13 +170,13 @@ class Rules {
      * Evaluate each condition of a rule considering the data stored in the learner model
      * @param cons 
      */
-    public evaluateConditions(cons: RuleCondition[]) {
+    public evaluateConditions(cons: IRuleCondition[]) {
         let result = true;
-        // iterate over all conditions and 
+        // iterate over all conditions and conjugate them
         for (var i = 0; i < cons.length; i++) {
             let condition = cons[i];
             switch (condition.operator) {
-                case Operators.Equal:
+                case EOperators.Equal:
                     result = result && this.getLearnerModelKey(condition.context, condition.key) === condition.value ? true : false;
                     break;
                 default:
@@ -115,19 +186,68 @@ class Rules {
         return result;
     }
 
+
     /**
-     * Triggers Action of a modal Window
-     * @param title 
-     * @param message 
+     * Pushes IRuleAction to the actionQueue.
+     * @param action (IRuleAction)
      */
-    public initiateModal(title:string, message:string):void{
+    private _addToActionQueue(action: IRuleAction): void {
+        this.actionQueue.push(action);
+        this._processActionQueue();
+    }
+
+
+    /**
+     * 
+     */
+    private _processActionQueue(): void {
+        let _this = this;
+        // filter by current location
+        let localActions: IRuleAction[] = this.actionQueue.filter(function (d) {
+            return d.moodle_context === _this.moodleContext;
+        });
+
+        // consider the action timing, TODO
+
+        // execute
+        for (var i = 0; i < localActions.length; i++) {
+            this._executeAction(localActions[i]);
+        }
+    }
+
+
+    /**
+     * 
+     * @param tmp 
+     */
+    private _executeAction(tmp: IRuleAction) {
+        switch (tmp.method) {
+            case ERuleMethod.Alert:
+                console.log('Execute ALERT', tmp.text);
+                break;
+            case ERuleMethod.Modal:
+                this.initiateModal('Hinweis', tmp.text)
+                console.log('Execute MODAL', tmp.text);
+                break;
+            default:
+                new Error('Undefined rule action executed.');
+        }
+    }
+
+
+    /**
+     * Triggers a modal Window
+     * @param title Modal title
+     * @param message Message body
+     */
+    public initiateModal(title: string, message: string): void {
         let config = <IModalConfig>{
             id: "myfield",
             content: {
-                header: "<h5 class=\"modal-title\" id=\"exampleModalLabel\">"+ title +"</h5>",
-                body: "<p>"+ message +"</p>",
-                footer: "<button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Close</button> \
-            <button type=\"button\" class=\"btn btn-primary\">Save changes</button>"
+                header: "<h5 class=\"modal-title\" id=\"exampleModalLabel\">" + title + "</h5>",
+                body: "<p>" + message + "</p>",
+                footer: "<button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Jetzt nicht</button> \
+            <button type=\"button\" class=\"btn btn-primary\">OK, habe verstanden</button>"
             },
             options: {
                 centerVertically: true,
@@ -144,21 +264,53 @@ class Rules {
     }
 }
 
-export interface Rule {
-    Condition: RuleCondition[];
-    Action: RuleAction; // todo: think about enabling multiple actions per rule
+
+
+
+export interface IRule {
+    Condition: IRuleCondition[];
+    Action: IRuleAction; // todo: think about enabling multiple actions per rule
 }
-export interface RuleCondition {
+export interface IRuleCondition {
     context: string,
     key: string,
     value: number,
-    operator: Operators
+    operator: EOperators
 };
-export enum Operators {
+export interface IRuleAction {
+    method: ERuleMethod,
+    text: string,
+    moodle_context: EMoodleContext,
+    moodle_course?: number,
+    timing?: ETiming,
+    priority?: number,
+    repeatitions?: number, // number of time the action should be repeated after being dismissed by the user
+}
+export enum EMoodleContext {
+    LOGIN_PAGE,
+    HOME_PAGE,
+    PROFILE_PAGE,
+    COURSE_PARTICIPANTS,
+    COURSE_OVERVIEW_PAGE,
+    MOD_PAGE,
+    MOD_ASSIGNMENT,
+    MOD_NEWSMOD,
+    MOD_QUIZ,
+    UNKNOWN
+}
+export enum EOperators {
     Smaller,
     Bigger,
     Equal,
 }
-export interface RuleAction { method: RuleMethod, text: string }
-//export interface ActionContexts { 'semester_planing':string, 'bam':string }
-export enum RuleMethod { Alert, Modal }
+export enum ERuleMethod {
+    Alert,
+    Modal
+}
+export enum ETiming {
+    NOW,
+    ENTER_PAGE,
+    LOGIN,
+    WHEN_VISIBLE,
+    WHEN_IDLE,
+}
