@@ -1,4 +1,4 @@
-define(["require", "exports", "./core_modal"], function (require, exports, core_modal_1) {
+define(["require", "exports", "./core_modal", "./sensor_viewport"], function (require, exports, core_modal_1, sensor_viewport_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ETiming = exports.ERuleMethod = exports.EOperators = exports.EMoodleContext = exports.LearnerModelManager = void 0;
@@ -31,7 +31,8 @@ define(["require", "exports", "./core_modal"], function (require, exports, core_
                     Action: {
                         method: ERuleMethod.Modal,
                         text: 'hello world',
-                        moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE
+                        moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
+                        viewport_selector: 'img.atto_image_button_text-bottom'
                     }
                 }];
             this.lm = lm;
@@ -53,8 +54,11 @@ define(["require", "exports", "./core_modal"], function (require, exports, core_
                 case "/course/view.php": return EMoodleContext.COURSE_OVERVIEW_PAGE;
                 case "/mod/page/view.php": return EMoodleContext.MOD_PAGE;
                 case "/mod/assign/view.php": return EMoodleContext.MOD_ASSIGNMENT;
-                case "/mod/quiz/view.php": return EMoodleContext.MOD_QUIZ;
                 case "/mod/newsmod/view.php": return EMoodleContext.MOD_NEWSMOD;
+                case "/mod/quiz/view.php": return EMoodleContext.MOD_QUIZ;
+                case "/mod/quiz/attempt.php": return EMoodleContext.MOD_QUIZ_ATTEMPT;
+                case "/mod/quiz/summary.php": return EMoodleContext.MOD_QUIZ_SUMMARY;
+                case "/mod/quiz/review.php": return EMoodleContext.MOD_QUIZ_REVIEW;
             }
             return EMoodleContext.UNKNOWN;
         }
@@ -110,7 +114,16 @@ define(["require", "exports", "./core_modal"], function (require, exports, core_
                 return d.moodle_context === _this.moodleContext;
             });
             for (var i = 0; i < localActions.length; i++) {
-                this._executeAction(localActions[i]);
+                if (localActions[i].viewport_selector !== undefined) {
+                    let test = new sensor_viewport_1.DOMVPTracker(localActions[i].viewport_selector, 1);
+                    test.get().then((resolve) => {
+                        _this._executeAction(localActions[i]);
+                        console.log(resolve);
+                    });
+                }
+                else {
+                    this._executeAction(localActions[i]);
+                }
             }
         }
         _executeAction(tmp) {
@@ -161,6 +174,9 @@ define(["require", "exports", "./core_modal"], function (require, exports, core_
         EMoodleContext["MOD_ASSIGNMENT"] = "mod_assignment";
         EMoodleContext["MOD_NEWSMOD"] = "mod_newsmod";
         EMoodleContext["MOD_QUIZ"] = "mod_quiz";
+        EMoodleContext["MOD_QUIZ_ATTEMPT"] = "mod_quiz_attempt";
+        EMoodleContext["MOD_QUIZ_SUMMARY"] = "mod_quiz_summary";
+        EMoodleContext["MOD_QUIZ_REVIEW"] = "mod_quiz_review";
         EMoodleContext["UNKNOWN"] = "unknown";
     })(EMoodleContext = exports.EMoodleContext || (exports.EMoodleContext = {}));
     var EOperators;

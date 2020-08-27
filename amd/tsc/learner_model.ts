@@ -9,7 +9,7 @@
 
 
 import { Modal, IModalConfig, EModalSize } from './core_modal';
-
+import { DOMVPTracker } from './sensor_viewport';
 
 /**
  * Loads and synchronizes the Learner Model
@@ -71,7 +71,8 @@ class RuleManager {
         Action: {
             method: ERuleMethod.Modal,
             text: 'hello world',
-            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE
+            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
+            viewport_selector: 'img.atto_image_button_text-bottom'
         }
     }];
 
@@ -108,7 +109,7 @@ class RuleManager {
         https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
         https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
         */
-       path = path.replace('/moodle',''); // bad fix for my local installation
+        path = path.replace('/moodle', ''); // bad fix for my local installation
         switch (path) {
             case "/login/index.php": return EMoodleContext.LOGIN_PAGE;
             case "/": return EMoodleContext.HOME_PAGE;
@@ -117,14 +118,21 @@ class RuleManager {
             case "/course/view.php": return EMoodleContext.COURSE_OVERVIEW_PAGE;
             case "/mod/page/view.php": return EMoodleContext.MOD_PAGE;
             case "/mod/assign/view.php": return EMoodleContext.MOD_ASSIGNMENT;
-            case "/mod/quiz/view.php": return EMoodleContext.MOD_QUIZ;
             case "/mod/newsmod/view.php": return EMoodleContext.MOD_NEWSMOD;
+            case "/mod/quiz/view.php": return EMoodleContext.MOD_QUIZ;
+            case "/mod/quiz/attempt.php": return EMoodleContext.MOD_QUIZ_ATTEMPT;
+            case "/mod/quiz/summary.php": return EMoodleContext.MOD_QUIZ_SUMMARY;
+            case "/mod/quiz/review.php": return EMoodleContext.MOD_QUIZ_REVIEW;
         }
         return EMoodleContext.UNKNOWN;
     }
 
 
-    private _determineURLParameters(param:string):string|number {
+    /**
+     * Determines whether a given URL parameter exists and returns its value.
+     * @param param 
+     */
+    private _determineURLParameters(param: string): string | number {
         // let params = <any>{};
         let parser = document.createElement('a');
         parser.href = window.location.href;
@@ -132,8 +140,7 @@ class RuleManager {
         var vars = query.split('&');
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split('=');
-            // @ts-ignore
-            if (pair[0] === param){
+            if (pair[0] === param) {
                 return decodeURIComponent(pair[1])
             }
         }
@@ -154,6 +161,7 @@ class RuleManager {
         }
     }
 
+
     /**
      * 
      * @param context 
@@ -166,6 +174,7 @@ class RuleManager {
         // @ts-ignore
         return this.lm[context][key];
     }
+
 
     /**
      * Evaluate each condition of a rule considering the data stored in the learner model
@@ -203,16 +212,29 @@ class RuleManager {
      */
     private _processActionQueue(): void {
         let _this = this;
-        // filter by current location
+        // filter by current location/page
         let localActions: IRuleAction[] = this.actionQueue.filter(function (d) {
             return d.moodle_context === _this.moodleContext;
         });
+        // TODO: exclude rule actions that are not related to the current course
 
-        // consider the action timing, TODO
+        // TODO: consider the action timing
 
         // execute
         for (var i = 0; i < localActions.length; i++) {
-            this._executeAction(localActions[i]);
+            if (localActions[i].viewport_selector !== undefined){
+                // @ts-ignore
+                let test = new DOMVPTracker(localActions[i].viewport_selector, 1);
+
+                test.get().then(
+                    (resolve) => {
+                        _this._executeAction(localActions[i]);
+                        console.log(resolve);
+                    }
+                ); 
+            }else{
+                this._executeAction(localActions[i]);
+            }
         }
     }
 
@@ -283,6 +305,7 @@ export interface IRuleAction {
     text: string,
     moodle_context: EMoodleContext,
     moodle_course?: number,
+    viewport_selector?: string,
     timing?: ETiming,
     priority?: number,
     repeatitions?: number, // number of time the action should be repeated after being dismissed by the user
@@ -293,10 +316,13 @@ export enum EMoodleContext {
     PROFILE_PAGE,
     COURSE_PARTICIPANTS,
     COURSE_OVERVIEW_PAGE,
-    MOD_PAGE  = 'mod_page',
+    MOD_PAGE = 'mod_page',
     MOD_ASSIGNMENT = 'mod_assignment',
     MOD_NEWSMOD = 'mod_newsmod',
     MOD_QUIZ = 'mod_quiz',
+    MOD_QUIZ_ATTEMPT = 'mod_quiz_attempt',
+    MOD_QUIZ_SUMMARY = 'mod_quiz_summary',
+    MOD_QUIZ_REVIEW = 'mod_quiz_review',
     UNKNOWN = 'unknown'
 }
 export enum EOperators {

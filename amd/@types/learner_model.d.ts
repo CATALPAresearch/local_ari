@@ -30,6 +30,7 @@ export interface IRuleAction {
     text: string;
     moodle_context: EMoodleContext;
     moodle_course?: number;
+    viewport_selector?: string;
     timing?: ETiming;
     priority?: number;
     repeatitions?: number;
@@ -44,6 +45,9 @@ export declare enum EMoodleContext {
     MOD_ASSIGNMENT = "mod_assignment",
     MOD_NEWSMOD = "mod_newsmod",
     MOD_QUIZ = "mod_quiz",
+    MOD_QUIZ_ATTEMPT = "mod_quiz_attempt",
+    MOD_QUIZ_SUMMARY = "mod_quiz_summary",
+    MOD_QUIZ_REVIEW = "mod_quiz_review",
     UNKNOWN = "unknown"
 }
 export declare enum EOperators {
