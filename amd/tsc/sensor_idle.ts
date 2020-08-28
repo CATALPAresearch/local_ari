@@ -1,9 +1,15 @@
-
+/**
+ *
+ * @author Niels Seidel <niels.seidel@fernuni-hagen.de>
+ * @version 1.0-20200409
+ * @description Detects users being idle for a given amount of time
+ *
+ */
 
 import { IRuleAction } from './rule_manager';
 
-export function sensor_idle(callback: (action: IRuleAction) => void, action: IRuleAction, idleTime ?: number) {
-    
+export function sensor_idle(callback: (action: IRuleAction) => void, action: IRuleAction, idleTime?: number) {
+
     idleTime = idleTime === undefined ? 3000 : idleTime;
     let timerID: number;
     // Register events
@@ -16,9 +22,7 @@ export function sensor_idle(callback: (action: IRuleAction) => void, action: IRu
     function resetTimer() {
         clearTimeout(timerID);
         timerID = setTimeout((() => {
-            
             callback(action);
-        // @ts-ignore
         }), idleTime)
     }
 };

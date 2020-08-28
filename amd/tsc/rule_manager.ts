@@ -14,6 +14,7 @@
 
 import { ILearnerModel } from './learner_model_manager';
 import { Modal, IModalConfig, EModalSize } from './core_modal';
+import { uniqid } from "./core_helper";
 import { DOMVPTracker } from './sensor_viewport';
 import { getTabID } from './sensor_tab';
 import { sensor_idle } from './sensor_idle';
@@ -40,9 +41,13 @@ export class RuleManager {
             method: ERuleMethod.Modal,
             text: 'hello world x',
             moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-            //viewport_selector: 'h3',
-            delay: 3000, // miliseconds
-            timing: ETiming.WHEN_IDLE,
+            
+            //delay: 3000, // miliseconds
+            //timing: ETiming.WHEN_IDLE,
+
+            //viewport_selector: 'h3.sectionname',
+            viewport_selector: '#course-footer',
+            timing: ETiming.WHEN_VISIBLE,
             /**
              *   NOW,
     PAGE_LOADED,
@@ -210,15 +215,16 @@ export class RuleManager {
                 // @ts-ignore
                 new DOMVPTracker(localActions[i].viewport_selector, 0)
                     .get().then((resolve) => {
-                        _this._executeAction(localActions[i]);
-                        console.log(resolve);
+                        //console.log('z217 ',localActions[i].moodle_context)
+                        //RuleManager._executeAction(localActions[i]);
+                        console.log('z217 ', resolve);
                     }
-                    );
+                );
             } else if (localActions[i].timing === ETiming.WHEN_IDLE && localActions[i].delay !== undefined) {
                 //this._callWhenIdle(localActions[i], localActions[i].delay)
-                sensor_idle(this._executeAction, localActions[i], localActions[i].delay);
+                sensor_idle(RuleManager._executeAction, localActions[i], localActions[i].delay);
             } else { // === ETiming.NOW
-                this._executeAction(localActions[i]);
+                RuleManager._executeAction(localActions[i]);
             }
         }
     }
@@ -228,8 +234,8 @@ export class RuleManager {
      * 
      * @param tmp 
      */
-    private _executeAction(tmp: IRuleAction): void {
-        console.log('inside _executeAction', typeof this)
+    public static _executeAction(tmp: IRuleAction): void {
+        console.log('drinn')
         //let _this = this;
         switch (tmp.method) {
             case ERuleMethod.Alert:
@@ -237,7 +243,7 @@ export class RuleManager {
                 break;
             case ERuleMethod.Modal:
                 console.log('Execute MODAL', tmp.text);
-                RuleManager._initiateModal('Hinweis', tmp.text);
+                RuleManager.initiateModal('Hinweis', tmp.text);
                 break;
             default:
                 new Error('Undefined rule action executed.');
@@ -249,9 +255,9 @@ export class RuleManager {
      * @param title Modal title
      * @param message Message body
      */
-    public static _initiateModal(title: string, message: string): void {
+    public static initiateModal(title: string, message: string): void {
         let config = <IModalConfig>{
-            id: "myfield",
+            id: "modal-" + uniqid(),
             content: {
                 header: "<h5 class=\"modal-title\" id=\"exampleModalLabel\">" + title + "</h5>",
                 body: "<p>" + message + "</p>",

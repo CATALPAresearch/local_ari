@@ -15,8 +15,8 @@ export declare class RuleManager {
     evaluateConditions(cons: IRuleCondition[]): boolean;
     private _addToActionQueue;
     private _processActionQueue;
-    private _executeAction;
-    static _initiateModal(title: string, message: string): void;
+    static _executeAction(tmp: IRuleAction): void;
+    static initiateModal(title: string, message: string): void;
 }
 export interface IRule {
     Condition: IRuleCondition[];

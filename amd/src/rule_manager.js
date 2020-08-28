@@ -1,4 +1,4 @@
-define(["require", "exports", "./core_modal", "./sensor_viewport", "./sensor_tab", "./sensor_idle"], function (require, exports, core_modal_1, sensor_viewport_1, sensor_tab_1, sensor_idle_1) {
+define(["require", "exports", "./core_modal", "./core_helper", "./sensor_viewport", "./sensor_tab", "./sensor_idle"], function (require, exports, core_modal_1, core_helper_1, sensor_viewport_1, sensor_tab_1, sensor_idle_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ETiming = exports.ERuleMethod = exports.EOperators = exports.EMoodleContext = exports.RuleManager = void 0;
@@ -16,8 +16,8 @@ define(["require", "exports", "./core_modal", "./sensor_viewport", "./sensor_tab
                         method: ERuleMethod.Modal,
                         text: 'hello world x',
                         moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-                        delay: 3000,
-                        timing: ETiming.WHEN_IDLE,
+                        viewport_selector: '#course-footer',
+                        timing: ETiming.WHEN_VISIBLE,
                     }
                 }];
             this.lm = lm;
@@ -101,35 +101,34 @@ define(["require", "exports", "./core_modal", "./sensor_viewport", "./sensor_tab
                 if (localActions[i].timing === ETiming.WHEN_VISIBLE && localActions[i].viewport_selector !== undefined) {
                     new sensor_viewport_1.DOMVPTracker(localActions[i].viewport_selector, 0)
                         .get().then((resolve) => {
-                        _this._executeAction(localActions[i]);
-                        console.log(resolve);
+                        console.log('z217 ', resolve);
                     });
                 }
                 else if (localActions[i].timing === ETiming.WHEN_IDLE && localActions[i].delay !== undefined) {
-                    sensor_idle_1.sensor_idle(this._executeAction, localActions[i], localActions[i].delay);
+                    sensor_idle_1.sensor_idle(RuleManager._executeAction, localActions[i], localActions[i].delay);
                 }
                 else {
-                    this._executeAction(localActions[i]);
+                    RuleManager._executeAction(localActions[i]);
                 }
             }
         }
-        _executeAction(tmp) {
-            console.log('inside _executeAction', typeof this);
+        static _executeAction(tmp) {
+            console.log('drinn');
             switch (tmp.method) {
                 case ERuleMethod.Alert:
                     console.log('Execute ALERT', tmp.text);
                     break;
                 case ERuleMethod.Modal:
                     console.log('Execute MODAL', tmp.text);
-                    RuleManager._initiateModal('Hinweis', tmp.text);
+                    RuleManager.initiateModal('Hinweis', tmp.text);
                     break;
                 default:
                     new Error('Undefined rule action executed.');
             }
         }
-        static _initiateModal(title, message) {
+        static initiateModal(title, message) {
             let config = {
-                id: "myfield",
+                id: "modal-" + core_helper_1.uniqid(),
                 content: {
                     header: "<h5 class=\"modal-title\" id=\"exampleModalLabel\">" + title + "</h5>",
                     body: "<p>" + message + "</p>",
