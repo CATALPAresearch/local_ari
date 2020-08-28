@@ -64,7 +64,7 @@ export class BrowserBroadcast{
         this._broadcastChannel.onmessageerror = callback;
     }
 
-    public send(message:IBroadcastMessage){
+    public send(message:object){
         this._broadcastChannel.postMessage(message);
     }
 
@@ -72,9 +72,4 @@ export class BrowserBroadcast{
         this._broadcastChannel.close();
     }
 
-}
-
-export interface IBroadcastMessage{
-    sender: string;
-    message: any;
 }
