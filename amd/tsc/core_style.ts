@@ -25,7 +25,7 @@ export class StyleHandler{
         Promise.all(push);
     }
 
-    public static async style(data:IStyle, documentReady:boolean = false):Promise<void>{
+    public static async style(data:IStyle):Promise<void>{
         let func = function(){
             if(data.duration){
                 let old = $(data.selector).css(data.property);
@@ -34,18 +34,18 @@ export class StyleHandler{
                 $(data.selector).css(data.property, data.value);
             } 
         }
-        if(documentReady){
+        if(data.documentReady){
             $(document).ready(func);
         } else {
             func();
         }             
     }
 
-    public static async animate(data:IAnimation, documentReady:boolean = false):Promise<void>{
+    public static async animate(data:IAnimation):Promise<void>{
         let func = function(){
             $(data.selector).animate(data.params, data.duration);
         }
-        if(documentReady){
+        if(data.documentReady){
             $(document).ready(func);
         } else {
             func();
@@ -55,6 +55,7 @@ export class StyleHandler{
 }
 
 interface IStyle{
+    documentReady:boolean;
     selector: string;
     property: string;
     value: string|number;
@@ -62,6 +63,7 @@ interface IStyle{
 }
 
 interface IAnimation{
+    documentReady:boolean;
     selector: string;
     params: object;
     duration: number;    
