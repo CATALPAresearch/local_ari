@@ -1,60 +1,19 @@
-
 /**
  *
- * @author Niels Seidel
+ * @author Niels Seidel <niels.seidel@fernuni-hagen.de>
  * @version 1.0-20200409
- * @description Model of all data related to the learner
+ * @description Manages the rules and the fulfillment of their conditions and execution of the related actions.
  *
  */
 
-
+import { ILearnerModel } from './learner_model_manager'
 import { Modal, IModalConfig, EModalSize } from './core_modal';
 import { DOMVPTracker } from './sensor_viewport';
 
 /**
- * Loads and synchronizes the Learner Model
- */
-//@ts-ignore
-export class LearnerModelManager {
-    public static model: ILearnerModel = {
-        userid: 101,
-        semester_planing: {
-            initial_view_ms_list: 0
-        }
-    };
-
-    constructor() {
-        this.checkRules();
-    }
-
-    public checkRules(): void {
-        new RuleManager(LearnerModelManager.model);
-    }
-
-    public update(): void { }
-}
-
-
-
-export interface ILearnerModel {
-    userid: number;
-    semester_planing?: {
-        initial_view_ms_list?: number; // rezeptive NUtzung der MS Liste, open collapse
-        body?: string; // drei tage nach MS start Der Studierende hat die MS-Planung weder aufgerufen noch angpasst. Wir möchten wissen, ob er die Planung nun einmal ansehen und ggf. anpassen möchte.
-        initial_edit_ms_list?: string; // Listenansicht der MS-Planung wurde rezeptiv genutzt, der Studierende soll an die Anpassung seiner aktiven Meilensteine erinnert werden.
-        footer?: string;
-    };
-    longpage?: {};
-    self_assessments?: {};
-}
-
-
-
-
-/**
  * RuleManger checks rule conditions and mangages the subsequent rule actions by considering context variables
  */
-class RuleManager {
+export class RuleManager {
     public lm: ILearnerModel;
     public actionQueue: IRuleAction[];
     private rules: IRule[] = [];
@@ -72,7 +31,7 @@ class RuleManager {
             method: ERuleMethod.Modal,
             text: 'hello world',
             moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-            viewport_selector: 'img.atto_image_button_text-bottom'
+            viewport_selector: 'h3'
         }
     }];
 
@@ -83,7 +42,7 @@ class RuleManager {
         this.moodleContext = this._determineMoodleContext();
         // @ts-ignore
         this.moodleInstanceID = this._determineURLParameters('id');
-        console.log(this.moodleContext, this.moodleInstanceID);
+        console.log('current context:',this.moodleContext, this.moodleInstanceID);
         // initial rule as an example, only for testing
         this.rules = this.example_rules;
 
@@ -152,11 +111,9 @@ class RuleManager {
      * Iterates over all rules in order to check whether thei condistions are fulfilled. If all conditions are met the rule actions are pushed to the ruleActionQueue.
      */
     private _checkRules(): void {
-        let tmp;
         for (var i = 0; i < this.rules.length; i++) {
-            tmp = this.rules[i];
-            if (this.evaluateConditions(tmp.Condition)) {
-                this._addToActionQueue(tmp.Action);
+            if (this.evaluateConditions(this.rules[i].Condition)) {
+                this._addToActionQueue(this.rules[i].Action);
             }
         }
     }
@@ -222,17 +179,19 @@ class RuleManager {
 
         // execute
         for (var i = 0; i < localActions.length; i++) {
-            if (localActions[i].viewport_selector !== undefined){
+            
+            if (localActions[i].viewport_selector !== undefined) {
+                //localActions[i].viewport_selector
                 // @ts-ignore
-                let test = new DOMVPTracker(localActions[i].viewport_selector);
-
+                let test = new DOMVPTracker('footer', 0);
+                // @ts-ignore
                 test.get().then(
                     (resolve) => {
                         _this._executeAction(localActions[i]);
                         console.log(resolve);
                     }
-                ); 
-            }else{
+                );
+            } else {
                 this._executeAction(localActions[i]);
             }
         }

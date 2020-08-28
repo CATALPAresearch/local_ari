@@ -1,27 +1,7 @@
 define(["require", "exports", "./core_modal", "./sensor_viewport"], function (require, exports, core_modal_1, sensor_viewport_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ETiming = exports.ERuleMethod = exports.EOperators = exports.EMoodleContext = exports.LearnerModelManager = void 0;
-    class LearnerModelManager {
-        constructor() {
-            let test = new sensor_viewport_1.DOMVPTracker('img');
-            test.get().then((resolve) => {
-                console.log(resolve, 44);
-            });
-            this.checkRules();
-        }
-        checkRules() {
-            new RuleManager(LearnerModelManager.model);
-        }
-        update() { }
-    }
-    exports.LearnerModelManager = LearnerModelManager;
-    LearnerModelManager.model = {
-        userid: 101,
-        semester_planing: {
-            initial_view_ms_list: 0
-        }
-    };
+    exports.ETiming = exports.ERuleMethod = exports.EOperators = exports.EMoodleContext = exports.RuleManager = void 0;
     class RuleManager {
         constructor(lm) {
             this.rules = [];
@@ -39,12 +19,11 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
                         viewport_selector: 'h3'
                     }
                 }];
-            console.log('drin');
             this.lm = lm;
             this.actionQueue = [];
             this.moodleContext = this._determineMoodleContext();
             this.moodleInstanceID = this._determineURLParameters('id');
-            console.log(this.moodleContext, this.moodleInstanceID);
+            console.log('current context:', this.moodleContext, this.moodleInstanceID);
             this.rules = this.example_rules;
             this._checkRules();
         }
@@ -117,7 +96,6 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
                 return d.moodle_context === _this.moodleContext;
             });
             for (var i = 0; i < localActions.length; i++) {
-                console.log(localActions[i].viewport_selector);
                 if (localActions[i].viewport_selector !== undefined) {
                     let test = new sensor_viewport_1.DOMVPTracker('footer', 0);
                     test.get().then((resolve) => {
@@ -166,6 +144,7 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
             new core_modal_1.Modal(config);
         }
     }
+    exports.RuleManager = RuleManager;
     ;
     var EMoodleContext;
     (function (EMoodleContext) {
@@ -203,4 +182,4 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
         ETiming[ETiming["WHEN_IDLE"] = 4] = "WHEN_IDLE";
     })(ETiming = exports.ETiming || (exports.ETiming = {}));
 });
-//# sourceMappingURL=../tsc/@maps/learner_model.js.map
+//# sourceMappingURL=../tsc/@maps/rule_manager.js.map
