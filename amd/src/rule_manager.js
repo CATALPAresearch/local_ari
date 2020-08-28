@@ -1,4 +1,4 @@
-define(["require", "exports", "./core_modal", "./sensor_viewport"], function (require, exports, core_modal_1, sensor_viewport_1) {
+define(["require", "exports", "./core_modal", "./sensor_viewport", "./sensor_tab", "./sensor_idle"], function (require, exports, core_modal_1, sensor_viewport_1, sensor_tab_1, sensor_idle_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ETiming = exports.ERuleMethod = exports.EOperators = exports.EMoodleContext = exports.RuleManager = void 0;
@@ -14,16 +14,18 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
                         }],
                     Action: {
                         method: ERuleMethod.Modal,
-                        text: 'hello world',
+                        text: 'hello world x',
                         moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-                        viewport_selector: 'h3'
+                        delay: 3000,
+                        timing: ETiming.WHEN_IDLE,
                     }
                 }];
             this.lm = lm;
             this.actionQueue = [];
             this.moodleContext = this._determineMoodleContext();
             this.moodleInstanceID = this._determineURLParameters('id');
-            console.log('current context:', this.moodleContext, this.moodleInstanceID);
+            this.browserTabID = sensor_tab_1.getTabID();
+            console.log('current context:', this.moodleContext, this.moodleInstanceID, this.browserTabID);
             this.rules = this.example_rules;
             this._checkRules();
         }
@@ -96,12 +98,15 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
                 return d.moodle_context === _this.moodleContext;
             });
             for (var i = 0; i < localActions.length; i++) {
-                if (localActions[i].viewport_selector !== undefined) {
-                    let test = new sensor_viewport_1.DOMVPTracker('footer', 0);
-                    test.get().then((resolve) => {
+                if (localActions[i].timing === ETiming.WHEN_VISIBLE && localActions[i].viewport_selector !== undefined) {
+                    new sensor_viewport_1.DOMVPTracker(localActions[i].viewport_selector, 0)
+                        .get().then((resolve) => {
                         _this._executeAction(localActions[i]);
                         console.log(resolve);
                     });
+                }
+                else if (localActions[i].timing === ETiming.WHEN_IDLE && localActions[i].delay !== undefined) {
+                    sensor_idle_1.sensor_idle(this._executeAction, localActions[i], localActions[i].delay);
                 }
                 else {
                     this._executeAction(localActions[i]);
@@ -109,19 +114,20 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
             }
         }
         _executeAction(tmp) {
+            console.log('inside _executeAction', typeof this);
             switch (tmp.method) {
                 case ERuleMethod.Alert:
                     console.log('Execute ALERT', tmp.text);
                     break;
                 case ERuleMethod.Modal:
-                    this.initiateModal('Hinweis', tmp.text);
                     console.log('Execute MODAL', tmp.text);
+                    RuleManager._initiateModal('Hinweis', tmp.text);
                     break;
                 default:
                     new Error('Undefined rule action executed.');
             }
         }
-        initiateModal(title, message) {
+        static _initiateModal(title, message) {
             let config = {
                 id: "myfield",
                 content: {
@@ -176,8 +182,8 @@ define(["require", "exports", "./core_modal", "./sensor_viewport"], function (re
     var ETiming;
     (function (ETiming) {
         ETiming[ETiming["NOW"] = 0] = "NOW";
-        ETiming[ETiming["ENTER_PAGE"] = 1] = "ENTER_PAGE";
-        ETiming[ETiming["LOGIN"] = 2] = "LOGIN";
+        ETiming[ETiming["PAGE_LOADED"] = 1] = "PAGE_LOADED";
+        ETiming[ETiming["LOGGED_IN"] = 2] = "LOGGED_IN";
         ETiming[ETiming["WHEN_VISIBLE"] = 3] = "WHEN_VISIBLE";
         ETiming[ETiming["WHEN_IDLE"] = 4] = "WHEN_IDLE";
     })(ETiming = exports.ETiming || (exports.ETiming = {}));

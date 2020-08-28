@@ -4,11 +4,19 @@
  * @version 1.0-20200409
  * @description Manages the rules and the fulfillment of their conditions and execution of the related actions.
  *
+ * TODO
+ * - separate Rules in a file
+ * - delayed rule execution
+ * - consider timing for actions
+ * - reinforcement learning
+ * - 
  */
 
-import { ILearnerModel } from './learner_model_manager'
+import { ILearnerModel } from './learner_model_manager';
 import { Modal, IModalConfig, EModalSize } from './core_modal';
 import { DOMVPTracker } from './sensor_viewport';
+import { getTabID } from './sensor_tab';
+import { sensor_idle } from './sensor_idle';
 
 /**
  * RuleManger checks rule conditions and mangages the subsequent rule actions by considering context variables
@@ -19,6 +27,7 @@ export class RuleManager {
     private rules: IRule[] = [];
     private moodleContext: EMoodleContext;
     private moodleInstanceID: number;
+    private browserTabID: string;
 
     private example_rules: IRule[] = [{
         Condition: [{
@@ -29,9 +38,18 @@ export class RuleManager {
         }],
         Action: {
             method: ERuleMethod.Modal,
-            text: 'hello world',
+            text: 'hello world x',
             moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-            viewport_selector: 'h3'
+            //viewport_selector: 'h3',
+            delay: 3000, // miliseconds
+            timing: ETiming.WHEN_IDLE,
+            /**
+             *   NOW,
+    PAGE_LOADED,
+    LOGGED_IN,
+    WHEN_VISIBLE,
+    WHEN_IDLE,
+             */
         }
     }];
 
@@ -42,7 +60,8 @@ export class RuleManager {
         this.moodleContext = this._determineMoodleContext();
         // @ts-ignore
         this.moodleInstanceID = this._determineURLParameters('id');
-        console.log('current context:',this.moodleContext, this.moodleInstanceID);
+        this.browserTabID = getTabID();
+        console.log('current context:', this.moodleContext, this.moodleInstanceID, this.browserTabID);
         // initial rule as an example, only for testing
         this.rules = this.example_rules;
 
@@ -176,22 +195,29 @@ export class RuleManager {
         // TODO: exclude rule actions that are not related to the current course
 
         // TODO: consider the action timing
+        /**
+             *   NOW,
+    PAGE_LOADED,
+    LOGGED_IN,
+    WHEN_VISIBLE,
+    WHEN_IDLE,
+             */
 
         // execute
         for (var i = 0; i < localActions.length; i++) {
-            
-            if (localActions[i].viewport_selector !== undefined) {
-                //localActions[i].viewport_selector
+
+            if (localActions[i].timing === ETiming.WHEN_VISIBLE && localActions[i].viewport_selector !== undefined) {
                 // @ts-ignore
-                let test = new DOMVPTracker('footer', 0);
-                // @ts-ignore
-                test.get().then(
-                    (resolve) => {
+                new DOMVPTracker(localActions[i].viewport_selector, 0)
+                    .get().then((resolve) => {
                         _this._executeAction(localActions[i]);
                         console.log(resolve);
                     }
-                );
-            } else {
+                    );
+            } else if (localActions[i].timing === ETiming.WHEN_IDLE && localActions[i].delay !== undefined) {
+                //this._callWhenIdle(localActions[i], localActions[i].delay)
+                sensor_idle(this._executeAction, localActions[i], localActions[i].delay);
+            } else { // === ETiming.NOW
                 this._executeAction(localActions[i]);
             }
         }
@@ -202,27 +228,55 @@ export class RuleManager {
      * 
      * @param tmp 
      */
-    private _executeAction(tmp: IRuleAction) {
+    private _executeAction(tmp: IRuleAction): void {
+        console.log('inside _executeAction', typeof this)
+        //let _this = this;
         switch (tmp.method) {
             case ERuleMethod.Alert:
                 console.log('Execute ALERT', tmp.text);
                 break;
             case ERuleMethod.Modal:
-                this.initiateModal('Hinweis', tmp.text)
                 console.log('Execute MODAL', tmp.text);
+                RuleManager._initiateModal('Hinweis', tmp.text);
                 break;
             default:
                 new Error('Undefined rule action executed.');
         }
     }
 
+    /**
+     * 
+     * @param action 
+     * @param idleTime 
+     
+    private _callWhenIdle(action: IRuleAction, idleTime?: number) {
+        let _this = this;
+        idleTime = idleTime === undefined ? 3000 : idleTime;
+        let timerID: number;
+        // Register events
+        window.addEventListener('load', resetTimer, true);
+        var events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        events.forEach(function (name) {
+            document.addEventListener(name, resetTimer, true);
+        });
+
+        function resetTimer() {
+            clearTimeout(timerID);
+            timerID = setTimeout(() => {
+                // @ts-ignore
+                _this._executeAction(action);
+
+            }, idleTime)
+        }
+    };
+*/
 
     /**
      * Triggers a modal Window
      * @param title Modal title
      * @param message Message body
      */
-    public initiateModal(title: string, message: string): void {
+    public static _initiateModal(title: string, message: string): void {
         let config = <IModalConfig>{
             id: "myfield",
             content: {
@@ -266,8 +320,9 @@ export interface IRuleAction {
     moodle_course?: number,
     viewport_selector?: string,
     timing?: ETiming,
+    delay?: number,
     priority?: number,
-    repeatitions?: number, // number of time the action should be repeated after being dismissed by the user
+    repetitions?: number, // number of time the action should be repeated after being dismissed by the user
 }
 export enum EMoodleContext {
     LOGIN_PAGE,
@@ -295,8 +350,8 @@ export enum ERuleMethod {
 }
 export enum ETiming {
     NOW,
-    ENTER_PAGE,
-    LOGIN,
+    PAGE_LOADED,
+    LOGGED_IN,
     WHEN_VISIBLE,
     WHEN_IDLE,
 }

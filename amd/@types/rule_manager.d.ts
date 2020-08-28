@@ -5,6 +5,7 @@ export declare class RuleManager {
     private rules;
     private moodleContext;
     private moodleInstanceID;
+    private browserTabID;
     private example_rules;
     constructor(lm: ILearnerModel);
     private _determineMoodleContext;
@@ -15,7 +16,7 @@ export declare class RuleManager {
     private _addToActionQueue;
     private _processActionQueue;
     private _executeAction;
-    initiateModal(title: string, message: string): void;
+    static _initiateModal(title: string, message: string): void;
 }
 export interface IRule {
     Condition: IRuleCondition[];
@@ -34,8 +35,9 @@ export interface IRuleAction {
     moodle_course?: number;
     viewport_selector?: string;
     timing?: ETiming;
+    delay?: number;
     priority?: number;
-    repeatitions?: number;
+    repetitions?: number;
 }
 export declare enum EMoodleContext {
     LOGIN_PAGE = 0,
@@ -63,8 +65,8 @@ export declare enum ERuleMethod {
 }
 export declare enum ETiming {
     NOW = 0,
-    ENTER_PAGE = 1,
-    LOGIN = 2,
+    PAGE_LOADED = 1,
+    LOGGED_IN = 2,
     WHEN_VISIBLE = 3,
     WHEN_IDLE = 4
 }

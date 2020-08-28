@@ -13,7 +13,6 @@ export class Controller{
   private wwwroot:string;
 
   constructor(wwwroot: string) {
-    console.log('run')
     new LearnerModelManager();
     this.wwwroot = wwwroot;
     console.log(this.wwwroot);

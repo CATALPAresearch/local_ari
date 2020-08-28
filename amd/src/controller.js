@@ -4,7 +4,6 @@ define(["require", "exports", "./learner_model_manager"], function (require, exp
     exports.Controller = void 0;
     class Controller {
         constructor(wwwroot) {
-            console.log('run');
             new learner_model_manager_1.LearnerModelManager();
             this.wwwroot = wwwroot;
             console.log(this.wwwroot);
