@@ -5,14 +5,14 @@
  * @description Manages the rules and the fulfillment of their conditions and execution of the related actions.
  *
  * TODO
- * - separate Rules in a file
+ * - handle user reaction on rule presentation
  * - delayed rule execution
- * - consider timing for actions
  * - reinforcement learning
  * - 
  */
 
 import { ILearnerModel } from './learner_model_manager';
+import { Rules, IRule, IRuleAction, IRuleCondition, EOperators, EMoodleContext, ETiming, ERuleMethod} from './rules';
 import { Modal, IModalConfig, EModalSize } from './core_modal';
 import { uniqid } from "./core_helper";
 import { DOMVPTracker } from './sensor_viewport';
@@ -30,34 +30,6 @@ export class RuleManager {
     private moodleInstanceID: number;
     private browserTabID: string;
 
-    private example_rules: IRule[] = [{
-        Condition: [{
-            context: 'semester_planing', // better EMoodleContext ??
-            key: 'initial_view_ms_list',
-            value: 0,
-            operator: EOperators.Equal
-        }],
-        Action: {
-            method: ERuleMethod.Modal,
-            text: 'hello world x',
-            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-            
-            //delay: 3000, // miliseconds
-            //timing: ETiming.WHEN_IDLE,
-
-            //viewport_selector: 'h3.sectionname',
-            viewport_selector: '#course-footer',
-            timing: ETiming.WHEN_VISIBLE,
-            /**
-             *   NOW,
-    PAGE_LOADED,
-    LOGGED_IN,
-    WHEN_VISIBLE,
-    WHEN_IDLE,
-             */
-        }
-    }];
-
 
     constructor(lm: ILearnerModel) {
         this.lm = lm;
@@ -68,7 +40,7 @@ export class RuleManager {
         this.browserTabID = getTabID();
         console.log('current context:', this.moodleContext, this.moodleInstanceID, this.browserTabID);
         // initial rule as an example, only for testing
-        this.rules = this.example_rules;
+        this.rules = (new Rules()).getAll();
 
         // checks all rules
         this._checkRules();
@@ -201,11 +173,6 @@ export class RuleManager {
 
         // TODO: consider the action timing
         /**
-             *   NOW,
-    PAGE_LOADED,
-    LOGGED_IN,
-    WHEN_VISIBLE,
-    WHEN_IDLE,
              */
 
         // execute
@@ -281,56 +248,3 @@ export class RuleManager {
 
 
 
-
-export interface IRule {
-    Condition: IRuleCondition[];
-    Action: IRuleAction; // todo: think about enabling multiple actions per rule
-}
-export interface IRuleCondition {
-    context: string,
-    key: string,
-    value: number,
-    operator: EOperators
-};
-export interface IRuleAction {
-    method: ERuleMethod,
-    text: string,
-    moodle_context: EMoodleContext,
-    moodle_course?: number,
-    viewport_selector?: string,
-    timing?: ETiming,
-    delay?: number,
-    priority?: number,
-    repetitions?: number, // number of time the action should be repeated after being dismissed by the user
-}
-export enum EMoodleContext {
-    LOGIN_PAGE,
-    HOME_PAGE,
-    PROFILE_PAGE,
-    COURSE_PARTICIPANTS,
-    COURSE_OVERVIEW_PAGE,
-    MOD_PAGE = 'mod_page',
-    MOD_ASSIGNMENT = 'mod_assignment',
-    MOD_NEWSMOD = 'mod_newsmod',
-    MOD_QUIZ = 'mod_quiz',
-    MOD_QUIZ_ATTEMPT = 'mod_quiz_attempt',
-    MOD_QUIZ_SUMMARY = 'mod_quiz_summary',
-    MOD_QUIZ_REVIEW = 'mod_quiz_review',
-    UNKNOWN = 'unknown'
-}
-export enum EOperators {
-    Smaller,
-    Bigger,
-    Equal,
-}
-export enum ERuleMethod {
-    Alert,
-    Modal
-}
-export enum ETiming {
-    NOW,
-    PAGE_LOADED,
-    LOGGED_IN,
-    WHEN_VISIBLE,
-    WHEN_IDLE,
-}

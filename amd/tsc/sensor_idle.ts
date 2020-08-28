@@ -6,7 +6,7 @@
  *
  */
 
-import { IRuleAction } from './rule_manager';
+import { IRuleAction } from './rules';
 
 export function sensor_idle(callback: (action: IRuleAction) => void, action: IRuleAction, idleTime?: number) {
 
