@@ -245,33 +245,6 @@ export class RuleManager {
     }
 
     /**
-     * 
-     * @param action 
-     * @param idleTime 
-     
-    private _callWhenIdle(action: IRuleAction, idleTime?: number) {
-        let _this = this;
-        idleTime = idleTime === undefined ? 3000 : idleTime;
-        let timerID: number;
-        // Register events
-        window.addEventListener('load', resetTimer, true);
-        var events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-        events.forEach(function (name) {
-            document.addEventListener(name, resetTimer, true);
-        });
-
-        function resetTimer() {
-            clearTimeout(timerID);
-            timerID = setTimeout(() => {
-                // @ts-ignore
-                _this._executeAction(action);
-
-            }, idleTime)
-        }
-    };
-*/
-
-    /**
      * Triggers a modal Window
      * @param title Modal title
      * @param message Message body
