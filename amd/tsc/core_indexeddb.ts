@@ -6,18 +6,18 @@
 
 <meta content="object" property="og:type">
 <meta content="GitLab" property="og:site_name">
-<meta content="amd/tsc/core_communication.ts · 4a11a582c417ca66ba15f3d2990265bd85cf69f8 · aple / Entwicklung / local-ari" property="og:title">
+<meta content="amd/tsc/core_indexeddb.ts · 4a11a582c417ca66ba15f3d2990265bd85cf69f8 · aple / Entwicklung / local-ari" property="og:title">
 <meta content="Moodle local plugin that provides an Adaption Rule Interface (ARI)" property="og:description">
 <meta content="https://gitlab.pi6.fernuni-hagen.de/assets/gitlab_logo-7ae504fe4f68fdebb3c2034e36621930cd36ea87924c11ff65dbcb8ed50dca58.png" property="og:image">
 <meta content="64" property="og:image:width">
 <meta content="64" property="og:image:height">
-<meta content="https://gitlab.pi6.fernuni-hagen.de/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts" property="og:url">
+<meta content="https://gitlab.pi6.fernuni-hagen.de/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts" property="og:url">
 <meta content="summary" property="twitter:card">
-<meta content="amd/tsc/core_communication.ts · 4a11a582c417ca66ba15f3d2990265bd85cf69f8 · aple / Entwicklung / local-ari" property="twitter:title">
+<meta content="amd/tsc/core_indexeddb.ts · 4a11a582c417ca66ba15f3d2990265bd85cf69f8 · aple / Entwicklung / local-ari" property="twitter:title">
 <meta content="Moodle local plugin that provides an Adaption Rule Interface (ARI)" property="twitter:description">
 <meta content="https://gitlab.pi6.fernuni-hagen.de/assets/gitlab_logo-7ae504fe4f68fdebb3c2034e36621930cd36ea87924c11ff65dbcb8ed50dca58.png" property="twitter:image">
 
-<title>amd/tsc/core_communication.ts · 4a11a582c417ca66ba15f3d2990265bd85cf69f8 · aple / Entwicklung / local-ari · GitLab</title>
+<title>amd/tsc/core_indexeddb.ts · 4a11a582c417ca66ba15f3d2990265bd85cf69f8 · aple / Entwicklung / local-ari · GitLab</title>
 <meta content="Moodle local plugin that provides an Adaption Rule Interface (ARI)" name="description">
 <link rel="shortcut icon" type="image/png" href="/assets/favicon-7901bd695fb93edb07975966062049829afb56cf11511236e61bcf425070e36e.png" id="favicon" data-original-href="/assets/favicon-7901bd695fb93edb07975966062049829afb56cf11511236e61bcf425070e36e.png" />
 
@@ -26,7 +26,7 @@
 
 <link rel="stylesheet" media="all" href="/assets/highlight/themes/dark-4cc9557f25ca3af5956cef153e6242f0c08171ba11f5da909cd949ef9205a221.css" />
 
-<script type="text/javascript" src="https://ff.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Nk7wU-V3Y82I4b5cSkh2TM9U22202C_o8OqRDISXJomAu7pqru7KfAFUWSXKZzoZMAPyglFaU0Wlwa-coK9meEKXJAOtFEgLwB4nfr1FgR9maWZ2etyZWG2KamEbWN07xLWObRJxBmWVdnCa-ZxlokwO0evT4uF9UBcV2-k5zAk8f09NTAI3007eLccWBx-iH0LHSBhREPiDPOXkPEttmA" charset="UTF-8"></script><script>
+<script type="text/javascript" src="https://ff.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=sNFUHiYvShS1v5nJTto9Bp7WciIs_kv1SRzsu0UtdXTLTwP4q82j0tEijr1MZCTb6tl0RaIXF3iI9_pSuDnCRMmNGTo5Jk1tYU7um27ggdDNO0v96RItZhWGsq_aJHPyudsb6njLCGwSFfvtQcLQGQEKavxmPsBM3Us3Wy1K7gbOW6ESYFo8CyWUNAMnF_3Hw-FeN258ldZYuRyp_mjLUw" charset="UTF-8"></script><script>
 //<![CDATA[
 window.gon={};gon.features={"codeNavigation":true};
 //]]>
@@ -49,7 +49,7 @@ window.uploads_path = "/aple/entwicklung/ari/uploads";
 //]]>
 </script>
 <meta name="csrf-param" content="authenticity_token" />
-<meta name="csrf-token" content="tRq5iLLjAvLZ4WKmEuHPk5TVQPmKlcLYgFEQYRFWSeDELOV+6kJOZMYwUWzYjBEdK/hOqOMtNtzzuzhy6j1r3Q==" />
+<meta name="csrf-token" content="CZEKAwoi3dxVkp8stpucXUuQgPeB745q1m831rgOeZR4p1b1UoORSkpDrOZ89kLT9L2OpuhXem6lhR/FQ2VbqQ==" />
 <meta name="csp-nonce" />
 <meta name="action-cable-url" content="/-/cable" />
 <meta content="origin-when-cross-origin" name="referrer">
@@ -68,7 +68,7 @@ window.uploads_path = "/aple/entwicklung/ari/uploads";
 
 </head>
 
-<body class="ui-indigo tab-width-8  gl-browser-firefox gl-platform-windows" data-find-file="/aple/entwicklung/ari/-/find_file/4a11a582c417ca66ba15f3d2990265bd85cf69f8" data-group="entwicklung" data-namespace-id="109" data-page="projects:blob:show" data-page-type-id="4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts" data-project="ari" data-project-id="155">
+<body class="ui-indigo tab-width-8  gl-browser-firefox gl-platform-windows" data-find-file="/aple/entwicklung/ari/-/find_file/4a11a582c417ca66ba15f3d2990265bd85cf69f8" data-group="entwicklung" data-namespace-id="109" data-page="projects:blob:show" data-page-type-id="4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts" data-project="ari" data-project-id="155">
 
 <script>
 //<![CDATA[
@@ -632,7 +632,7 @@ Activity
 <li><a class="group-path breadcrumb-item-text js-breadcrumb-item-text " href="/aple">aple</a><svg class="s8 breadcrumbs-list-angle" data-testid="angle-right-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#angle-right"></use></svg></li><li><a class="group-path breadcrumb-item-text js-breadcrumb-item-text " href="/aple/entwicklung">Entwicklung</a><svg class="s8 breadcrumbs-list-angle" data-testid="angle-right-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#angle-right"></use></svg></li> <li><a href="/aple/entwicklung/ari"><span class="breadcrumb-item-text js-breadcrumb-item-text">local-ari</span></a><svg class="s8 breadcrumbs-list-angle" data-testid="angle-right-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#angle-right"></use></svg></li>
 
 <li>
-<h2 class="breadcrumbs-sub-title"><a href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts">Repository</a></h2>
+<h2 class="breadcrumbs-sub-title"><a href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts">Repository</a></h2>
 </li>
 </ul>
 </div>
@@ -647,14 +647,14 @@ Activity
 <div class="flash-container flash-container-page sticky">
 </div>
 
-<div class="js-signature-container" data-signatures-path="/aple/entwicklung/ari/-/commits/4a11a582c417ca66ba15f3d2990265bd85cf69f8/signatures?limit=1"></div>
+<div class="js-signature-container" data-signatures-path="/aple/entwicklung/ari/-/commits/250afc5191845e34d1804409c1f851c1e1ccbf53/signatures?limit=1"></div>
 
 <div class="tree-holder" id="tree-holder">
 <div class="nav-block">
 <div class="tree-ref-container">
 <div class="tree-ref-holder">
 <form class="project-refs-form" action="/aple/entwicklung/ari/-/refs/switch" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="destination" id="destination" value="blob" />
-<input type="hidden" name="path" id="path" value="amd/tsc/core_communication.ts" />
+<input type="hidden" name="path" id="path" value="amd/tsc/core_indexeddb.ts" />
 <div class="dropdown">
 <button class="dropdown-menu-toggle js-project-refs-dropdown qa-branches-select" type="button" data-toggle="dropdown" data-selected="4a11a582c417ca66ba15f3d2990265bd85cf69f8" data-ref="4a11a582c417ca66ba15f3d2990265bd85cf69f8" data-refs-url="/aple/entwicklung/ari/refs?sort=updated_desc" data-field-name="ref" data-submit-form-on-click="true" data-visit="true"><span class="dropdown-toggle-text ">4a11a582c417ca66ba15f3d2990265bd85cf69f8</span><i aria-hidden="true" data-hidden="true" class="fa fa-chevron-down"></i></button>
 <div class="dropdown-menu dropdown-menu-paging dropdown-menu-selectable git-revision-dropdown qa-branches-dropdown">
@@ -679,42 +679,42 @@ Activity
 <a href="/aple/entwicklung/ari/-/tree/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc">tsc</a>
 </li>
 <li class="breadcrumb-item">
-<a href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts"><strong>core_communication.ts</strong>
+<a href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts"><strong>core_indexeddb.ts</strong>
 </a></li>
 </ul>
 </div>
 <div class="tree-controls gl-children-ml-sm-3"><a class="btn shortcuts-find-file" rel="nofollow" href="/aple/entwicklung/ari/-/find_file/4a11a582c417ca66ba15f3d2990265bd85cf69f8">Find file
-</a><a class="btn js-blob-blame-link" href="/aple/entwicklung/ari/-/blame/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts">Blame</a><a class="btn" href="/aple/entwicklung/ari/-/commits/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts">History</a><a class="btn js-data-file-blob-permalink-url" href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts">Permalink</a></div>
+</a><a class="btn js-blob-blame-link" href="/aple/entwicklung/ari/-/blame/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts">Blame</a><a class="btn" href="/aple/entwicklung/ari/-/commits/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts">History</a><a class="btn js-data-file-blob-permalink-url" href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts">Permalink</a></div>
 </div>
 
 <div class="info-well d-none d-sm-block">
 <div class="well-segment">
 <ul class="blob-commit-info">
-<li class="commit flex-row js-toggle-container" id="commit-4a11a582">
+<li class="commit flex-row js-toggle-container" id="commit-250afc51">
 <div class="avatar-cell d-none d-sm-block">
 <a href="/MarcBurchart"><img alt="Marc Burchart&#39;s avatar" src="/uploads/-/system/user/avatar/84/avatar.png?width=40" class="avatar s40 d-none d-sm-inline-block" title="Marc Burchart" /></a>
 </div>
 <div class="commit-detail flex-list">
 <div class="commit-content qa-commit-content">
-<a class="commit-row-message item-title js-onboarding-commit-item " href="/aple/entwicklung/ari/-/commit/4a11a582c417ca66ba15f3d2990265bd85cf69f8">deleted broadcast message interface</a>
+<a class="commit-row-message item-title js-onboarding-commit-item " href="/aple/entwicklung/ari/-/commit/250afc5191845e34d1804409c1f851c1e1ccbf53">created core_indexeddb.ts</a>
 <span class="commit-row-message d-inline d-sm-none">
 &middot;
-4a11a582
+250afc51
 </span>
 <div class="committer">
-<a class="commit-author-link js-user-link" data-user-id="84" href="/MarcBurchart">Marc Burchart</a> authored <time class="js-timeago" title="Aug 28, 2020 11:06pm" datetime="2020-08-28T23:06:48Z" data-toggle="tooltip" data-placement="bottom" data-container="body">Aug 29, 2020</time>
+<a class="commit-author-link js-user-link" data-user-id="84" href="/MarcBurchart">Marc Burchart</a> authored <time class="js-timeago" title="Aug 28, 2020 7:31pm" datetime="2020-08-28T19:31:14Z" data-toggle="tooltip" data-placement="bottom" data-container="body">Aug 28, 2020</time>
 </div>
 
 </div>
 <div class="commit-actions flex-row">
-<button class="btn gpg-status-box js-loading-gpg-badge" data-commit-sha="4a11a582c417ca66ba15f3d2990265bd85cf69f8" data-placement="top" data-title="GPG signature (loading...)" data-toggle="tooltip" tabindex="0"></button>
+<button class="btn gpg-status-box js-loading-gpg-badge" data-commit-sha="250afc5191845e34d1804409c1f851c1e1ccbf53" data-placement="top" data-title="GPG signature (loading...)" data-toggle="tooltip" tabindex="0"></button>
 
-<div class="js-commit-pipeline-status" data-endpoint="/aple/entwicklung/ari/-/commit/4a11a582c417ca66ba15f3d2990265bd85cf69f8/pipelines?ref=4a11a582c417ca66ba15f3d2990265bd85cf69f8"></div>
+<div class="js-commit-pipeline-status" data-endpoint="/aple/entwicklung/ari/-/commit/250afc5191845e34d1804409c1f851c1e1ccbf53/pipelines?ref=4a11a582c417ca66ba15f3d2990265bd85cf69f8"></div>
 <div class="commit-sha-group d-none d-sm-flex">
 <div class="label label-monospace monospace">
-4a11a582
+250afc51
 </div>
-<button class="btn btn btn-default" data-toggle="tooltip" data-placement="bottom" data-container="body" data-title="Copy commit SHA" data-class="btn btn-default" data-clipboard-text="4a11a582c417ca66ba15f3d2990265bd85cf69f8" type="button" title="Copy commit SHA" aria-label="Copy commit SHA"><svg class="s16" data-testid="copy-to-clipboard-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#copy-to-clipboard"></use></svg></button>
+<button class="btn btn btn-default" data-toggle="tooltip" data-placement="bottom" data-container="body" data-title="Copy commit SHA" data-class="btn btn-default" data-clipboard-text="250afc5191845e34d1804409c1f851c1e1ccbf53" type="button" title="Copy commit SHA" aria-label="Copy commit SHA"><svg class="s16" data-testid="copy-to-clipboard-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#copy-to-clipboard"></use></svg></button>
 
 </div>
 </div>
@@ -732,11 +732,11 @@ Activity
 <div class="file-header-content">
 <i aria-hidden="true" data-hidden="true" class="fa fa-file-text-o fa-fw"></i>
 <strong class="file-title-name">
-core_communication.ts
+core_indexeddb.ts
 </strong>
-<button class="btn btn-clipboard btn-transparent" data-toggle="tooltip" data-placement="bottom" data-container="body" data-class="btn-clipboard btn-transparent" data-title="Copy file path" data-clipboard-text="{&quot;text&quot;:&quot;amd/tsc/core_communication.ts&quot;,&quot;gfm&quot;:&quot;`amd/tsc/core_communication.ts`&quot;}" type="button" title="Copy file path" aria-label="Copy file path"><svg class="s16" data-testid="copy-to-clipboard-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#copy-to-clipboard"></use></svg></button>
+<button class="btn btn-clipboard btn-transparent" data-toggle="tooltip" data-placement="bottom" data-container="body" data-class="btn-clipboard btn-transparent" data-title="Copy file path" data-clipboard-text="{&quot;text&quot;:&quot;amd/tsc/core_indexeddb.ts&quot;,&quot;gfm&quot;:&quot;`amd/tsc/core_indexeddb.ts`&quot;}" type="button" title="Copy file path" aria-label="Copy file path"><svg class="s16" data-testid="copy-to-clipboard-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#copy-to-clipboard"></use></svg></button>
 <small class="mr-1">
-1.99 KB
+5.41 KB
 </small>
 </div>
 
@@ -745,9 +745,9 @@ core_communication.ts
 <button name="button" type="submit" class="btn btn-default disabled has-tooltip" title="You can only replace files when you are on a branch" data-container="body">Replace</button>
 <button name="button" type="submit" class="btn btn-default disabled has-tooltip" title="You can only delete files when you are on a branch" data-container="body">Delete</button>
 </div><div class="btn-group ml-2" role="group">
-<button class="btn btn btn-sm js-copy-blob-source-btn" data-toggle="tooltip" data-placement="bottom" data-container="body" data-class="btn btn-sm js-copy-blob-source-btn" data-title="Copy file contents" data-clipboard-target=".blob-content[data-blob-id=&#39;e2bd2e1a2d90d817b64265b482cc168b77233fe7&#39;]" type="button" title="Copy file contents" aria-label="Copy file contents"><svg class="s16" data-testid="copy-to-clipboard-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#copy-to-clipboard"></use></svg></button>
-<a class="btn btn-sm has-tooltip" target="_blank" rel="noopener noreferrer" aria-label="Open raw" title="Open raw" data-container="body" href="/aple/entwicklung/ari/-/raw/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts"><svg class="s16" data-testid="doc-code-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#doc-code"></use></svg></a>
-<a download="amd/tsc/core_communication.ts" class="btn btn-sm has-tooltip" target="_blank" rel="noopener noreferrer" aria-label="Download" title="Download" data-container="body" href="/aple/entwicklung/ari/-/raw/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts?inline=false"><svg class="s16" data-testid="download-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#download"></use></svg></a>
+<button class="btn btn btn-sm js-copy-blob-source-btn" data-toggle="tooltip" data-placement="bottom" data-container="body" data-class="btn btn-sm js-copy-blob-source-btn" data-title="Copy file contents" data-clipboard-target=".blob-content[data-blob-id=&#39;d3e5cde884dcdfec0b6b2b0e73b8676856ead7f9&#39;]" type="button" title="Copy file contents" aria-label="Copy file contents"><svg class="s16" data-testid="copy-to-clipboard-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#copy-to-clipboard"></use></svg></button>
+<a class="btn btn-sm has-tooltip" target="_blank" rel="noopener noreferrer" aria-label="Open raw" title="Open raw" data-container="body" href="/aple/entwicklung/ari/-/raw/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts"><svg class="s16" data-testid="doc-code-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#doc-code"></use></svg></a>
+<a download="amd/tsc/core_indexeddb.ts" class="btn btn-sm has-tooltip" target="_blank" rel="noopener noreferrer" aria-label="Download" title="Download" data-container="body" href="/aple/entwicklung/ari/-/raw/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts?inline=false"><svg class="s16" data-testid="download-icon"><use xlink:href="/assets/icons-81bca028cfa382a852fa2c8a6dfb4fb2b7467093d38f9fe9a07a519ca785299c.svg#download"></use></svg></a>
 
 </div></div>
 </div>
@@ -760,7 +760,7 @@ edit
 files in this project directly. Please fork this project,
 make your changes there, and submit a merge request.
 </span>
-<a class="js-fork-suggestion-button btn btn-grouped btn-inverted btn-success" rel="nofollow" data-method="post" href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts">Fork</a>
+<a class="js-fork-suggestion-button btn btn-grouped btn-inverted btn-success" rel="nofollow" data-method="post" href="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts">Fork</a>
 <button class="js-cancel-fork-suggestion-button btn btn-grouped" type="button">
 Cancel
 </button>
@@ -768,7 +768,7 @@ Cancel
 
 
 
-<div class="blob-viewer" data-path="amd/tsc/core_communication.ts" data-type="simple" data-url="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts?format=json&amp;viewer=simple">
+<div class="blob-viewer" data-path="amd/tsc/core_indexeddb.ts" data-type="simple" data-url="/aple/entwicklung/ari/-/blob/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts?format=json&amp;viewer=simple">
 <div class="text-center gl-mt-3 gl-mb-3">
 <i aria-hidden="true" aria-label="Loading content…" class="fa fa-spinner fa-spin fa-2x qa-spinner"></i>
 </div>
@@ -783,13 +783,13 @@ Cancel
 <div class="modal-dialog modal-lg">
 <div class="modal-content">
 <div class="modal-header">
-<h3 class="page-title">Replace core_communication.ts</h3>
+<h3 class="page-title">Replace core_indexeddb.ts</h3>
 <button aria-label="Close" class="close" data-dismiss="modal" type="button">
 <span aria-hidden>&times;</span>
 </button>
 </div>
 <div class="modal-body">
-<form class="js-quick-submit js-upload-blob-form" data-method="put" action="/aple/entwicklung/ari/-/update/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_communication.ts" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="_method" value="put" /><input type="hidden" name="authenticity_token" value="wJawbcqRGrvePI8W2rSflij5D/bhdJUEFGsqakB8rL+xoOybkjBWLcHtvNwQ2UEYl9QBp4jMYQBngQJ5uxeOgg==" /><div class="dropzone">
+<form class="js-quick-submit js-upload-blob-form" data-method="put" action="/aple/entwicklung/ari/-/update/4a11a582c417ca66ba15f3d2990265bd85cf69f8/amd/tsc/core_indexeddb.ts" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="_method" value="put" /><input type="hidden" name="authenticity_token" value="xlgmPTxpLxqCiO85H3KMWkcwI/DvmYaFpIYydj5BrS23bnrLZMhjjJ1Z3PPVH1LU+B0toYYhcoHXbBplxSqPEA==" /><div class="dropzone">
 <div class="dropzone-previews blob-upload-dropzone-previews">
 <p class="dz-message light">
 Attach a file by drag &amp; drop or <a class="markdown-selector" href="#">click to upload</a>
@@ -799,12 +799,12 @@ Attach a file by drag &amp; drop or <a class="markdown-selector" href="#">click 
 <br>
 <div class="dropzone-alerts alert alert-danger data" style="display:none"></div>
 <div class="form-group row commit_message-group">
-<label class="col-form-label col-sm-2" for="commit_message-beea2aba582061b725208b6eb686618f">Commit message
+<label class="col-form-label col-sm-2" for="commit_message-8d7976c99027833a56b8b51335b6b6ee">Commit message
 </label><div class="col-sm-10">
 <div class="commit-message-container">
 <div class="max-width-marker"></div>
-<textarea name="commit_message" id="commit_message-beea2aba582061b725208b6eb686618f" class="form-control js-commit-message" placeholder="Replace core_communication.ts" required="required" rows="3">
-Replace core_communication.ts</textarea>
+<textarea name="commit_message" id="commit_message-8d7976c99027833a56b8b51335b6b6ee" class="form-control js-commit-message" placeholder="Replace core_indexeddb.ts" required="required" rows="3">
+Replace core_indexeddb.ts</textarea>
 </div>
 </div>
 </div>
@@ -815,8 +815,8 @@ Replace core_communication.ts</textarea>
 <input type="text" name="branch_name" id="branch_name" required="required" class="form-control js-branch-name ref-name" />
 <div class="js-create-merge-request-container">
 <div class="form-check gl-mt-3">
-<input type="checkbox" name="create_merge_request" id="create_merge_request-5a48cab0e830667206e38aec2f6e628e" value="1" class="js-create-merge-request form-check-input" checked="checked" />
-<label class="form-check-label" for="create_merge_request-5a48cab0e830667206e38aec2f6e628e">Start a <strong>new merge request</strong> with these changes
+<input type="checkbox" name="create_merge_request" id="create_merge_request-09fa6a332acc5b89e183f936efabdd1b" value="1" class="js-create-merge-request form-check-input" checked="checked" />
+<label class="form-check-label" for="create_merge_request-09fa6a332acc5b89e183f936efabdd1b">Start a <strong>new merge request</strong> with these changes
 </label></div>
 
 </div>
