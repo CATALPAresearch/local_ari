@@ -1,3 +1,11 @@
+/**
+ * 
+ * @author Marc Burchart
+ * @version 1.0-20200901
+ * @description Parent class for all media streams.
+ * 
+ */
+
 class CMediaStream{
 
     protected _mediaStream:MediaStream|null = null;
@@ -92,4 +100,5 @@ export class Audio extends CMediaStream{
         return;
     }
 }
+
 
