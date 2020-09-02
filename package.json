@@ -6,7 +6,7 @@
     "install": "npm install & npm update",
     "test": "tsc -p amd && tsc -p lib",
     "t": "tsc -p amd",
-    "prod": "tsc -p amd && tsc -p lib && grunt build-plugin"
+    "prod": "tsc -p amd && tsc -p lib && grunt plugin-build"
   },
   "repository": {
     "type": "git",
@@ -22,10 +22,6 @@
   "devDependencies": {
     "eslint": "^6.8.0",
     "grunt": "^1.3.0",
-    "nodemon": "^2.0.4",
-    "typescript": "^3.9.3"
-  },
-  "dependencies": {
     "grunt-cli": "^1.3.2",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-jshint": "^2.1.0",
@@ -33,6 +29,11 @@
     "grunt-contrib-watch": "^1.1.0",
     "grunt-load-gruntfile": "0.0.2",
     "grunt-terser": "^1.0.0",
-    "grunt-ts": "^6.0.0-beta.22"
+    "grunt-ts": "^6.0.0-beta.22",
+    "nodemon": "^2.0.4",
+    "typescript": "^3.9.3"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "^2.3.0"
   }
 }
