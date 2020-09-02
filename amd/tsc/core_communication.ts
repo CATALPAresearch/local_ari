@@ -37,39 +37,5 @@ export default class Communication{
                 }]);
             }
         );      
-    }    
-}
-
-/**
- * 
- * @author Marc Burchart
- * @version 1.0-20200829
- * @description Allows communication between different documents (in different windows, tabs, frames or iframes) of the same origin.
- * 
- */
-
-export class BrowserBroadcast{
-
-    private readonly _broadcastChannel:BroadcastChannel;
-
-    constructor(name:string){
-        this._broadcastChannel = new BroadcastChannel(name);
-    }
-
-    public receive(callback:(ev:MessageEvent) => void):void{
-        this._broadcastChannel.onmessage = callback;
-    }
-
-    public messageError(callback:(ev:MessageEvent) => void):void{
-        this._broadcastChannel.onmessageerror = callback;
-    }
-
-    public send(message:object){
-        this._broadcastChannel.postMessage(message);
-    }
-
-    public close():void{
-        this._broadcastChannel.close();
-    }
-
+    } 
 }
