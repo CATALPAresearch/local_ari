@@ -1,3 +1,4 @@
 node_modules/
 amd/src/*
 amd/build/*
+amd/types/*
