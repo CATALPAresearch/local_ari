@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 define(["require", "exports", "jquery", "jqueryui"], function (require, exports, $) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.EOutOfViewport = exports.DOMVPTracker = void 0;
+    exports.DOMVPTracker = void 0;
     class DOMVPTracker {
         constructor(jQuerySelector, index = 0) {
             this._onEvent = () => {
@@ -34,7 +34,6 @@ define(["require", "exports", "jquery", "jqueryui"], function (require, exports,
                 }
             };
             const e = $(jQuerySelector).get(index);
-            e.style.backgroundColor = "red";
             this._element = e;
         }
         _deepEquality(o1, o2) {
@@ -119,16 +118,5 @@ define(["require", "exports", "jquery", "jqueryui"], function (require, exports,
         }
     }
     exports.DOMVPTracker = DOMVPTracker;
-    var EOutOfViewport;
-    (function (EOutOfViewport) {
-        EOutOfViewport[EOutOfViewport["topleft"] = 0] = "topleft";
-        EOutOfViewport[EOutOfViewport["topright"] = 1] = "topright";
-        EOutOfViewport[EOutOfViewport["bottomleft"] = 2] = "bottomleft";
-        EOutOfViewport[EOutOfViewport["bottomright"] = 3] = "bottomright";
-        EOutOfViewport[EOutOfViewport["top"] = 4] = "top";
-        EOutOfViewport[EOutOfViewport["bottom"] = 5] = "bottom";
-        EOutOfViewport[EOutOfViewport["left"] = 6] = "left";
-        EOutOfViewport[EOutOfViewport["right"] = 7] = "right";
-    })(EOutOfViewport = exports.EOutOfViewport || (exports.EOutOfViewport = {}));
 });
 //# sourceMappingURL=../tsc/@maps/sensor_viewport.js.map

@@ -3,7 +3,7 @@
  * 
  * @author Marc Burchart
  * @version 1.0-20200409
- * @description A Skript to handle Service- and Webworker.
+ * @description A script to handle Service- and Webworker.
  * 
  */
 
