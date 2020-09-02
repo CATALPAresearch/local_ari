@@ -8,6 +8,8 @@
  * 
  */
 
+import Communication from "./core_communication";
+
 export class SystemMessage {
     
     private _data:ISystemMessage;
