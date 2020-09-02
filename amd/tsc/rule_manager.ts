@@ -12,8 +12,8 @@
  */
 
 import { ILearnerModel } from './learner_model_manager';
-import { Rules, IRule, IRuleAction, IRuleCondition, EOperators, EMoodleContext, ETiming, ERuleMethod} from './rules';
-import { Modal, IModalConfig, EModalSize } from './core_modal';
+import { Rules, IRule, IRuleAction, IRuleCondition, EOperators, EMoodleContext, ETiming, ERuleActor} from './rules';
+import { Modal, IModalConfig, EModalSize } from './actor_modal';
 import { uniqid } from "./core_helper";
 import { DOMVPTracker } from './sensor_viewport';
 import { getTabID } from './sensor_tab';
@@ -205,10 +205,10 @@ export class RuleManager {
         console.log('drinn')
         //let _this = this;
         switch (tmp.method) {
-            case ERuleMethod.Alert:
+            case ERuleActor.Alert:
                 console.log('Execute ALERT', tmp.text);
                 break;
-            case ERuleMethod.Modal:
+            case ERuleActor.Modal:
                 console.log('Execute MODAL', tmp.text);
                 RuleManager.initiateModal('Hinweis', tmp.text);
                 break;

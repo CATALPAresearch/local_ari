@@ -9,7 +9,7 @@ export interface IRuleCondition {
     operator: EOperators;
 }
 export interface IRuleAction {
-    method: ERuleMethod;
+    method: ERuleActor;
     text: string;
     moodle_context: EMoodleContext;
     moodle_course?: number;
@@ -39,9 +39,12 @@ export declare enum EOperators {
     Bigger = 1,
     Equal = 2
 }
-export declare enum ERuleMethod {
+export declare enum ERuleActor {
     Alert = 0,
-    Modal = 1
+    Prompt = 1,
+    Confirm = 2,
+    Style = 3,
+    Modal = 4
 }
 export declare enum ETiming {
     NOW = 0,

@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Rules = exports.ETiming = exports.ERuleMethod = exports.EOperators = exports.EMoodleContext = void 0;
+    exports.Rules = exports.ETiming = exports.ERuleActor = exports.EOperators = exports.EMoodleContext = void 0;
     ;
     var EMoodleContext;
     (function (EMoodleContext) {
@@ -25,11 +25,14 @@ define(["require", "exports"], function (require, exports) {
         EOperators[EOperators["Bigger"] = 1] = "Bigger";
         EOperators[EOperators["Equal"] = 2] = "Equal";
     })(EOperators = exports.EOperators || (exports.EOperators = {}));
-    var ERuleMethod;
-    (function (ERuleMethod) {
-        ERuleMethod[ERuleMethod["Alert"] = 0] = "Alert";
-        ERuleMethod[ERuleMethod["Modal"] = 1] = "Modal";
-    })(ERuleMethod = exports.ERuleMethod || (exports.ERuleMethod = {}));
+    var ERuleActor;
+    (function (ERuleActor) {
+        ERuleActor[ERuleActor["Alert"] = 0] = "Alert";
+        ERuleActor[ERuleActor["Prompt"] = 1] = "Prompt";
+        ERuleActor[ERuleActor["Confirm"] = 2] = "Confirm";
+        ERuleActor[ERuleActor["Style"] = 3] = "Style";
+        ERuleActor[ERuleActor["Modal"] = 4] = "Modal";
+    })(ERuleActor = exports.ERuleActor || (exports.ERuleActor = {}));
     var ETiming;
     (function (ETiming) {
         ETiming[ETiming["NOW"] = 0] = "NOW";
@@ -46,7 +49,7 @@ define(["require", "exports"], function (require, exports) {
                             operator: EOperators.Equal
                         }],
                     Action: {
-                        method: ERuleMethod.Modal,
+                        method: ERuleActor.Modal,
                         text: 'hello world x',
                         moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
                         viewport_selector: '#course-footer',

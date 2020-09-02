@@ -1,4 +1,4 @@
-define(["require", "exports", "./rules", "./core_modal", "./core_helper", "./sensor_viewport", "./sensor_tab", "./sensor_idle"], function (require, exports, rules_1, core_modal_1, core_helper_1, sensor_viewport_1, sensor_tab_1, sensor_idle_1) {
+define(["require", "exports", "./rules", "./actor_modal", "./core_helper", "./sensor_viewport", "./sensor_tab", "./sensor_idle"], function (require, exports, rules_1, actor_modal_1, core_helper_1, sensor_viewport_1, sensor_tab_1, sensor_idle_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.RuleManager = void 0;
@@ -100,10 +100,10 @@ define(["require", "exports", "./rules", "./core_modal", "./core_helper", "./sen
         static _executeAction(tmp) {
             console.log('drinn');
             switch (tmp.method) {
-                case rules_1.ERuleMethod.Alert:
+                case rules_1.ERuleActor.Alert:
                     console.log('Execute ALERT', tmp.text);
                     break;
-                case rules_1.ERuleMethod.Modal:
+                case rules_1.ERuleActor.Modal:
                     console.log('Execute MODAL', tmp.text);
                     RuleManager.initiateModal('Hinweis', tmp.text);
                     break;
@@ -127,11 +127,11 @@ define(["require", "exports", "./rules", "./core_modal", "./core_helper", "./sen
                     keyboard: true,
                     backdrop: true,
                     animate: true,
-                    size: core_modal_1.EModalSize.small,
+                    size: actor_modal_1.EModalSize.small,
                     showCloseButton: true
                 }
             };
-            new core_modal_1.Modal(config);
+            new actor_modal_1.Modal(config);
         }
     }
     exports.RuleManager = RuleManager;

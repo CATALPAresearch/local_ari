@@ -18,7 +18,7 @@ export interface IRuleCondition {
     operator: EOperators
 };
 export interface IRuleAction {
-    method: ERuleMethod,
+    method: ERuleActor,
     text: string,
     moodle_context: EMoodleContext,
     moodle_course?: number,
@@ -48,8 +48,11 @@ export enum EOperators {
     Bigger,
     Equal,
 }
-export enum ERuleMethod {
+export enum ERuleActor {
     Alert,
+    Prompt,
+    Confirm,
+    Style,
     Modal
 }
 export enum ETiming {
@@ -67,7 +70,7 @@ export class Rules {
             operator: EOperators.Equal
         }],
         Action: {
-            method: ERuleMethod.Modal,
+            method: ERuleActor.Modal,
             text: 'hello world x',
             moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
 
