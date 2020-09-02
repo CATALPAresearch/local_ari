@@ -27,7 +27,7 @@ export class RuleManager {
     public actionQueue: IRuleAction[];
     private rules: IRule[] = [];
     private moodleContext: EMoodleContext;
-    private moodleInstanceID: number;
+    private moodleInstanceID: number | string;
     private browserTabID: string;
 
 
@@ -35,7 +35,6 @@ export class RuleManager {
         this.lm = lm;
         this.actionQueue = [];
         this.moodleContext = this._determineMoodleContext();
-        // @ts-ignore
         this.moodleInstanceID = this._determineURLParameters('id');
         this.browserTabID = getTabID();
         console.log('current context:', this.moodleContext, this.moodleInstanceID, this.browserTabID);
@@ -177,21 +176,23 @@ export class RuleManager {
 
         // execute
         for (var i = 0; i < localActions.length; i++) {
-
-            if (localActions[i].timing === ETiming.WHEN_VISIBLE && localActions[i].viewport_selector !== undefined) {
-                // @ts-ignore
-                new DOMVPTracker(localActions[i].viewport_selector, 0)
+            let tmpLocalAction = localActions[i];
+            if (!tmpLocalAction){
+                new Error('No local action found in loop.')
+            }
+            if (tmpLocalAction.timing === ETiming.WHEN_VISIBLE && tmpLocalAction.viewport_selector !== undefined) {
+                new DOMVPTracker(tmpLocalAction.viewport_selector, 0)
                     .get().then((resolve) => {
-                        //console.log('z217 ',localActions[i].moodle_context)
-                        //RuleManager._executeAction(localActions[i]);
+                        //console.log('z217 ',tmpLocalAction.moodle_context)
+                        //RuleManager._executeAction(tmpLocalAction);
                         console.log('z217 ', resolve);
                     }
                 );
-            } else if (localActions[i].timing === ETiming.WHEN_IDLE && localActions[i].delay !== undefined) {
-                //this._callWhenIdle(localActions[i], localActions[i].delay)
-                sensor_idle(RuleManager._executeAction, localActions[i], localActions[i].delay);
+            } else if (tmpLocalAction.timing === ETiming.WHEN_IDLE && tmpLocalAction.delay !== undefined) {
+                //this._callWhenIdle(tmpLocalAction, tmpLocalAction.delay)
+                sensor_idle(RuleManager._executeAction, tmpLocalAction, tmpLocalAction.delay);
             } else { // === ETiming.NOW
-                RuleManager._executeAction(localActions[i]);
+                RuleManager._executeAction(tmpLocalAction);
             }
         }
     }
