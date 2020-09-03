@@ -2,7 +2,7 @@
 //import { LearnerModelManager } from './learner_model_manager';
 
 import { LearnerModelManager } from "./learner_model_manager";
-import { runTF } from "./rule_rl";
+//import { runTF } from "./rule_rl";
 
 /**
  * 
