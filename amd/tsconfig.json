@@ -5,10 +5,9 @@
         "declarationMap": true,
         "declarationDir": "./@types",
         "sourceMap": true,
+        "noImplicitAny": false,
         "mapRoot": "./@maps",
         "outDir": "./src",
-        "rootDir": "./tsc",
-        "skipLibCheck": true,
-        "moduleResolution": "node"
+        "rootDir": "./tsc"
     }
 }

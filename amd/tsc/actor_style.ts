@@ -17,8 +17,10 @@ export class StyleHandler{
         for(let i in list){            
             let obj = list[i];
             if(obj.value){
+                // @ts-ignore
                 push.push(this.style(obj).catch(()=>{return Promise.resolve();}));
             } else if(obj.params){
+                // @ts-ignore
                 push.push(this.animate(obj).catch(()=>{return Promise.resolve();}));
             }            
         }

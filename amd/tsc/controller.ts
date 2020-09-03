@@ -2,6 +2,7 @@
 //import { LearnerModelManager } from './learner_model_manager';
 
 import { LearnerModelManager } from "./learner_model_manager";
+import { runTF } from "./rule_rl";
 
 /**
  * 
@@ -15,7 +16,8 @@ export class Controller{
   
   private wwwroot:string;
 
-  constructor(wwwroot: string) {  
+  constructor(wwwroot: string) { 
+    // new Promise(() => {  runTF(); });
     new LearnerModelManager(); 
     this.wwwroot = wwwroot;
     console.log(this.wwwroot);    

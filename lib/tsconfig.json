@@ -5,8 +5,9 @@
         "declarationMap": true,
         "declarationDir": "./@types",
         "sourceMap": true,
+        "allowJs":true,
         "mapRoot": "./@maps",
         "outDir": "./src",
-        "rootDir": "./tsc"        
+        "rootDir": "./tsc"       
     }
 }
