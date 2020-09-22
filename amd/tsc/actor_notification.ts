@@ -6,7 +6,7 @@ import * as notification from "core/notification" ;
  * 
  * @author Marc Burchart
  * @version 1.0-20200409
- * @description Provide contextual feedback messages.
+ * @description Provide an interface to create a notification in Moodle
  * 
  */
 

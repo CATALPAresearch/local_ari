@@ -54,7 +54,7 @@ export class Modal {
         if(fade.length > 0 && addClass.length > 0) fade = fade + " ";
         let dialog = `<div class="modal-dialog ${align}${size}" role="document"><div class="modal-content">${content}</div></div>`; 
         let modal = `<div class="modal ${fade}${addClass}" id="${config.id}" tabindex="-1" role="dialog" aria-labelledby="${config.id}" aria-hidden="true">${dialog}</div>`;       
-        console.log(modal);
+        // console.log(modal);
         $("body").append(modal);
         if(typeof config.options === "object"){
             let obj = {

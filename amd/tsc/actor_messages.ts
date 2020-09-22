@@ -2,7 +2,7 @@
  * 
  * @author Marc Burchart
  * @version 1.0-20200901
- * @description Send a system message to the user.
+ * @description Provides an interface to send a personal message to an user in Moodle
  * @param data ISystemMessage
  * @note You can use html at the message string.
  * 

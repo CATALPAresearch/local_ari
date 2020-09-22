@@ -9,12 +9,12 @@
 
 //@ts-ignore
 class LearnerModelManeger {
-    constructor() { 
-        
+    constructor() {
+
     }
 
-    public load(): void {}
-    public update(): void {}
+    public load(): void { }
+    public update(): void { }
 }
 
 export interface LearnerModel {
@@ -25,5 +25,5 @@ export interface LearnerModel {
         initial_edit_ms_list?: string; // Listenansicht der MS-Planung wurde rezeptiv genutzt, der Studierende soll an die Anpassung seiner aktiven Meilensteine erinnert werden.
         footer?: string;
     };
-    
+
 }

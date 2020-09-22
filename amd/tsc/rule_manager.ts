@@ -14,11 +14,13 @@
 import { ILearnerModel } from './learner_model_manager';
 import { Rules, IRule, IRuleAction, IRuleCondition, EOperators, EMoodleContext, ETiming, ERuleActor } from './rules';
 import { Modal, IModalConfig, EModalSize } from './actor_modal';
+import { Alert } from './actor_alert';
+//import { StyleHandler } from './actor_style';
 import { uniqid } from "./core_helper";
 import { DOMVPTracker } from './sensor_viewport';
 import { getTabID } from './sensor_tab';
 import { sensor_idle } from './sensor_idle';
-import { Alert } from './actor_alert';
+
 
 /**
  * RuleManger checks rule conditions and mangages the subsequent rule actions by considering context variables
@@ -48,7 +50,7 @@ export class RuleManager {
     }
 
     /**
-     * 
+     * Should this become a sensor of its own?
      */
     private _determineMoodleContext(): EMoodleContext {
         let path = window.location.pathname;
@@ -185,8 +187,9 @@ export class RuleManager {
             if (tmpLocalAction.timing === ETiming.WHEN_VISIBLE && tmpLocalAction.viewport_selector !== undefined) {
                 new DOMVPTracker(tmpLocalAction.viewport_selector, 0)
                     .get().then((resolve) => {
+                        
                         //console.log('z217 ',tmpLocalAction.moodle_context)
-                        //RuleManager._executeAction(tmpLocalAction);
+                        RuleManager._executeAction(tmpLocalAction);
                         console.log('z217 ', resolve);
                     }
                     );
@@ -206,10 +209,14 @@ export class RuleManager {
      */
     public static _executeAction(tmp: IRuleAction): void {
         console.log('drinn')
+        if (tmp.repetitions < 1){
+            return;
+        }
         //let _this = this;
         switch (tmp.method) {
             case ERuleActor.Alert:
                 console.log('Execute ALERT', tmp.text);
+                RuleManager.initiateActorAlert(tmp.text);
                 break;
             case ERuleActor.Modal:
                 console.log('Execute MODAL', tmp.text);
@@ -218,51 +225,70 @@ export class RuleManager {
             default:
                 new Error('Undefined rule action executed.');
         }
+        tmp.repetitions--;
     }
 
 
-    
-/**
- * duration?: number;
-    opened?:number;
-    closed?: number;
-    viewportAccessed?: number;
-    hovered?: number;
-    agreed?: number;
-    dismissed?: number;
-    dived?: number;
- * @param id 
- * @param params 
- */
+
+    /**
+     * duration?: number;
+        opened?:number;
+        closed?: number;
+        viewportAccessed?: number;
+        hovered?: number;
+        agreed?: number;
+        dismissed?: number;
+        dived?: number;
+     * @param id 
+     * @param params 
+     */
     public storeActorStats(id: string, params: IRuleActorStats) {
         // @ts-ignore
         let instance = this.activeActors[id];
-        if(instance === null){
+        if (instance === null) {
             instance = {
-                opened:0,
-                closed:0,
-                viewportAccessed:0,
-                hovered:0,
-                agreed:0,
-                dismissed:0,
-                dived:0,
+                opened: 0,
+                closed: 0,
+                viewportAccessed: 0,
+                hovered: 0,
+                agreed: 0,
+                dismissed: 0,
+                dived: 0,
             };
-            
+
         }
 
         instance.duration = params.duration === undefined ? undefined : params.duration;
     }
 
 
-    public initiateActorAlert(message: string): void {
-        let start: number = 0, end: number = 0;
-        if (message.length > 0) {
-            start = new Date().getDate();
-            Alert(message);
-            end = new Date().getDate();
-        }
-        this.storeActorStats("bam", { duration: (end - start) });
+    /**
+     * Triggers style changes
+     * @param title Modal title
+     * @param message Message body
+     */
+    /*
+    public static initiateActorStyle(selector:string, property:string, value:string): void {
+        // let t = new StyleHandler();
+        return;
     }
+    */
+
+    /**
+     * Triggers a alert window as actor
+     * @param title Modal title
+     * @param message Message body
+     */
+    public static initiateActorAlert(message: string): void {
+        //let start: number = 0, end: number = 0;
+        if (message.length > 0) {
+            //start = new Date().getDate();
+            Alert(message);
+            //end = new Date().getDate();
+        }
+        //this.storeActorStats("bam", { duration: (end - start) });
+    }
+
     /**
      * Triggers a modal Window
      * @param title Modal title
@@ -294,7 +320,7 @@ export class RuleManager {
 
 export interface IRuleActorStats {
     duration?: number;
-    opened?:number;
+    opened?: number;
     closed?: number;
     viewportAccessed?: number;
     hovered?: number;

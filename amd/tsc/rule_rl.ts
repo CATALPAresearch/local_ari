@@ -5,6 +5,7 @@
  * @description Reinforcement Learning (rl) for adapting rule actions
  *
  * TODO
+ * - https://www.newworldai.com/cs234-reinforcement-learning-lectures-stanford-engineering/
  * - get tensor flow running
  * - build test case for basic rewards
  */

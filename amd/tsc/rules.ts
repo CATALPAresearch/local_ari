@@ -2,9 +2,52 @@
  *
  * @author Niels Seidel <niels.seidel@fernuni-hagen.de>
  * @version 1.0-20200409
- * @description Set of Rules to be processed by the RuleManager
+ * @description Load or define strictly defined Rules to be processed by the RuleManager
  *
  */
+
+export class Rules {
+    public the_rules: IRule[] = [{
+        Condition: [{
+            context: 'semester_planing', // better EMoodleContext ??
+            key: 'initial_view_ms_list',
+            value: 0,
+            operator: EOperators.Equal
+        }],
+        Action: {
+            method: ERuleActor.Modal,
+            text: 'hello world',
+            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
+
+            //delay: 3000, // miliseconds
+            //timing: ETiming.WHEN_IDLE,
+
+            //viewport_selector: 'h3.sectionname',
+            viewport_selector: '#page-footer',
+            timing: ETiming.WHEN_VISIBLE,
+
+            repetitions: 1,
+            /**
+             *   NOW,
+            WHEN_VISIBLE,
+            WHEN_IDLE,
+             */
+        }
+    }];
+
+    constructor() {
+        // TODO load from json file
+    }
+
+    public getAll(): IRule[] {
+        return this.the_rules;
+    }
+
+    public consistencyCheck(): Boolean {
+        // TODO
+        return true;
+    }
+}
 
 
 export interface IRule {
@@ -26,7 +69,7 @@ export interface IRuleAction {
     timing?: ETiming,
     delay?: number,
     priority?: number,
-    repetitions?: number, // number of time the action should be repeated after being dismissed by the user
+    repetitions: number, // number of time the action should be repeated after being dismissed by the user
 }
 export enum EMoodleContext {
     LOGIN_PAGE,
@@ -59,40 +102,4 @@ export enum ETiming {
     NOW,
     WHEN_VISIBLE,
     WHEN_IDLE,
-}
-
-export class Rules {
-    public the_rules: IRule[] = [{
-        Condition: [{
-            context: 'semester_planing', // better EMoodleContext ??
-            key: 'initial_view_ms_list',
-            value: 0,
-            operator: EOperators.Equal
-        }],
-        Action: {
-            method: ERuleActor.Modal,
-            text: 'hello world x',
-            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-
-            //delay: 3000, // miliseconds
-            //timing: ETiming.WHEN_IDLE,
-
-            //viewport_selector: 'h3.sectionname',
-            viewport_selector: '#course-footer',
-            timing: ETiming.WHEN_VISIBLE,
-            /**
-             *   NOW,
-    WHEN_VISIBLE,
-    WHEN_IDLE,
-             */
-        }
-    }];
-
-    constructor() { }
-
-    public getAll(): IRule[] {
-        return this.the_rules;
-    }
-
-    
 }
