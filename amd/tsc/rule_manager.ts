@@ -20,6 +20,7 @@ import { uniqid } from "./core_helper";
 import { DOMVPTracker } from './sensor_viewport';
 import { getTabID } from './sensor_tab';
 import { sensor_idle } from './sensor_idle';
+import { IndexedDB } from './core_indexeddb';
 
 
 /**
@@ -35,6 +36,8 @@ export class RuleManager {
     public activeActors: Array<object>;
 
     constructor(lm: ILearnerModel) {
+        //let t = new IndexedDB('milestones'); // buggy
+        //t.open();
         this.lm = lm;
         this.actionQueue = [];
         this.moodleContext = this._determineMoodleContext();

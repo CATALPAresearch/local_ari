@@ -20,7 +20,6 @@ export class Controller{
     // new Promise(() => {  runTF(); });
     new LearnerModelManager(); 
     this.wwwroot = wwwroot;
-    console.log(this.wwwroot);    
   }
     
 }

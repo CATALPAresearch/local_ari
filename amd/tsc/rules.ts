@@ -7,25 +7,31 @@
  */
 
 export class Rules {
-    public the_rules: IRule[] = [{
-        Condition: [{
-            context: 'semester_planing', // better EMoodleContext ??
-            key: 'initial_view_ms_list',
-            value: 0,
-            operator: EOperators.Equal
-        }],
+
+    public rule_z3: IRule = {
+        Condition: [
+            {
+                context: 'semester_planing',
+                key: 'count_active_milestones',
+                value: 0,
+                operator: EOperators.Greater
+            },
+            {
+                context: 'semester_planing',
+                key: 'count_milestone_list_views',
+                value: 0,
+                operator: EOperators.Equal
+            }
+        ],
         Action: {
             method: ERuleActor.Modal,
-            text: 'hello world',
+            text: 'Es wurde eine Meilensteinplanung angelegt. Bitte überprüfen Sie, ob diese Planung so für Sie passt.',
             moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-
             //delay: 3000, // miliseconds
             //timing: ETiming.WHEN_IDLE,
-
             //viewport_selector: 'h3.sectionname',
             viewport_selector: '#page-footer',
             timing: ETiming.WHEN_VISIBLE,
-
             repetitions: 1,
             /**
              *   NOW,
@@ -33,7 +39,131 @@ export class Rules {
             WHEN_IDLE,
              */
         }
-    }];
+    };
+
+    public rule_z4: IRule = {
+        Condition: [
+            {
+                context: 'semester_planing',
+                key: 'count_active_milestones',
+                value: 0,
+                operator: EOperators.Greater
+            },
+            {
+                context: 'semester_planing',
+                key: 'count_milestone_list_views',
+                value: 0,
+                operator: EOperators.Equal
+            },
+            {
+                context: 'semester_planing',
+                key: 'milestone_start',
+                value: (new Date()).getTime() - 3 * 24 * 3600 * 1000, // 3 days after today
+                operator: EOperators.Greater
+            },
+        ],
+        Action: {
+            method: ERuleActor.Modal,
+            text: 'hello world', // TODO: Haben Sie schon etwas von Ihrem Meilenstein erledigt? -> ja/ Meilentein ansehen; if "ja" -> Abhaken anbieten; if "Meilentein ansehen" ->  open >aktuellen MS<
+            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
+            viewport_selector: '#page-footer',
+            timing: ETiming.WHEN_VISIBLE,
+            repetitions: 1,
+        }
+    };
+
+    public rule_z5: IRule = {
+        Condition: [
+            {
+                context: 'semester_planing',
+                key: 'count_active_milestones',
+                value: 0,
+                operator: EOperators.Greater
+            },
+            {
+                context: 'semester_planing',
+                key: 'count_milestone_list_views',
+                value: 0,
+                operator: EOperators.Greater
+            },
+            {
+                context: 'semester_planing',
+                key: 'milestone_start_date',
+                value: (new Date()).getDate(),
+                operator: EOperators.Equal
+            }
+        ],
+        Action: {
+            method: ERuleActor.Modal,
+            text: 'Heute beginnt Ihr Meilenstein >>Name aktueller MS<<. Sie können diesen jederzeit anpassen.>>Link zum MS-Editor<< ',
+            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
+            viewport_selector: '#page-footer',
+            timing: ETiming.WHEN_VISIBLE,
+            repetitions: 1,
+        }
+    };
+
+    public rule_z6: IRule = {
+        Condition: [
+            {
+                context: 'semester_planing',
+                key: 'count_active_milestones',
+                value: 0,
+                operator: EOperators.Greater
+            },
+            {
+                context: 'semester_planing',
+                key: 'count_milestone_list_views',
+                value: 0,
+                operator: EOperators.Greater
+            },
+            {
+                context: 'semester_planing',
+                key: 'milestone_start_date',
+                value: (new Date()).getTime() - 4 * 24 * 3600 * 1000,
+                operator: EOperators.Smaller
+            },
+            {
+                context: 'semester_planing',
+                key: 'milestone_start_date',
+                value: (new Date()).getTime() - 3 * 24 * 3600 * 1000,
+                operator: EOperators.Greater
+            }
+        ],
+        Action: {
+            method: ERuleActor.Modal,
+            text: 'hello ', // TODO: Haben Sie schon etwas von Ihrem Meilenstein erledigt? -> ja/ Meilentein ansehen; if "ja" -> Abhaken anbieten; if "Meilentein ansehen" ->  open >aktuellen MS<
+            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
+            viewport_selector: '#page-footer',
+            timing: ETiming.WHEN_VISIBLE,
+            repetitions: 1,
+        }
+    };
+
+    // template for rule formulation
+    public rule_: IRule = {
+        Condition: [
+            {
+                context: 'semester_planing',
+                key: 'count_active_milestones',
+                value: 0,
+                operator: EOperators.Greater
+            }
+        ],
+        Action: {
+            method: ERuleActor.Modal,
+            text: 'hello world',
+            moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
+            viewport_selector: '#page-footer',
+            timing: ETiming.WHEN_VISIBLE,
+            repetitions: 1,
+        }
+    };
+
+    // list of rules
+    public the_rules: IRule[] = [
+        this.rule_z3
+    ];
 
     constructor() {
         // TODO load from json file
@@ -88,8 +218,11 @@ export enum EMoodleContext {
 }
 export enum EOperators {
     Smaller,
-    Bigger,
+    Greater,
     Equal,
+    Contains,
+    Similar,
+    Has
 }
 export enum ERuleActor {
     Alert,
