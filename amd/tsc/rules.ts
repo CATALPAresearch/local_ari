@@ -24,14 +24,14 @@ export class Rules {
             }
         ],
         Action: {
-            method: ERuleActor.Modal,
+            method: ERuleActor.Alert,
             text: 'Es wurde eine Meilensteinplanung angelegt. Bitte überprüfen Sie, ob diese Planung so für Sie passt.',
             moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-            //delay: 3000, // miliseconds
-            //timing: ETiming.WHEN_IDLE,
+            delay: 1000, // miliseconds
+            timing: ETiming.WHEN_IDLE,
             //viewport_selector: 'h3.sectionname',
-            viewport_selector: '#page-footer',
-            timing: ETiming.WHEN_VISIBLE,
+            //viewport_selector: '.ms-headline',
+            //timing: ETiming.WHEN_VISIBLE,
             repetitions: 1,
             /**
              *   NOW,

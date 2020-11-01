@@ -13,14 +13,14 @@
 
 import { ILearnerModel } from './learner_model_manager';
 import { Rules, IRule, IRuleAction, IRuleCondition, EOperators, EMoodleContext, ETiming, ERuleActor } from './rules';
-import { Modal, IModalConfig, EModalSize } from './actor_modal';
-import { Alert } from './actor_alert';
+import { Modal, IModalConfig, EModalSize } from './actor_bs_modal';
+import { Alert } from './actor_js_alert';
 //import { StyleHandler } from './actor_style';
 import { uniqid } from "./core_helper";
 import { DOMVPTracker } from './sensor_viewport';
 import { getTabID } from './sensor_tab';
 import { sensor_idle } from './sensor_idle';
-import { IndexedDB } from './core_indexeddb';
+//import { IndexedDB } from './core_indexeddb'; // replace by dexie
 
 
 /**
@@ -38,6 +38,7 @@ export class RuleManager {
     constructor(lm: ILearnerModel) {
         //let t = new IndexedDB('milestones'); // buggy
         //t.open();
+        
         this.lm = lm;
         this.actionQueue = [];
         this.moodleContext = this._determineMoodleContext();
@@ -113,7 +114,10 @@ export class RuleManager {
      * Iterates over all rules in order to check whether thei condistions are fulfilled. If all conditions are met the rule actions are pushed to the ruleActionQueue.
      */
     private _checkRules(): void {
+        console.log('rules',this.rules)
+        console.log('lm',this.lm)
         for (var i = 0; i < this.rules.length; i++) {
+            console.log(this.evaluateConditions(this.rules[i].Condition))
             if (this.evaluateConditions(this.rules[i].Condition)) {
                 this._addToActionQueue(this.rules[i].Action);
             }
@@ -130,6 +134,7 @@ export class RuleManager {
         if (key === undefined) {
             return false;
         }
+        console.log('lm-key',this.lm[context][key])
         // @ts-ignore
         return this.lm[context][key];
     }
@@ -139,19 +144,24 @@ export class RuleManager {
      * Evaluate each condition of a rule considering the data stored in the learner model
      * @param cons 
      */
-    public evaluateConditions(cons: IRuleCondition[]) {
+    public evaluateConditions(cons: IRuleCondition[]) { console.log('eveal')
         let result = true;
         // iterate over all conditions and conjugate them
         for (var i = 0; i < cons.length; i++) {
+            
             let condition = cons[i];
+            // console.log(this.getLearnerModelKey(condition.context, condition.key), condition.value, condition.operator)
             switch (condition.operator) {
                 case EOperators.Equal:
                     result = result && this.getLearnerModelKey(condition.context, condition.key) === condition.value ? true : false;
                     break;
+                case EOperators.Greater:
+                    result = result && this.getLearnerModelKey(condition.context, condition.key) > condition.value ? true : false;
+                    break;
                 default:
                     result = false;
             }
-        }
+        } console.log('res', result)
         return result;
     }
 

@@ -18,7 +18,8 @@ export class LearnerModelManager {
         userid: 2,
         semester_planing: {
             initial_view_ms_list: 0,
-            count_active_milestones: 0,
+            count_active_milestones: 1,
+            count_milestone_list_views: 0
         }
         
     };
@@ -41,6 +42,7 @@ export interface ILearnerModel {
     semester_planing?: {
         initial_view_ms_list?: number; // rezeptive NUtzung der MS Liste, open collapse
         count_active_milestones?: number;
+        count_milestone_list_views?: number;
         body?: string; // drei tage nach MS start Der Studierende hat die MS-Planung weder aufgerufen noch angpasst. Wir möchten wissen, ob er die Planung nun einmal ansehen und ggf. anpassen möchte.
         initial_edit_ms_list?: string; // Listenansicht der MS-Planung wurde rezeptiv genutzt, der Studierende soll an die Anpassung seiner aktiven Meilensteine erinnert werden.
         footer?: string;
