@@ -1,7 +1,14 @@
 
 
+# Installation
 
+* clone repo into 'local' folder and rename the folder to 'ari'
+* Run 'grunt' in terminal
 
+## To-Do
+* Move to Webpack and vue.js
+* Connect ARI to the backend
+* Extend the controller to let the backend access the different classes over the communication
 
 ## Functionalities
 * Management of cookies
@@ -17,6 +24,3 @@
 * Communicate with moodle over a standard communication class
 * Change the style of any DOM object
 
-## To-Do
-* Connect ARI to the backend
-* Extend the controller to let the backend access the different classes over the communication
