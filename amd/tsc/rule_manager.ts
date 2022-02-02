@@ -15,7 +15,7 @@ import { ILearnerModel } from './learner_model_manager';
 import { Rules, IRule, IRuleAction, IRuleCondition, EOperators, EMoodleContext, ETiming, ERuleActor } from './rules';
 import { Modal, IModalConfig, EModalSize } from './actor_bs_modal';
 import { Alert } from './actor_js_alert';
-//import { StyleHandler } from './actor_style';
+import { StyleHandler } from './actor_style';
 import { uniqid } from "./core_helper";
 import { DOMVPTracker } from './sensor_viewport';
 import { getTabID } from './sensor_tab';
@@ -38,7 +38,7 @@ export class RuleManager {
     constructor(lm: ILearnerModel) {
         //let t = new IndexedDB('milestones'); // buggy
         //t.open();
-        
+
         this.lm = lm;
         this.actionQueue = [];
         this.moodleContext = this._determineMoodleContext();
@@ -114,8 +114,8 @@ export class RuleManager {
      * Iterates over all rules in order to check whether thei condistions are fulfilled. If all conditions are met the rule actions are pushed to the ruleActionQueue.
      */
     private _checkRules(): void {
-        console.log('rules',this.rules)
-        console.log('lm',this.lm)
+        console.log('rules', this.rules)
+        console.log('lm', this.lm)
         for (var i = 0; i < this.rules.length; i++) {
             console.log(this.evaluateConditions(this.rules[i].Condition))
             if (this.evaluateConditions(this.rules[i].Condition)) {
@@ -134,7 +134,7 @@ export class RuleManager {
         if (key === undefined) {
             return false;
         }
-        console.log('lm-key',this.lm[context][key])
+        console.log('lm-key', this.lm[context][key])
         // @ts-ignore
         return this.lm[context][key];
     }
@@ -144,11 +144,12 @@ export class RuleManager {
      * Evaluate each condition of a rule considering the data stored in the learner model
      * @param cons 
      */
-    public evaluateConditions(cons: IRuleCondition[]) { console.log('eveal')
+    public evaluateConditions(cons: IRuleCondition[]) {
+        console.log('eveal')
         let result = true;
         // iterate over all conditions and conjugate them
         for (var i = 0; i < cons.length; i++) {
-            
+
             let condition = cons[i];
             // console.log(this.getLearnerModelKey(condition.context, condition.key), condition.value, condition.operator)
             switch (condition.operator) {
@@ -200,7 +201,7 @@ export class RuleManager {
             if (tmpLocalAction.timing === ETiming.WHEN_VISIBLE && tmpLocalAction.viewport_selector !== undefined) {
                 new DOMVPTracker(tmpLocalAction.viewport_selector, 0)
                     .get().then((resolve) => {
-                        
+
                         //console.log('z217 ',tmpLocalAction.moodle_context)
                         RuleManager._executeAction(tmpLocalAction);
                         console.log('z217 ', resolve);
@@ -222,7 +223,7 @@ export class RuleManager {
      */
     public static _executeAction(tmp: IRuleAction): void {
         console.log('drinn')
-        if (tmp.repetitions < 1){
+        if (tmp.repetitions < 1) {
             return;
         }
         //let _this = this;
@@ -234,6 +235,10 @@ export class RuleManager {
             case ERuleActor.Modal:
                 console.log('Execute MODAL', tmp.text);
                 RuleManager.initiateActorModal('Hinweis', tmp.text);
+                break;
+            case ERuleActor.Style:
+                //console.log('Execute STYLE', tmp.text);
+                RuleManager.initiateActorStyle(tmp.dom_selector || '');
                 break;
             default:
                 new Error('Undefined rule action executed.');
@@ -275,17 +280,7 @@ export class RuleManager {
     }
 
 
-    /**
-     * Triggers style changes
-     * @param title Modal title
-     * @param message Message body
-     */
-    /*
-    public static initiateActorStyle(selector:string, property:string, value:string): void {
-        // let t = new StyleHandler();
-        return;
-    }
-    */
+
 
     /**
      * Triggers a alert window as actor
@@ -299,6 +294,38 @@ export class RuleManager {
             Alert(message);
             //end = new Date().getDate();
         }
+        //this.storeActorStats("bam", { duration: (end - start) });
+    }
+
+
+    /**
+     * Triggers a alert window as actor
+     * @param title Modal title
+     * @param message Message body
+     */
+    public static initiateActorStyle(selector: string): void {
+        //let start: number = 0, end: number = 0;
+        //start = new Date().getDate();
+        StyleHandler.style({
+            documentReady: true,
+            selector: selector,
+            property: 'color',
+            value: 'red',
+        });
+        StyleHandler.animate({
+            documentReady: true,
+            selector: selector,
+            params: {
+                width: "70%",
+                opacity: 0.4,
+                marginLeft: "0.6in",
+                fontSize: "3em",
+                borderWidth: "10px"
+            },
+            duration: 1500
+        });
+        //end = new Date().getDate();
+
         //this.storeActorStats("bam", { duration: (end - start) });
     }
 

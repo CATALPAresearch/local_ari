@@ -24,8 +24,9 @@ export class Rules {
             }
         ],
         Action: {
-            method: ERuleActor.Alert,
+            method: ERuleActor.Style,
             text: 'Es wurde eine Meilensteinplanung angelegt. Bitte überprüfen Sie, ob diese Planung so für Sie passt.',
+            dom_selector: '.ms-headline',
             moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
             delay: 1000, // miliseconds
             timing: ETiming.WHEN_IDLE,
@@ -195,6 +196,7 @@ export interface IRuleAction {
     text: string,
     moodle_context: EMoodleContext,
     moodle_course?: number,
+    dom_selector?: string,
     viewport_selector?: string,
     timing?: ETiming,
     delay?: number,
