@@ -15,7 +15,7 @@ export const initStore = (ariContext) => createStore({
     state: {
         ariContext,
     },
-    getters: {
+    getters: {  
         //[GET.LONGPAGE_CONTEXT]: ({ safranContext }) => safranContext,
     },
     plugins: [VuexORM.install(database)]

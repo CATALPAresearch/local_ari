@@ -33,8 +33,8 @@ module.exports = (env, options) => {
         output: {
             path: path.resolve(__dirname, '../amd/build'),
             publicPath: '/dist/',
-            filename: 'app-lazy.min.js',
-            chunkFilename: '[id].app-lazy.min.js?v=[hash]',
+            filename: 'app-lazy.js',
+            chunkFilename: '[id].app-lazy.js?v=[hash]',
             libraryTarget: 'amd',
         },
         module: {
@@ -95,7 +95,7 @@ module.exports = (env, options) => {
             new VueLoaderPlugin(),
             new WebpackShellPlugin({
                 onBuildStart: ['echo "Starting"'],
-                onBuildEnd: ['ls -l ../amd/build/', 'cp ../amd/build/app-lazy.min.js ../amd/src/']
+                onBuildEnd: ['ls -l ../amd/build/', 'cp ../amd/build/app-lazy.js ../amd/src/']
             })
         ],
         watchOptions: {
