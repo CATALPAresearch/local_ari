@@ -1,76 +1,49 @@
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * @package    mod_longpage
- * @copyright  2021 Adrian Stritzinger <Adrian.Stritzinger@studium.fernuni-hagen.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 var path = require('path');
-const TerserPlugin = require('terser-webpack-plugin');
-const { VueLoaderPlugin } = require('vue-loader');
 var webpack = require('webpack');
-const WebpackShellPlugin = require('webpack-shell-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 
+const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
 
 module.exports = (env, options) => {
-    const exports = {
+
+    exports = {
         entry: './main.js',
         output: {
             path: path.resolve(__dirname, '../amd/build'),
             publicPath: '/dist/',
-            filename: 'app-lazy.js',
-            chunkFilename: '[id].app-lazy.js?v=[hash]',
+            filename: 'app-lazy.min.js',
+            chunkFilename: "[id].app-lazy.min.js?v=[hash]",
             libraryTarget: 'amd',
         },
         module: {
             rules: [
                 {
-                    test: /\.js?$/,
-                    loader: 'babel-loader',
-                    exclude: ['/node_modules/','/tsc/']
-                },
-                {
-                    test: /\.(sa|sc|c)ss$/,
+                    test: /\.css$/,
                     use: [
                         'vue-style-loader',
-                        'css-loader',
-                        'sass-loader',
+                        'css-loader'
                     ],
                 },
                 {
                     test: /\.vue$/,
                     loader: 'vue-loader',
                     options: {
-                        loaders: {
-                            scss: 'vue-style-loader!css-loader!sass-loader'
-                        },
+                        loaders: {}
+                        // Other vue-loader options go here
                     }
                 },
                 {
-                    test: /\.(eot|svg|ttf|woff|woff2)$/,
-                    loader: 'url-loader'
+                    test: /\.js$/,
+                    loader: 'babel-loader',
+                    exclude: /node_modules/
                 }
             ]
         },
         resolve: {
             alias: {
-                '@': path.resolve(__dirname, 'src'),
-                vue$: 'vue/dist/vue.esm-bundler.js',
+                'vue$': 'vue/dist/vue.esm.js'
             },
             extensions: ['*', '.js', '.vue', '.json']
         },
@@ -91,12 +64,37 @@ module.exports = (env, options) => {
         },
         devtool: '#eval-source-map',
         plugins: [
-            // new BundleAnalyzerPlugin(),
             new VueLoaderPlugin(),
-            new WebpackShellPlugin({
-                onBuildStart: ['echo "Starting"'],
-                onBuildEnd: ['ls -l ../amd/build/', 'cp ../amd/build/app-lazy.js ../amd/src/']
-            })
+            new FileManagerPlugin({
+                events: {
+                    onStart :{
+                        delete: [
+                            {
+                                source: path.resolve(__dirname, '../amd/src/app-lazy.js'),
+                                options: { force: true },
+                            },
+                            {
+                                source: path.resolve(__dirname, '../amd/build/app-lazy.min.js'),
+                                options: { force: true },
+                            },
+                        ],
+                    },
+                  onEnd: {
+                    copy: [
+                      {source: path.resolve(__dirname, '../amd/build'), destination: path.resolve(__dirname, '../amd/src')},
+                    ],
+                    move: [
+                        { source: path.resolve(__dirname, '../amd/src/app-lazy.min.js'), destination: path.resolve(__dirname, '../amd/src/app-lazy.js') },
+                    ],
+                    delete: [
+                        {
+                            source: path.resolve(__dirname, '../amd/src/app-lazy.min.js'),
+                            options: { force: true },
+                        },
+                    ],
+                  },
+                }
+              }),
         ],
         watchOptions: {
             ignored: /node_modules/
@@ -126,18 +124,15 @@ module.exports = (env, options) => {
             'core/notification': {
                 amd: 'core/notification'
             },
-            'core/pubsub': {
-                amd: 'core/pubsub'
-            },
-            jquery: {
+            'jquery': {
                 amd: 'jquery'
             }
         }
     };
+
     if (options.mode === 'production') {
         exports.devtool = false;
         // http://vue-loader.vuejs.org/en/workflow/production.html
-        // exp
         exports.plugins = (exports.plugins || []).concat([
             new webpack.DefinePlugin({
                 'process.env': {
@@ -154,10 +149,14 @@ module.exports = (env, options) => {
                     cache: true,
                     parallel: true,
                     sourceMap: true,
+                    terserOptions: {
+                        // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+                    }
                 }),
             ]
-        };
+        }
     }
+
     return exports;
 };
 

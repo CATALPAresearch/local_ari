@@ -1,5 +1,6 @@
 <template>
-     <div>        
+     <div>    
+        Hallo, das ist VUE. Hier steht eine Variable: {{myVar2}}    
         <transition name="fade">
             
         </transition>
@@ -23,7 +24,7 @@
         data: function(){
             return {
                 myVar:true,
-                myVar2:44
+                myVar2:42
             }
         },
         computed: {/*
