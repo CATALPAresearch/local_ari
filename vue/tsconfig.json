@@ -1,13 +1,27 @@
 {
-    "extends": "../tsconfig_base.json",
     "compilerOptions": {
+        "target": "es6",
+        "module": "amd",
+        "lib": ["dom", "es6"],
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": false,
+        "noFallthroughCasesInSwitch": true,
+        "strictFunctionTypes": true,
+        "removeComments": true,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
         "declaration": true,             
         "declarationMap": true,
         "declarationDir": "./@types",
         "sourceMap": true,
         "noImplicitAny": false,
         "mapRoot": "./@maps",
-        "outDir": "./src",
-        "rootDir": "./tsc"
+        "outDir": "./dist",
+        "rootDir": ".",
+        "paths": {
+            "@/*": ["./src/*"],
+        }
     }
 }

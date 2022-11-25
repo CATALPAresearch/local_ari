@@ -1,15 +1,15 @@
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
+const webpack = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 
-const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
+// const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
 
 module.exports = (env, options) => {
 
     exports = {
-        entry: './main.js',
+        entry: './src/main.ts',
         output: {
             path: path.resolve(__dirname, '../amd/build'),
             publicPath: '/dist/',
@@ -38,14 +38,24 @@ module.exports = (env, options) => {
                     test: /\.js$/,
                     loader: 'babel-loader',
                     exclude: /node_modules/
+                },
+                {
+                    test: /\.tsx?$/,
+                    loader: "ts-loader",
+                    exclude: /node_modules/,
+                    options: {
+                        // Tell to ts-loader: if you check .vue file extension, handle it like a ts file
+                        appendTsSuffixTo: [/\.vue$/]
+                    }
                 }
             ]
         },
         resolve: {
             alias: {
-                'vue$': 'vue/dist/vue.esm.js'
+                'vue$': 'vue/dist/vue.esm.js',
+                '@': path.resolve(__dirname, "./src/"),
             },
-            extensions: ['*', '.js', '.vue', '.json']
+            extensions: ['*', '.tsx', '.ts', '.js', '.vue', '.json']
         },
         devServer: {
             historyApiFallback: true,
@@ -154,7 +164,7 @@ module.exports = (env, options) => {
                     }
                 }),
             ]
-        }
+        };
     }
 
     return exports;
