@@ -1,14 +1,14 @@
-import { defineComponent } from 'vue';
-// import {Rules} from "../tsc/rules";
+import {defineComponent} from 'vue';
+import { Rules, IRule } from '@/tsc/rules';
 
 export default defineComponent({
-    data: function ()
-    {
+    name: "Main",
+    data () {
         return {
             myVar: true,
             myVar2: 42,
-            rulesLoaded: true, //false,
-            allRules: [{name: "Rule 1"}, {name: "Rule 2"}] //[]
+            rulesLoaded: false,
+            allRules: [] as IRule[]
         }
     },
     mounted: function () {
@@ -16,7 +16,9 @@ export default defineComponent({
     },
     methods: {
         fetchRules() {
-            // this.allRules = (new Rules()).getAll();
+            // this.allRules = [{name: "Rule 1"}, {name: "Rule 2"}]
+            this.allRules = (new Rules()).getAll();
+            console.log(this.allRules);
             this.rulesLoaded = true;
         }
     },

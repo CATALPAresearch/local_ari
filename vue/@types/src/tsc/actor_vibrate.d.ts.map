@@ -1,0 +1,1 @@
+{"version":3,"file":"actor_vibrate.d.ts","sourceRoot":"","sources":["../../../src/tsc/actor_vibrate.ts"],"names":[],"mappings":"AAQA,MAAM,CAAC,OAAO,OAAO,OAAO;IAExB,OAAO,CAAC,KAAK,CAAY;gBAEb,IAAI,EAAC,UAAU;IAIpB,QAAQ,IAAG,OAAO;IAaZ,GAAG,IAAG,OAAO,CAAC,IAAI,CAAC;CAMnC;AAED,MAAM,WAAW,UAAU;IACvB,QAAQ,EAAE,MAAM,GAAC,MAAM,EAAE,CAAC;CAC7B"}

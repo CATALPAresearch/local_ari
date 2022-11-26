@@ -21,7 +21,7 @@ export function sensor_idle(callback: (action: IRuleAction) => void, action: IRu
 
     function resetTimer() {
         clearTimeout(timerID);
-        timerID = setTimeout((() => {
+        timerID = window.setTimeout((() => {
             callback(action);
         }), idleTime)
     }

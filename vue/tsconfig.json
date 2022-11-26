@@ -21,7 +21,12 @@
         "outDir": "./dist",
         "rootDir": ".",
         "paths": {
-            "@/*": ["./src/*"],
+            "@/*": ["./src/*"]
         }
-    }
+    },
+    "files": [
+        "./shims-vue.d.ts"
+    ],
+    "include": ["./src/**/*", "./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": ["node_modules"]
 }

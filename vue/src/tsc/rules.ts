@@ -163,7 +163,7 @@ export class Rules {
 
     // list of rules
     public the_rules: IRule[] = [
-        this.rule_z3
+        this.rule_z3, this.rule_z5, this.rule_z4, this.rule_z6
     ];
 
     constructor() {
