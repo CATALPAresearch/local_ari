@@ -9,7 +9,7 @@
       </div>
       <table id="table_nav">
         <tr>
-          <th>Rule</th>
+          <th></th>
           <th>Condition</th>
           <th>Action</th>
         </tr>
@@ -38,7 +38,11 @@
                 {{ condInd }}:
                 <input v-model="condition.key">,
                 <input v-model="condition.value">,
-                <input v-model="condition.operator">
+
+                <label for="operator">Operator</label>
+                <select name="operator" id="operators">
+                  <option v-for="(operator) in operators" :value="condition.operator">{{ operator }}</option>
+                </select>
               </li>
             </ul>
           </td>
@@ -55,4 +59,16 @@
   </div>
 </template>
 <script lang="ts" src="./Main.ts"></script>
-<style scoped></style>
+<style scoped>
+#table_nav {
+  border-collapse: collapse;
+  width: 100%;
+}
+#table_nav th, td {
+  text-align: left;
+  padding: 8px;
+}
+#table_nav tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+</style>

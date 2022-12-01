@@ -1,5 +1,5 @@
 import {defineComponent} from 'vue';
-import { Rules, IRule } from '@/tsc/rules';
+import { Rules, IRule, EOperators } from '@/tsc/rules';
 
 export default defineComponent({
     name: "Main",
@@ -7,7 +7,8 @@ export default defineComponent({
         return {
             rulesLoaded: false,
             allRules: [] as IRule[],
-            newRules: [] as IRule[]
+            newRules: [] as IRule[],
+            operators: EOperators
         }
     },
     mounted: function () {
@@ -25,7 +26,7 @@ export default defineComponent({
         },
         saveRule(index: number) {
             console.log("saveRules at index " + index);
-            console.log(this.newRules.at(index)?.Condition.at(0)?.key, this.newRules.at(index)?.Action.text);
+            console.log(this.newRules.at(index)?.Condition.at(0), this.newRules.at(index)?.Action.text);
         },
         editRule(index: number) {
             console.log("editRule at index " + index);
