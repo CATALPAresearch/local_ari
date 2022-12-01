@@ -6,7 +6,8 @@ export default defineComponent({
     data () {
         return {
             rulesLoaded: false,
-            allRules: [] as IRule[]
+            allRules: [] as IRule[],
+            newRules: [] as IRule[]
         }
     },
     mounted: function () {
@@ -17,6 +18,20 @@ export default defineComponent({
             this.allRules = (new Rules()).getAll();
             console.log(this.allRules);
             this.rulesLoaded = true;
+        },
+        newRule() {
+            console.log("addRule");
+            this.newRules.push((new Rules()).rule_);
+        },
+        saveRule(index: number) {
+            console.log("saveRules at index " + index);
+            console.log(this.newRules.at(index)?.Condition.at(0)?.key, this.newRules.at(index)?.Action.text);
+        },
+        editRule(index: number) {
+            console.log("editRule at index " + index);
+        },
+        deleteRule(index: number) {
+            console.log("deleteRule at index " + index);
         }
     },
     computed: {/*
