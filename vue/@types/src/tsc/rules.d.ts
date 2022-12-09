@@ -10,12 +10,15 @@ export declare class Rules {
     consistencyCheck(): Boolean;
 }
 export interface IRule {
+    id: number;
+    active: boolean;
+    title: string;
     Condition: IRuleCondition[];
     Action: IRuleAction;
 }
 export interface IRuleCondition {
     context: string;
-    key: string;
+    key: EConditionKey;
     value: number;
     operator: EOperators;
 }
@@ -32,38 +35,48 @@ export interface IRuleAction {
     repetitions: number;
 }
 export declare enum EMoodleContext {
-    LOGIN_PAGE = 0,
-    HOME_PAGE = 1,
-    PROFILE_PAGE = 2,
-    COURSE_PARTICIPANTS = 3,
-    COURSE_OVERVIEW_PAGE = 4,
-    MOD_PAGE = "mod_page",
-    MOD_ASSIGNMENT = "mod_assignment",
-    MOD_NEWSMOD = "mod_newsmod",
-    MOD_QUIZ = "mod_quiz",
-    MOD_QUIZ_ATTEMPT = "mod_quiz_attempt",
-    MOD_QUIZ_SUMMARY = "mod_quiz_summary",
-    MOD_QUIZ_REVIEW = "mod_quiz_review",
+    LOGIN_PAGE = "login page",
+    HOME_PAGE = "home page",
+    PROFILE_PAGE = "profile page",
+    COURSE_PARTICIPANTS = "course participants",
+    COURSE_OVERVIEW_PAGE = "course overview page",
+    MOD_PAGE = "mod page",
+    MOD_ASSIGNMENT = "mod assignment",
+    MOD_NEWSMOD = "mod newsmod",
+    MOD_QUIZ = "mod quiz",
+    MOD_QUIZ_ATTEMPT = "mod quiz attempt",
+    MOD_QUIZ_SUMMARY = "mod quiz summary",
+    MOD_QUIZ_REVIEW = "mod quiz review",
     UNKNOWN = "unknown"
 }
+export declare enum EConditionCount {
+    count_active_milestones = "count active milestones",
+    count_milestone_list_views = "count milestone list views"
+}
+export declare enum EConditionDate {
+    milestone_start_date = "milestone start date",
+    milestone_start = "milestone start",
+    milestone_end_date = "milestone end date"
+}
+export declare type EConditionKey = EConditionCount | EConditionDate;
 export declare enum EOperators {
-    Smaller = 0,
-    Greater = 1,
-    Equal = 2,
-    Contains = 3,
-    Similar = 4,
-    Has = 5
+    Smaller = "<",
+    Greater = ">",
+    Equal = "==",
+    Contains = "contains",
+    Similar = "similar",
+    Has = "has"
 }
 export declare enum ERuleActor {
-    Alert = 0,
-    Prompt = 1,
-    Confirm = 2,
-    Style = 3,
-    Modal = 4
+    Alert = "alert",
+    Prompt = "prompt",
+    Confirm = "confirm",
+    Style = "style",
+    Modal = "modal"
 }
 export declare enum ETiming {
-    NOW = 0,
-    WHEN_VISIBLE = 1,
-    WHEN_IDLE = 2
+    NOW = "now",
+    WHEN_VISIBLE = "when_visible",
+    WHEN_IDLE = "when_idle"
 }
 //# sourceMappingURL=../../../@maps/src/tsc/rules.d.ts.map
