@@ -1,10 +1,19 @@
-import { IRule, EOperators } from '@/tsc/rules';
+import { EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition } from '@/tsc/rules';
 declare const _default: import("vue").DefineComponent<Readonly<{}>, {}, {
     rulesLoaded: boolean;
-    allRules: IRule[];
+    existingRules: IRule[];
     newRules: IRule[];
-    operators: typeof EOperators;
-}, {}, {
+    contextFilter: string;
+}, {
+    operators(): typeof EOperators;
+    contexts(): typeof EMoodleContext;
+    actors(): typeof ERuleActor;
+    allRules(): IRule[];
+    ruleInFilter(): IRule[];
+    conditionsKeys(): string[];
+}, {
+    getConditionValue: (condition: IRuleCondition) => string | number;
+    convertTimestampToDate: (timestamp: number) => string;
     fetchRules(): void;
     newRule(): void;
     saveRule(index: number): void;

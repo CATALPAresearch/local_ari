@@ -1,41 +1,77 @@
 import {defineComponent} from 'vue';
-import { Rules, IRule, EOperators } from '@/tsc/rules';
+import {EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules} from '@/tsc/rules';
 
 export default defineComponent({
     name: "Main",
     data () {
         return {
             rulesLoaded: false,
-            allRules: [] as IRule[],
+            existingRules: [] as IRule[],
             newRules: [] as IRule[],
-            operators: EOperators
+            contextFilter: "None",
         }
     },
     mounted: function () {
+        console.log(this.contextFilter);
         this.fetchRules();
     },
     methods: {
+        getConditionValue: function (condition: IRuleCondition) {
+            // TODO check if date or duration
+            return ((<any>Object).values(EConditionDate).includes(condition.key) ?
+                this.convertTimestampToDate(condition.value) : condition.value)
+        },
+        convertTimestampToDate: function (timestamp: number) {
+            console.log(timestamp);
+            return new Date(timestamp).toDateString();
+        },
         fetchRules() {
-            this.allRules = (new Rules()).getAll();
-            console.log(this.allRules);
+            this.existingRules = (new Rules()).getAll();
+            console.log(this.existingRules);
             this.rulesLoaded = true;
         },
         newRule() {
-            console.log("addRule");
-            this.newRules.push((new Rules()).rule_);
+            console.log("newRule");
+            let new_rule = (new Rules()).rule_;
+            // TODO get from db
+            new_rule.id = Math.max(...this.allRules.map((rule) => rule.id)) + 1;
+            this.newRules.push(new_rule);
         },
         saveRule(index: number) {
-            console.log("saveRules at index " + index);
+            console.log("saveRule at index " + index);
+            // only stored in local copy, TODO: save to db
             console.log(this.newRules.at(index)?.Condition.at(0), this.newRules.at(index)?.Action.text);
         },
         editRule(index: number) {
-            console.log("editRule at index " + index);
+            console.log("[editRule] at index " + index + ", not implemented yet.");
         },
         deleteRule(index: number) {
             console.log("deleteRule at index " + index);
+            this.newRules = this.newRules.filter((rule) => rule.id !== index);
+            this.existingRules = this.existingRules.filter((rule) => rule.id !== index);
         }
     },
-    computed: {/*
+    computed: {
+        operators() {
+            return EOperators;
+        },
+        contexts() {
+            return EMoodleContext;
+        },
+        actors() {
+            return ERuleActor;
+        },
+        allRules() : IRule[] {
+            return [...this.existingRules, ...this.newRules];
+        },
+        ruleInFilter() : IRule[] {
+            console.log("chosen filter: " + this.contextFilter);
+            return this.contextFilter === "None" ? this.existingRules : this.existingRules.filter((rule) => rule.Action.moodle_context === this.contextFilter);
+        },
+        conditionsKeys() : string[] {
+            return (<any>Object).values(EConditionCount).concat((<any>Object).values(EConditionDate));
+        }
+        /*
             alertType: function(){
                 return this.$store.getters.getAlertType;
             },
