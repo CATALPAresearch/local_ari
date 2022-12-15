@@ -44,5 +44,66 @@ require_once($CFG->libdir.'/externallib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class rule extends external_api {
+    /**
+     *
+     * @return stdClass
+     * @throws required_capability_exception
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
+     */
+    public static function save_rule_execution($data) {
+        global $USER, $CFG, $DB;
+
+        $rule_execution = new stdClass();
+        $rule_execution->rule_id = $data["rule_id"];
+        $rule_execution->execution_date = $data["execution_date"];
+
+        if ($rule_execution->rule_id != 0) {
+            $rule_execution->timemodified =  $data['timemodified'];
+        } else {
+            $rule_execution->rule_id = null;
+            $rule_execution->timecreated =  $data["timecreated"];
+            $rule_execution->timemodified = 0;
+        }
+
+        $transaction = $DB->start_delegated_transaction();
+        $result = $DB->insert_record("ari_rule_execution", (array)$rule_execution);
+        $transaction->allow_commit();
+
+        return array('response'=> json_encode([$result, $data]));
+
+    }
+
+    public static function save_rule_execution_is_allowed_from_ajax() {
+        return true;
+    }
+
+    /**
+     *
+     * @return external_function_parameters
+     */
+    public static function save_rule_execution_parameters() {
+        return new external_function_parameters(
+            array('data' => new external_single_structure(
+                array(
+                    'rule_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
+                    'execution_date' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
+                    'timecreated' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                    'timemodified' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                ))));
+    }
+
+    /**
+     *
+     * @return external_single_structure
+     */
+    public static function save_rule_execution_returns() {
+        return new external_single_structure(
+            array( 'response' => new external_value(PARAM_RAW, '') )
+        );
+    }
 }
 
