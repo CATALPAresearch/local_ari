@@ -56,6 +56,7 @@
         <th>{{ rule.id }}</th>
         <th><input type="checkbox" v-model="rule.active"></th>
         <td><input v-model="rule.title"></td>
+        <td></td>
         <td>
           <ul>
             <li v-for="(condition, condInd) in rule.Condition">
