@@ -44,5 +44,70 @@ require_once($CFG->libdir.'/externallib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class rule extends external_api {
+    /**
+     *
+     * @return stdClass
+     * @throws required_capability_exception
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
+     */
+    public static function get_rule_execution($data) {
+        global $CFG, $DB;
+
+        if($data != null) {
+            $query = '
+            SELECT *
+            FROM '.$CFG->prefix.'ari_rule_execution
+            WHERE rule_id = '.$data['rule_id'].'
+            ;
+        ';
+        }
+        else {
+            $query = '
+            SELECT *
+            FROM '.$CFG->prefix.'ari_rule_execution
+            ;
+        ';
+        }
+
+        $transaction = $DB->start_delegated_transaction();
+        $data = $DB->get_records_sql($query, array(
+            'id' => $data['id'],
+            'rule_id' => $data['rule_id'],
+            'execution_date' => $data['execution_date'],
+            'user_id' => $data['user_id']
+        ));
+        $transaction->allow_commit();
+        return array('data' => json_encode($data));
+    }
+
+    public static function get_rule_execution_is_allowed_from_ajax() {
+        return true;
+    }
+
+    /**
+     *
+     * @return external_function_parameters
+     */
+    public static function get_rule_execution_parameters() {
+        return new external_function_parameters(
+            array('data' => new external_single_structure(
+                array(
+                    'rule_id' => new external_value(PARAM_INTEGER, '', VALUE_OPTIONAL),
+                ))));
+    }
+
+    /**
+     *
+     * @return external_single_structure
+     */
+    public static function get_rule_execution_returns() {
+        return new external_single_structure(
+            array( 'data' => new external_value(PARAM_RAW, '') )
+        );
+    }
 }
 

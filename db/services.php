@@ -28,6 +28,14 @@
             'ajax'        => true,
             'loginrequired' => true
         ),
+        'local_ari_get_rule_execution' => array(
+            'classname'    => 'local_ari\external\rule',
+            'methodname'   => 'get_rule_execution',
+            'description' => 'Get rule execution',
+            'type'        => 'write',
+            'ajax'        => true,
+            'loginrequired' => true
+        ),
     );
 
 ?>
