@@ -51,11 +51,11 @@
           <ul>
             <li v-for="(condition, condInd) in rule.Condition">
               <b>{{ condInd }}:</b>
-              <select name="condition_key" id="condition_key">
-                <option v-for="(condition_key) in conditionsKeys" :value="condition.key">{{ condition_key }}</option>
+              <select name="condition_key" id="condition_key" v-model="condition.key">
+                <option v-for="condition_key in conditionsKeys" :value="condition_key">{{ condition_key }}</option>
               </select>
-              <select name="operator" id="operators">
-                <option v-for="(operator) in operators" :value="condition.operator">{{ operator }}</option>
+              <select name="condition_operator" id="condition_operator" v-model="condition.operator">
+                <option v-for="operator in operators" :value="operator">{{ operator }}</option>
               </select>
               <input v-model="condition.value">
             </li>
@@ -63,12 +63,12 @@
         </td>
         <td>
           <b>Method:</b>
-          <select name="condition_actor" id="condition_actor">
-            <option v-for="(actor) in actors" :value="rule.Action.method">{{ actor }}</option>
+          <select name="action_actor" id="action_actor" v-model="rule.Action.method">
+            <option v-for="actor in actors" :value="actor">{{ actor }}</option>
           </select><br>
           <b>Context:</b>
-          <select name="condition_context" id="condition_context">
-            <option v-for="(context) in contexts" :value="rule.Action.moodle_context">{{ context }}</option>
+          <select name="action_context" id="action_context" v-model="rule.Action.moodle_context">
+            <option v-for="context in contexts" :value="context">{{ context }}</option>
           </select><br>
           <b>Text:</b> <input v-model="rule.Action.text">
 
