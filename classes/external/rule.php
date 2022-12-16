@@ -60,6 +60,7 @@ class rule extends external_api {
         $rule_execution = new stdClass();
         $rule_execution->rule_id = $data["rule_id"];
         $rule_execution->execution_date = $data["execution_date"];
+        $rule_execution->user_id = $data["user_id"];
 
         if ($rule_execution->rule_id != 0) {
             $rule_execution->timemodified =  $data['timemodified'];
@@ -91,6 +92,7 @@ class rule extends external_api {
                 array(
                     'rule_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
                     'execution_date' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
+                    'user_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
                     'timecreated' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
                     'timemodified' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
                 ))));
