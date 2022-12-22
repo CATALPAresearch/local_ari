@@ -10,14 +10,16 @@ export default defineComponent({
             existingRules: [] as IRule[],
             newRules: [] as IRule[],
             contextFilter: "None",
+            executions: [] as any[],
+            chosenTimeRangeFilter: null as any,
         }
     },
     mounted: function () {
-        console.log(this.contextFilter);
         this.fetchRules();
+        this.fetchAllRuleExecutions();
     },
     methods: {
-        fetchAllRuleExecutions() 
+        fetchAllRuleExecutions()
         {
             // Could also be used with rule id as parameter
             //     const rule = {
@@ -52,12 +54,10 @@ export default defineComponent({
                 this.convertTimestampToDate(condition.value) : condition.value)
         },
         convertTimestampToDate: function (timestamp: number) {
-            console.log(timestamp);
             return new Date(timestamp).toDateString();
         },
         fetchRules() {
             this.existingRules = (new Rules()).getAll();
-            console.log(this.existingRules);
             this.rulesLoaded = true;
         },
         newRule() {
@@ -100,6 +100,15 @@ export default defineComponent({
         },
         conditionsKeys() : string[] {
             return (<any>Object).values(EConditionCount).concat((<any>Object).values(EConditionDate));
+        },
+        timeRangeFilterExecutions() : {name: string, value: any}[]  {
+            return [
+                {name: "Alle", value: null},
+                {name: "Heute", value: 0},
+                {name: "Letzte 7 Tage", value: 7},
+                {name: "Letzte 30 Tage", value: 30},
+                {name: "Seit Semesterbeginn", value:  180},  // TODO get date from semester start
+            ]
         }
         /*
             alertType: function(){
@@ -112,4 +121,4 @@ export default defineComponent({
                 return this.$store.getters.getAlertMessage;
             }*/
     }
-})
+});
