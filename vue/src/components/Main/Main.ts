@@ -1,5 +1,6 @@
 import {defineComponent} from 'vue';
 import {EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules} from '@/tsc/rules';
+import Communication from '../../../scripts/communication';
 
 export default defineComponent({
     name: "Main",
@@ -16,6 +17,35 @@ export default defineComponent({
         this.fetchRules();
     },
     methods: {
+        fetchAllRuleExecutions() 
+        {
+            // Could also be used with rule id as parameter
+            //     const rule = {
+            //         rule_id: id
+            //     };
+            // Communication.webservice("get_rule_execution", {
+            //         data: rule,
+            Communication.webservice("get_rule_execution", {
+                data: {},
+            }).then((response) => {
+                let json = JSON.parse(response.data);
+                Object.keys(json).forEach((key) => {
+                    this.executions.push(json[key]);
+                });
+            }).catch((error) => {
+                console.log("Error: ", error);
+            });
+        },
+        getExecutionCount(id: number) : number {
+            if(this.chosenTimeRangeFilter != null){
+                const chosenDate = new Date(Date.now() - this.chosenTimeRangeFilter * 24 * 60 * 60 * 1000);
+                chosenDate.setHours(0, 0, 0, 0);
+                return this.executions.filter((execution) => parseInt(execution.rule_id) === id && (execution.execution_date >= chosenDate.getTime()) ).length;
+            }
+            else {
+                return this.executions.filter((execution) => parseInt(execution.rule_id) === id).length;
+            }
+        },
         getConditionValue: function (condition: IRuleCondition) {
             // TODO check if date or duration
             return ((<any>Object).values(EConditionDate).includes(condition.key) ?
