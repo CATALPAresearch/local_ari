@@ -84,9 +84,32 @@ class rule extends external_api {
         return array('data' => json_encode($data));
     }
 
-    public static function get_rule_execution_is_allowed_from_ajax() {
-        return true;
+
+
+    public static function save_rule_execution($data) {
+        global $USER, $CFG, $DB;
+
+        $rule_execution = new stdClass();
+        $rule_execution->rule_id = $data["rule_id"];
+        $rule_execution->execution_date = $data["execution_date"];
+        $rule_execution->user_id = $data["user_id"];
+
+        if ($rule_execution->rule_id != 0) {
+            $rule_execution->timemodified =  $data['timemodified'];
+        } else {
+            $rule_execution->rule_id = null;
+            $rule_execution->timecreated =  $data["timecreated"];
+            $rule_execution->timemodified = 0;
+        }
+
+        $transaction = $DB->start_delegated_transaction();
+        $result = $DB->insert_record("ari_rule_execution", (array)$rule_execution);
+        $transaction->allow_commit();
+
+        return array('response'=> json_encode([$result, $data]));
+
     }
+
 
     /**
      *
@@ -100,14 +123,40 @@ class rule extends external_api {
                 ))));
     }
 
+
+    public static function save_rule_execution_parameters() {
+        return new external_function_parameters(
+            array('data' => new external_single_structure(
+                array(
+                    'rule_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
+                    'execution_date' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
+                    'user_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
+                    'timecreated' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                    'timemodified' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                ))));
+    }
+
     /**
      *
      * @return external_single_structure
      */
     public static function get_rule_execution_returns() {
         return new external_single_structure(
-            array( 'data' => new external_value(PARAM_RAW, '') )
+            array( 'data' => new external_value(PARAM_RAW, '') ));
+    }
+
+    public static function save_rule_execution_returns() {
+        return new external_single_structure(
+            array( 'response' => new external_value(PARAM_RAW, '') )
         );
+    }
+
+    public static function get_rule_execution_is_allowed_from_ajax() {
+        return true;
+    }
+
+    public static function save_rule_execution_is_allowed_from_ajax() {
+        return true;
     }
 }
 
