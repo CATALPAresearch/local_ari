@@ -1,5 +1,6 @@
 import {defineComponent} from 'vue';
 import {EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules} from '@/tsc/rules';
+import Communication from '../../../scripts/communication';
 
 export default defineComponent({
     name: "Main",
@@ -9,25 +10,54 @@ export default defineComponent({
             existingRules: [] as IRule[],
             newRules: [] as IRule[],
             contextFilter: "None",
+            executions: [] as any[],
+            chosenTimeRangeFilter: null as any,
         }
     },
     mounted: function () {
-        console.log(this.contextFilter);
         this.fetchRules();
+        this.fetchAllRuleExecutions();
     },
     methods: {
+        fetchAllRuleExecutions()
+        {
+            // Could also be used with rule id as parameter
+            //     const rule = {
+            //         rule_id: id
+            //     };
+            // Communication.webservice("get_rule_execution", {
+            //         data: rule,
+            Communication.webservice("get_rule_execution", {
+                data: {},
+            }).then((response) => {
+                let json = JSON.parse(response.data);
+                Object.keys(json).forEach((key) => {
+                    this.executions.push(json[key]);
+                });
+            }).catch((error) => {
+                console.log("Error: ", error);
+            });
+        },
+        getExecutionCount(id: number) : number {
+            if(this.chosenTimeRangeFilter != null){
+                const chosenDate = new Date(Date.now() - this.chosenTimeRangeFilter * 24 * 60 * 60 * 1000);
+                chosenDate.setHours(0, 0, 0, 0);
+                return this.executions.filter((execution) => parseInt(execution.rule_id) === id && (execution.execution_date >= chosenDate.getTime()) ).length;
+            }
+            else {
+                return this.executions.filter((execution) => parseInt(execution.rule_id) === id).length;
+            }
+        },
         getConditionValue: function (condition: IRuleCondition) {
             // TODO check if date or duration
             return ((<any>Object).values(EConditionDate).includes(condition.key) ?
                 this.convertTimestampToDate(condition.value) : condition.value)
         },
         convertTimestampToDate: function (timestamp: number) {
-            console.log(timestamp);
             return new Date(timestamp).toDateString();
         },
         fetchRules() {
             this.existingRules = (new Rules()).getAll();
-            console.log(this.existingRules);
             this.rulesLoaded = true;
         },
         newRule() {
@@ -71,6 +101,15 @@ export default defineComponent({
         },
         conditionsKeys() : string[] {
             return (<any>Object).values(EConditionCount).concat((<any>Object).values(EConditionDate));
+        },
+        timeRangeFilterExecutions() : {name: string, value: any}[]  {
+            return [
+                {name: "Alle", value: null},
+                {name: "Heute", value: 0},
+                {name: "Letzte 7 Tage", value: 7},
+                {name: "Letzte 30 Tage", value: 30},
+                {name: "Seit Semesterbeginn", value:  180},  // TODO get date from semester start
+            ]
         }
         /*
             alertType: function(){
@@ -83,4 +122,4 @@ export default defineComponent({
                 return this.$store.getters.getAlertMessage;
             }*/
     }
-})
+});

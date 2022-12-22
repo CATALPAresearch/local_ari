@@ -4,6 +4,8 @@ declare const _default: import("vue").DefineComponent<Readonly<{}>, {}, {
     existingRules: IRule[];
     newRules: IRule[];
     contextFilter: string;
+    executions: any[];
+    chosenTimeRangeFilter: any;
 }, {
     operators(): typeof EOperators;
     contexts(): typeof EMoodleContext;
@@ -11,7 +13,13 @@ declare const _default: import("vue").DefineComponent<Readonly<{}>, {}, {
     allRules(): IRule[];
     ruleInFilter(): IRule[];
     conditionsKeys(): string[];
+    timeRangeFilterExecutions(): {
+        name: string;
+        value: any;
+    }[];
 }, {
+    fetchAllRuleExecutions(): void;
+    getExecutionCount(id: number): number;
     getConditionValue: (condition: IRuleCondition) => string | number;
     convertTimestampToDate: (timestamp: number) => string;
     fetchRules(): void;

@@ -5,7 +5,12 @@
       <label for="context-filter">Context filter</label>
       <select v-model="contextFilter" name="context-filter" id="context-filter">
         <option value="None">All</option>
-        <option v-for="(context) in contexts" :value="context">{{ context }}</option>
+        <option v-for="context in contexts" :value="context">{{ context }}</option>
+      </select>
+
+      <label for="time-range-filter-executions">Executions</label>
+      <select v-model="chosenTimeRangeFilter" name="time-range-filter-executions" id="time-range-filter-executions">
+        <option v-for="range in timeRangeFilterExecutions" :value="range.value">{{ range.name }}</option>
       </select>
     </div>
     <div id="loadingIndicator" v-if="!rulesLoaded">
@@ -16,6 +21,7 @@
         <th></th>
         <th>Active</th>
         <th>Title</th>
+        <th>Executions</th>
         <th>Condition</th>
         <th>Action</th>
       </tr>
@@ -23,6 +29,9 @@
         <th>{{ rule.id }}</th>
         <th><input type="checkbox" v-model="rule.active"></th>
         <td>{{ rule.title }}</td>
+        <td>
+          {{ getExecutionCount(rule.id) }}
+        </td>
         <td>
           <ul>
             <li v-for="(condition, condInd) in rule.Condition">
@@ -47,6 +56,7 @@
         <th>{{ rule.id }}</th>
         <th><input type="checkbox" v-model="rule.active"></th>
         <td><input v-model="rule.title"></td>
+        <td></td>
         <td>
           <ul>
             <li v-for="(condition, condInd) in rule.Condition">
