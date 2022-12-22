@@ -33,14 +33,15 @@ export default defineComponent({
         newRule() {
             console.log("newRule");
             let new_rule = (new Rules()).rule_;
-            // TODO get from db
+            // TODO get new id from db
             new_rule.id = Math.max(...this.allRules.map((rule) => rule.id)) + 1;
             this.newRules.push(new_rule);
         },
         saveRule(index: number) {
-            console.log("saveRule at index " + index);
+            console.log("saveRule at index " + index + ", not implemented yet.");
             // only stored in local copy, TODO: save to db
-            console.log(this.newRules.at(index)?.Condition.at(0), this.newRules.at(index)?.Action.text);
+            let new_rule = this.newRules.find((rule) => rule.id === index);
+            console.log(new_rule);
         },
         editRule(index: number) {
             console.log("[editRule] at index " + index + ", not implemented yet.");
