@@ -1,6 +1,6 @@
 import {defineComponent} from 'vue';
 import {EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules} from '@/tsc/rules';
-import Communication from '@scripts/communication';
+import Communication from '../../../scripts/communication';
 
 export default defineComponent({
     name: "Main",
