@@ -45,8 +45,8 @@ require_once($CFG->libdir.'/externallib.php');
  */
 class rule extends external_api {
     /**
-     *
-     * @return stdClass
+     * Function to fetch rule executions from database
+     * @return array
      * @throws required_capability_exception
      * @throws coding_exception
      * @throws dml_exception
@@ -57,22 +57,19 @@ class rule extends external_api {
     public static function get_rule_execution($data) {
         global $CFG, $DB;
 
+        // Define WHERE if optional data is set
+        $query_where = '';
         if($data != null) {
-            $query = '
-            SELECT *
-            FROM '.$CFG->prefix.'ari_rule_execution
-            WHERE rule_id = '.$data['rule_id'].'
-            ;
-        ';
-        }
-        else {
-            $query = '
-            SELECT *
-            FROM '.$CFG->prefix.'ari_rule_execution
-            ;
-        ';
+            $query_where = ' WHERE rule_id = ' . $data['rule_id'];
         }
 
+        // Define query
+        $query = '
+            SELECT *
+            FROM '.$CFG->prefix.'ari_rule_execution'
+            . $query_where . ';';
+
+        // Execute query and fetch results
         $transaction = $DB->start_delegated_transaction();
         $data = $DB->get_records_sql($query, array(
             'id' => $data['id'],
@@ -85,45 +82,45 @@ class rule extends external_api {
     }
 
 
-
+    /**
+     * Function to save rule executions to database
+     * @param $data
+     * @return array
+     */
     public static function save_rule_execution($data) {
         global $USER, $CFG, $DB;
 
+        // Define query data
         $rule_execution = new stdClass();
         $rule_execution->rule_id = $data["rule_id"];
         $rule_execution->execution_date = $data["execution_date"];
         $rule_execution->user_id = $data["user_id"];
 
-        if ($rule_execution->rule_id != 0) {
-            $rule_execution->timemodified =  $data['timemodified'];
-        } else {
-            $rule_execution->rule_id = null;
-            $rule_execution->timecreated =  $data["timecreated"];
-            $rule_execution->timemodified = 0;
-        }
-
+        // Insert data into database
         $transaction = $DB->start_delegated_transaction();
         $result = $DB->insert_record("ari_rule_execution", (array)$rule_execution);
         $transaction->allow_commit();
 
         return array('response'=> json_encode([$result, $data]));
-
     }
 
 
     /**
-     *
+     * Function to define parameters for get_rule_execution query
      * @return external_function_parameters
      */
     public static function get_rule_execution_parameters() {
         return new external_function_parameters(
             array('data' => new external_single_structure(
-                array(
-                    'rule_id' => new external_value(PARAM_INTEGER, '', VALUE_OPTIONAL),
-                ))));
+                array('rule_id' => new external_value(PARAM_INTEGER, '', VALUE_OPTIONAL),)
+            )));
     }
 
 
+    /**
+     * Function to define parameters for save_rule_execution query
+     * @return external_function_parameters
+     */
     public static function save_rule_execution_parameters() {
         return new external_function_parameters(
             array('data' => new external_single_structure(
@@ -131,13 +128,11 @@ class rule extends external_api {
                     'rule_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
                     'execution_date' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
                     'user_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
-                    'timecreated' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
-                    'timemodified' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
                 ))));
     }
 
     /**
-     *
+     * Function to define return type for get_rule_execution query
      * @return external_single_structure
      */
     public static function get_rule_execution_returns() {
@@ -145,16 +140,28 @@ class rule extends external_api {
             array( 'data' => new external_value(PARAM_RAW, '') ));
     }
 
+    /**
+     * Function to define return type for save_rule_execution query
+     * @return external_single_structure
+     */
     public static function save_rule_execution_returns() {
         return new external_single_structure(
-            array( 'response' => new external_value(PARAM_RAW, '') )
+            array('response' => new external_value(PARAM_RAW, ''))
         );
     }
 
+    /**
+     * Function to enable ajax calls for get_rule_execution
+     * @return bool
+     */
     public static function get_rule_execution_is_allowed_from_ajax() {
         return true;
     }
 
+    /**
+     * Function to enable ajax calls for save_rule_execution
+     * @return bool
+     */
     public static function save_rule_execution_is_allowed_from_ajax() {
         return true;
     }

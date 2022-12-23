@@ -7,7 +7,6 @@
         <option value="None">All</option>
         <option v-for="context in contexts" :value="context">{{ context }}</option>
       </select>
-
       <label for="time-range-filter-executions">Executions</label>
       <select v-model="chosenTimeRangeFilter" name="time-range-filter-executions" id="time-range-filter-executions">
         <option v-for="range in timeRangeFilterExecutions" :value="range.value">{{ range.name }}</option>

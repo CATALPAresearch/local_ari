@@ -24,9 +24,9 @@ declare const _default: import("vue").DefineComponent<Readonly<{}>, {}, {
     convertTimestampToDate: (timestamp: number) => string;
     fetchRules(): void;
     newRule(): void;
-    saveRule(index: number): void;
-    editRule(index: number): void;
-    deleteRule(index: number): void;
+    saveRule(id: number): void;
+    editRule(id: number): void;
+    deleteRule(id: number): void;
 }, import("vue/types/v3-component-options").ComponentOptionsMixin, import("vue/types/v3-component-options").ComponentOptionsMixin, {}, string, Readonly<import("vue").ExtractPropTypes<Readonly<{}>>>, {}>;
 export default _default;
 //# sourceMappingURL=../../../../@maps/src/components/Main/Main.d.ts.map
