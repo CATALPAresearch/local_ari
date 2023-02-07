@@ -1,10 +1,10 @@
-import {defineComponent} from 'vue';
-import {EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules} from '@/tsc/rules';
+import { defineComponent } from 'vue';
+import { EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules } from '@/tsc/rules';
 import Communication from '../../../scripts/communication';
 
 export default defineComponent({
     name: "Main",
-    data () {
+    data() {
         return {
             rulesLoaded: false,
             existingRules: [] as IRule[],
@@ -47,14 +47,14 @@ export default defineComponent({
         },
 
         // Counts the number of rule executions for a rule in a given time range
-        getExecutionCount(id: number) : number {
+        getExecutionCount(id: number): number {
             // If filter is set
-            if(this.chosenTimeRangeFilter != null) {
+            if (this.chosenTimeRangeFilter != null) {
                 // Get time range as Unix timestamp
                 const chosenDate = new Date(Date.now() - this.chosenTimeRangeFilter * 24 * 60 * 60 * 1000);
                 chosenDate.setHours(0, 0, 0, 0);
                 // Count executions in given time range
-                return this.executions.filter((execution) => parseInt(execution.rule_id) === id && (execution.execution_date >= chosenDate.getTime()) ).length;
+                return this.executions.filter((execution) => parseInt(execution.rule_id) === id && (execution.execution_date >= chosenDate.getTime())).length;
             }
             else {
                 // Count all executions
@@ -96,7 +96,7 @@ export default defineComponent({
             console.log("[saveRule] with id " + id + ", database not implemented yet.");
 
             // get rule and remove it from newRules
-            let newRule = this.newRules.splice(this.newRules.findIndex((rule) => rule.id === id),1);
+            let newRule = this.newRules.splice(this.newRules.findIndex((rule) => rule.id === id), 1);
 
             // add rule to local copy of existing rules, TODO: remove later when saving to db is implemented, existing rules should be fetched from db
             this.existingRules.push(newRule[0]);
@@ -109,7 +109,7 @@ export default defineComponent({
             console.log("[editRule] at id " + id + ", not implemented yet.");
 
             // get rule and remove it from existingRules
-            let ruleToEdit = this.existingRules.splice(this.existingRules.findIndex((rule) => rule.id === id),1);
+            let ruleToEdit = this.existingRules.splice(this.existingRules.findIndex((rule) => rule.id === id), 1);
 
             // add rule to local copy of new rules
             this.newRules.push(ruleToEdit[0]);
@@ -136,26 +136,26 @@ export default defineComponent({
         actors() {
             return ERuleActor;
         },
-        allRules() : IRule[] {
+        allRules(): IRule[] {
             return [...this.existingRules, ...this.newRules];
         },
         // Filter rules by context
-        ruleInFilter() : IRule[] {
+        ruleInFilter(): IRule[] {
             console.log("chosen filter: " + this.contextFilter);
             return this.contextFilter === "None" ? this.existingRules : this.existingRules.filter((rule) => rule.Action.moodle_context === this.contextFilter);
         },
         // Get all conditions for UI filters
-        conditionsKeys() : string[] {
+        conditionsKeys(): string[] {
             return (<any>Object).values(EConditionCount).concat((<any>Object).values(EConditionDate));
         },
-        timeRangeFilterExecutions() : {name: string, value: any}[]  {
+        timeRangeFilterExecutions(): { name: string, value: any }[] {
             // Array with name and value of time range filter in days
             return [
-                {name: "Alle", value: null},
-                {name: "Heute", value: 0},
-                {name: "Letzte 7 Tage", value: 7},
-                {name: "Letzte 30 Tage", value: 30},
-                {name: "Seit Semesterbeginn", value:  180},  // TODO get date from semester start
+                { name: "Alle", value: null },
+                { name: "Heute", value: 0 },
+                { name: "Letzte 7 Tage", value: 7 },
+                { name: "Letzte 30 Tage", value: 30 },
+                { name: "Seit Semesterbeginn", value: 180 },  // TODO get date from semester start
             ]
         }
         /*
