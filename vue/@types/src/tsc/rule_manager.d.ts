@@ -18,6 +18,7 @@ export declare class RuleManager {
     private _processActionQueue;
     static _executeAction(tmp: IRuleAction): void;
     storeActorStats(id: string, params: IRuleActorStats): void;
+    static initiateActorHtmlPrompt(hook: string, message: string, indicatorhook?: string): boolean;
     static initiateActorAlert(message: string): void;
     static initiateActorStyle(selector: string): void;
     static initiateActorModal(title: string, message: string): void;

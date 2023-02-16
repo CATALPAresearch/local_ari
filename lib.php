@@ -13,7 +13,8 @@
 
     function local_ari_extend_navigation() {
         global $PAGE, $CFG;        
-        // $PAGE->requires->js_call_amd("local_ari/loader", "init", array($CFG->wwwroot));       
+        $PAGE->requires->js_call_amd("local_ari/app-lazy", "initAdaptations", array($CFG->wwwroot));
+        $PAGE->requires->js_call_amd('local_ari/app-lazy', 'initPromptPanel');
     }    
 
 ?>

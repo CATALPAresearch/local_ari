@@ -50,8 +50,8 @@
           <b>Text:</b> {{ rule.Action.text }}
         </td>
         <td class="align-text-bottom">
-          <button class="btn btn-light" @click="editRule(rule.id)">edit</button>
-          <button hidden class="btn btn-light" @click="deleteRule(rule.id)">delete</button>
+          <button class="btn btn-light align-text-bottom" @click="editRule(rule.id)">edit</button>
+          <button hidden class="btn btn-light align-text-bottom" @click="deleteRule(rule.id)">delete</button>
         </td>
       </tr>
       <tr style="background-color: lightblue;" v-for="rule in newRules" :key="rule.id">
@@ -99,9 +99,10 @@
     </table>
     <button class="btn btn-info" @click="newRule()">+ add new rule</button>
   </div>
+  
 </template>
 
-<script lang="ts" src="./Main.ts"></script>
+<script lang="ts" src="./AdaptationBoard.ts"></script>
 
 
 <style scoped>

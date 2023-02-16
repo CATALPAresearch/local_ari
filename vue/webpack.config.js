@@ -77,7 +77,7 @@ module.exports = (env, options) => {
             new VueLoaderPlugin(),
             new FileManagerPlugin({
                 events: {
-                    onStart :{
+                    onStart: {
                         delete: [
                             {
                                 source: path.resolve(__dirname, '../amd/src/app-lazy.js'),
@@ -89,22 +89,22 @@ module.exports = (env, options) => {
                             },
                         ],
                     },
-                  onEnd: {
-                    copy: [
-                      {source: path.resolve(__dirname, '../amd/build'), destination: path.resolve(__dirname, '../amd/src')},
-                    ],
-                    move: [
-                        { source: path.resolve(__dirname, '../amd/src/app-lazy.min.js'), destination: path.resolve(__dirname, '../amd/src/app-lazy.js') },
-                    ],
-                    delete: [
-                        {
-                            source: path.resolve(__dirname, '../amd/src/app-lazy.min.js'),
-                            options: { force: true },
-                        },
-                    ],
-                  },
+                    onEnd: {
+                        copy: [
+                            { source: path.resolve(__dirname, '../amd/build'), destination: path.resolve(__dirname, '../amd/src') },
+                        ],
+                        move: [
+                            { source: path.resolve(__dirname, '../amd/src/app-lazy.min.js'), destination: path.resolve(__dirname, '../amd/src/app-lazy.js') },
+                        ],
+                        delete: [
+                            {
+                                source: path.resolve(__dirname, '../amd/src/app-lazy.min.js'),
+                                options: { force: true },
+                            },
+                        ],
+                    },
                 }
-              }),
+            }),
         ],
         watchOptions: {
             ignored: /node_modules/
@@ -136,6 +136,9 @@ module.exports = (env, options) => {
             },
             'jquery': {
                 amd: 'jquery'
+            },
+            'jqueryui': {
+                amd: 'jqueryui'
             }
         }
     };

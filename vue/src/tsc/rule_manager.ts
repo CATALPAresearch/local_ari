@@ -14,6 +14,7 @@
 import { ILearnerModel } from './learner_model_manager';
 import { Rules, IRule, IRuleAction, IRuleCondition, EOperators, EMoodleContext, ETiming, ERuleActor } from './rules';
 import { Modal, IModalConfig, EModalSize } from './actor_bs_modal';
+import { HtmlPrompt, IHtmlPromptConfig} from './actor_js_html_prompt';
 import { Alert } from './actor_js_alert';
 import { StyleHandler } from './actor_style';
 import { uniqid } from "./core_helper";
@@ -38,28 +39,29 @@ export class RuleManager {
     constructor(lm: ILearnerModel) {
         //let t = new IndexedDB('milestones'); // buggy
         //t.open();
-
+        
         this.lm = lm;
         this.actionQueue = [];
         this.moodleContext = this._determineMoodleContext();
         this.moodleInstanceID = this._determineURLParameters('id');
         this.browserTabID = getTabID();
         this.activeActors = [];
-        console.log('current context:', this.moodleContext, this.moodleInstanceID, this.browserTabID);
+        console.log('ARI::current context:', this.moodleContext, this.moodleInstanceID, this.browserTabID);
+        
         // initial rule as an example, only for testing
+        // later on the set of rules could be filtered by the current moodleContext
         this.rules = (new Rules()).getAll();
-
-        // checks all rules
-        this._checkRules();
+        
+        // FIXME: locale-plugins load before course-format plugins. If we do not wait some seconds the prompts cannot be attached to DOM elements.
+        setTimeout(() => {
+            // checks all rules
+            this._checkRules();
+        }, 5000);
     }
 
     /**
      * Should this become a sensor of its own?
-     */
-    private _determineMoodleContext(): EMoodleContext {
-        let path = window.location.pathname;
-        /*
-        /login/index.php ... Login Page
+     * /login/index.php ... Login Page
         / ... home page
         /user/profile.php?id=4
         /user/index.php?id=5 ... user overview
@@ -70,8 +72,13 @@ export class RuleManager {
         https://aple.fernuni-hagen.de/mod/quiz/attempt.php?attempt=7753&cmid=259 ... start of a quiz
         https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
         https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
-        */
-        path = path.replace('/moodle', ''); // bad fix for my local installation
+     */
+    private _determineMoodleContext(): EMoodleContext {
+        let path = window.location.pathname;
+        path = path.replace('/moodle', ''); // FIXME: bad fix for my local installation
+        // path = path.split('#')[0]; // cut-off DOM paths and vue router routs
+        path = path.charAt(path.length-1) === '/' ? path.substring(0, path.length-1) : path; // remove trailling slash
+        console.log('ARI::moodle context', path);
         switch (path) {
             case "/login/index.php": return EMoodleContext.LOGIN_PAGE;
             case "/": return EMoodleContext.HOME_PAGE;
@@ -79,12 +86,14 @@ export class RuleManager {
             case "/user/index.php": return EMoodleContext.COURSE_PARTICIPANTS;
             case "/course/view.php": return EMoodleContext.COURSE_OVERVIEW_PAGE;
             case "/mod/page/view.php": return EMoodleContext.MOD_PAGE;
+            case "/mod/longpage/view.php": return EMoodleContext.MOD_LONGPAGE;
             case "/mod/assign/view.php": return EMoodleContext.MOD_ASSIGNMENT;
             case "/mod/newsmod/view.php": return EMoodleContext.MOD_NEWSMOD;
             case "/mod/quiz/view.php": return EMoodleContext.MOD_QUIZ;
             case "/mod/quiz/attempt.php": return EMoodleContext.MOD_QUIZ_ATTEMPT;
             case "/mod/quiz/summary.php": return EMoodleContext.MOD_QUIZ_SUMMARY;
             case "/mod/quiz/review.php": return EMoodleContext.MOD_QUIZ_REVIEW;
+            case "/mod/safran/view.php": return EMoodleContext.MOD_SAFRAN_REVIEW;
         }
         return EMoodleContext.UNKNOWN;
     }
@@ -111,13 +120,13 @@ export class RuleManager {
 
 
     /**
-     * Iterates over all rules in order to check whether thei condistions are fulfilled. If all conditions are met the rule actions are pushed to the ruleActionQueue.
+     * Iterates over all rules in order to check whether their condistions are fulfilled. 
+     * If all conditions are met the rule actions are pushed to the ruleActionQueue.
      */
     private _checkRules(): void {
-        console.log('rules', this.rules)
-        console.log('lm', this.lm)
+        console.log('ARI::Check rules for a given learner model', this.rules, this.lm)
         for (var i = 0; i < this.rules.length; i++) {
-            console.log(this.evaluateConditions(this.rules[i].Condition))
+            console.log('ARI::check individual rules: ',this.rules[i].title, this.evaluateConditions(this.rules[i].Condition))
             if (this.evaluateConditions(this.rules[i].Condition)) {
                 this._addToActionQueue(this.rules[i].Action);
             }
@@ -134,7 +143,14 @@ export class RuleManager {
         if (key === undefined) {
             return false;
         }
-        console.log('lm-key', this.lm[context][key])
+        console.log(
+            'lm-key', 
+            context, 
+            key,
+            this.lm )
+            
+            console.log(this.lm[context])
+            console.log(this.lm[context][key])
         // @ts-ignore
         return this.lm[context][key];
     }
@@ -145,11 +161,11 @@ export class RuleManager {
      * @param cons 
      */
     public evaluateConditions(cons: IRuleCondition[]) {
-        console.log('eveal')
+        console.log('ARI::evaluate rule conditions')
         let result = true;
+
         // iterate over all conditions and conjugate them
         for (var i = 0; i < cons.length; i++) {
-
             let condition = cons[i];
             // console.log(this.getLearnerModelKey(condition.context, condition.key), condition.value, condition.operator)
             switch (condition.operator) {
@@ -159,10 +175,33 @@ export class RuleManager {
                 case EOperators.Greater:
                     result = result && this.getLearnerModelKey(condition.context, condition.key) > condition.value ? true : false;
                     break;
+                case EOperators.Smaller:
+                    result = result && this.getLearnerModelKey(condition.context, condition.key) < condition.value ? true : false;
+                    break;
+                case EOperators.Contains:
+                    //result = result && this.getLearnerModelKey(condition.context, condition.key) > condition.value ? true : false;
+                    // TODO: 
+                    let mkey = this.getLearnerModelKey(condition.context, condition.key);
+                    if(typeof mkey == 'string'){
+                        //result = result && mkey.includes(condition.value);
+                    } else if(typeof mkey == 'object'){
+                        //result = result && mkey.includes(condition.value);
+                    }
+                    result = false;
+                    break;
+                case EOperators.Has:
+                    // has child element
+                    result = false;
+                    break;
+                case EOperators.Similar:
+                    // text similarity
+                    result = false;
+                    break;
                 default:
                     result = false;
             }
-        } console.log('res', result)
+        } 
+        console.log('ARI::rule conditions result', result)
         return result;
     }
 
@@ -184,14 +223,14 @@ export class RuleManager {
         let _this = this;
         // filter by current location/page
         let localActions: IRuleAction[] = this.actionQueue.filter(function (d) {
+            console.log('test', d.moodle_context,_this.moodleContext);
             return d.moodle_context === _this.moodleContext;
         });
+        //let localActions: IRuleAction[] = this.actionQueue;
         // TODO: exclude rule actions that are not related to the current course
 
         // TODO: consider the action timing
-        /**
-             */
-
+        
         // execute
         for (var i = 0; i < localActions.length; i++) {
             let tmpLocalAction = localActions[i];
@@ -222,12 +261,19 @@ export class RuleManager {
      * @param tmp 
      */
     public static _executeAction(tmp: IRuleAction): void {
-        console.log('drinn')
+        console.log('ARI:Select action type to be executed')
         if (tmp.repetitions < 1) {
             return;
         }
         //let _this = this;
         switch (tmp.method) {
+            case ERuleActor.HtmlPrompt:
+                console.log('Execute HhtmlPrompt', tmp.text);
+                let res:boolean = RuleManager.initiateActorHtmlPrompt(tmp.dom_content_selector  || 'body', tmp.text, tmp.dom_indicator_selector  || 'body');
+                if(res == false){
+                    tmp.repetitions++;
+                }
+                break;
             case ERuleActor.Alert:
                 console.log('Execute ALERT', tmp.text);
                 RuleManager.initiateActorAlert(tmp.text);
@@ -238,7 +284,7 @@ export class RuleManager {
                 break;
             case ERuleActor.Style:
                 //console.log('Execute STYLE', tmp.text);
-                RuleManager.initiateActorStyle(tmp.dom_selector || '');
+                RuleManager.initiateActorStyle(tmp.dom_content_selector || '');
                 break;
             default:
                 new Error('Undefined rule action executed.');
@@ -279,6 +325,29 @@ export class RuleManager {
         instance.duration = params.duration === undefined ? undefined : params.duration;
     }
 
+
+
+
+    /**
+     * Triggers a modal Window
+     * @param title Modal title
+     * @param message Message body
+     */
+     public static initiateActorHtmlPrompt(hook:string, message: string, indicatorhook?:string): boolean {
+        let config = <IHtmlPromptConfig>{
+            id: "htmlprompt-" + uniqid(),
+            hook: hook,
+            indicatorhook: indicatorhook !== undefined ? indicatorhook : undefined,
+            content: {
+                message: message,
+                /*urgency?:EHtmlPromptUrgency;
+                html?:string;
+                style?:string;*/
+            } 
+        }
+        let action = new HtmlPrompt(config);
+        return action.run();
+    }
 
 
 

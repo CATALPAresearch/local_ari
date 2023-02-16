@@ -1,0 +1,1 @@
+{"version":3,"file":"tmp_rules.d.ts","sourceRoot":"","sources":["../../../../src/tsc/rules/tmp_rules.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,KAAK,MAAM,UAAU,CAAC;AAElC,qBAAa,QAAQ;IACV,OAAO,EAAE,KAAK,CAAC,KAAK,CAmCzB;IAEK,OAAO,EAAE,KAAK,CAAC,KAAK,CAgCzB;IAEK,OAAO,EAAE,KAAK,CAAC,KAAK,CAgCzB;IAEK,OAAO,EAAE,KAAK,CAAC,KAAK,CAsCzB;IAGK,KAAK,EAAE,KAAK,CAAC,KAAK,CAoBvB;CAEL"}

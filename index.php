@@ -19,12 +19,11 @@ echo $OUTPUT->header();
 global $DB, $USER;
 $message = '';
 
-$PAGE->requires->js_call_amd('local_ari/app-lazy', 'init');
+$PAGE->requires->js_call_amd('local_ari/app-lazy', 'initAdaptationDashboard');
+
 
 echo <<<'EOT'
-<div id="app">
-  <router-view></router-view>
-</div>
+<div id="adaptationDashboardApp"></div>
 EOT;
 
 echo $OUTPUT->footer();

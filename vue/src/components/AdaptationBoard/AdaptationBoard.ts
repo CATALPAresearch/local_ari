@@ -3,7 +3,7 @@ import { EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor
 import Communication from '../../../scripts/communication';
 
 export default defineComponent({
-    name: "Main",
+    name: "AdaptationBoard",
     data() {
         return {
             rulesLoaded: false,
@@ -85,7 +85,7 @@ export default defineComponent({
         // Add new rule from template to list of new rules, only local for UI
         newRule() {
             console.log("newRule");
-            let newRule = (new Rules()).rule_;
+            let newRule = (new Rules()).rule;
             // TODO get new ID from db
             newRule.id = Math.max(...this.allRules.map((rule) => rule.id)) + 1;
             this.newRules.push(newRule);

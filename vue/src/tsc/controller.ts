@@ -1,6 +1,4 @@
 //import { ServiceWorker } from './core_worker';
-//import { LearnerModelManager } from './learner_model_manager';
-
 import { LearnerModelManager } from "./learner_model_manager";
 //import { runTF } from "./rule_rl";
 
@@ -20,7 +18,9 @@ export class Controller{
     // new Promise(() => {  runTF(); });
     new LearnerModelManager(); 
     this.wwwroot = wwwroot;
-    console.log(this.wwwroot);
+    console.log('----------------------------------------------------------------------')
+    console.log('ARI is up and running', this.wwwroot);
+    
   }
     
 }

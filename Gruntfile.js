@@ -67,7 +67,7 @@ module.exports = function (grunt) { // jshint ignore:line
                     expand: true,
                     src: ['*.js', '!*.min.js'],
                     dest: 'lib/build',
-                    cwd: './lib/src',
+                    cwd: './vue/src/tsc',
                     rename: function (dst, src) {
                         return dst + '/' + src.replace('.js', '.min.js');
                     }
