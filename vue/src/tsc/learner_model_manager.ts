@@ -50,28 +50,29 @@ export interface ILearnerModel {
         first_access?: Date;
         last_access?: Date;
         count_total_sessions?: number;
-        total_time_spent?: number;
+        total_time_spent?: Array<number>;
         ratio_active_days?: number;
         activity_sequence_last7days: Array<string>;
     };
-    assignment_activity?:{
-        first_access?: Date;
-        last_access?: Date;
-        count_sessions?: number;
-        time_spent?: number;
-        count_total_submissions?: number;
-    };
-    quiz_activity?:{
+    assignment_activity?:{ 
         first_access?: Date;
         last_access?: Date;
         count_sessions?: number;
         time_spent?: Array<number>;
-        count_attempts?: number;
+        submissions_per_instance?: Array<number>;
+        scores?: Array<number>;
+    };
+    quiz_activity?:{ 
+        first_access?: Date;
+        last_access?: Date;
+        count_sessions?: number;
+        time_spent?: Array<number>;
+        count_attempts?: Array<number>;
         count_unique_quizes?: number;
         count_unique_repeated_quizes?: number;
         count_attempts_per_quiz?: Array<number>;
-        avg_attpempt_time_per_task?: Map<number,number>;
-        reattempt_delay?: Array<number>;
+        avg_attpempt_time_per_task?: Map<number,number>; 
+        reattempt_delay?: Array<number>; // which reattempts? or is it the average?
         scores?: Array<number>;
     };
     safran_activity?:{
@@ -79,8 +80,8 @@ export interface ILearnerModel {
         last_access?: Date;
         count_sessions?: number;
         time_spent?: number;
-    };
-    longpage_activity?: {
+    }; // course, user, utc, type, instance, action, value
+    longpage_activity?: { // all measures as key-value list of longpage instance
         first_access?: Array<number>;
         last_access?: Array<number>;
         count_sessions?: Array<number>;
@@ -101,3 +102,5 @@ export interface ILearnerModel {
     hypervideo_activity?:{}
     
 }
+
+
