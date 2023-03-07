@@ -14,7 +14,7 @@ export class LearnerModelManager {
         userid: 2,
         courseid: 2,
         quiz_activity: {
-            count_attempts: 33,
+            count_attempts: [33],
             avg_attpempt_time_per_task: new Map<number, number>([[22, 4.3], [34, 20.4]]),
         },
     };
