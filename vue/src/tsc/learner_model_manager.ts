@@ -52,7 +52,10 @@ export interface ILearnerModel {
         count_total_sessions?: number;
         total_time_spent?: Array<number>;
         ratio_active_days?: number;
-        activity_sequence_last7days: Array<string>;
+        activity_sequence_last7days?: Array<string>;
+        selected_goal?: string;
+        course_unit_completion?: Map<number, number>;
+        course_unit_success?: Map<number, number>;
     };
     assignment_activity?:{ 
         first_access?: Date;

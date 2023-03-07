@@ -19,8 +19,9 @@ echo "
 <ol>
     <li>Chose a course and the activity plugins to be considers in the model</li>
     <li>Compile a CSV file containing all text content from the activity plugins</li>
-    <li>Run a python script to extract keywords per plugin instance</li>
-    <li>Upload CSV file conatining keywords for each plugin instance and store it in the Moodle database</li>
+    <li>Run a python script to extract keywords per plugin instance: python3.9 scripts/keyword_extraction.py --method ner --input 0</li>
+    <li>Upload the resulting content-model.csv file conatining keywords for each plugin instance and store it in the Moodle database</li>
+    <li>Run queries on the content model using SQL</li>
 </ol>
 ";
 

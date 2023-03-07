@@ -236,7 +236,6 @@ class Keywords:
             # skip header
             headers = next(instancereader)
             for row in instancereader:
-                #print(', '.join(row))
                 text = row[5]
         
                 if text is None:
@@ -274,19 +273,15 @@ class Keywords:
                         "instance_url_id": [row[2]], 
                         "instance_id": [row[3]], 
                         "instance_section_num": [row[4]], 
-                        #"text": [], 
                         "keyword": [str(w[1])],
                         "document_frequency": [w[0]]
                     })
                     df = pd.concat([df, df_row], ignore_index=True)
-                    
-                    
-                #text_keywords = self.postProcessKeywords(l)
-                
+            
             print(df)
             df = df.drop_duplicates(["course_id", "component", "instance_id", "instance_section_num", "keyword"])
-            # stemming
-            # sum up frequency of duplicates
+            # TODO: stemming
+            # TODO: sum up frequency of duplicates
             #df.to_csv('/Volumes/DATA0/nise/Downloads/content-model.csv', encoding='utf-8', index=False)
             df.to_csv('./content-model.csv', encoding='utf-8', index=False)
 
