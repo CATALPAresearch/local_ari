@@ -15,7 +15,7 @@ export class LearnerModelManager {
         courseid: 2,
         quiz_activity: {
             count_attempts: [33],
-            avg_attpempt_time_per_task: new Map<number, number>([[22, 4.3], [34, 20.4]]),
+            avg_attempt_time_per_task: new Map<number, number>([[22, 4.3], [34, 20.4]]),
         },
     };
 
@@ -74,7 +74,7 @@ export interface ILearnerModel {
         count_unique_quizes?: number;
         count_unique_repeated_quizes?: number;
         count_attempts_per_quiz?: Array<number>;
-        avg_attpempt_time_per_task?: Map<number,number>; 
+        avg_attempt_time_per_task?: Map<number,number>; 
         reattempt_delay?: Array<number>; // which reattempts? or is it the average?
         scores?: Array<number>;
     };
