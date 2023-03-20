@@ -30,6 +30,47 @@ echo "
 </ol>
 ";
 
+echo "<script>
+                function fetchUsers(){
+                    var cID = document.getElementById('courseSelect').value;
+
+                    var xmlhttp = new XMLHttpRequest();
+                    xmlhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            var users = Object.values(JSON.parse(this.responseText));
+                            var userSelect = document.getElementById('userSelect');
+                            for (let user of users){
+                                let newOption = document.createElement('option');
+                                newOption.text = user.userid;
+                                newOption.value = user.userid;
+                                userSelect.add(newOption);
+                            }
+                            
+                        }
+                    };
+                    xmlhttp.open('GET', 'getusers.php?q=' + cID, true);
+                    xmlhttp.send();
+                }
+
+                function fetchUserData(){
+                    var cID = document.getElementById('courseSelect').value;
+                    var userID = document.getElementById('userSelect').value;
+
+                    var xmlhttp = new XMLHttpRequest();
+                    xmlhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            var userData = this.responseText;
+                            document.getElementById('mainContent').innerHTML = userData;
+
+                        }
+                    };
+                    xmlhttp.open('GET', 'getUserData.php?q=' + userID + '&cID=' + cID, true);
+                    xmlhttp.send();
+
+                }
+
+</script>";
+
 global $USER, $PAGE, $DB, $CFG;
 
 $session_timeout = 1800;  // 1800s = 30m
@@ -44,7 +85,7 @@ $courses = [
 
 $course_id = 2;
 // select user TODO query users from db once course is selected
-$user_id = 1224;
+$user_id = 1019;
 
 // select activities to be considered
 $selected_course_activities = [
@@ -55,55 +96,33 @@ $selected_course_activities = [
 ];
 
 
+$query_courseID = "
+SELECT DISTINCT
+    id,
+    fullname
+FROM {course}
+ORDER BY id ASC";
+
+
+$records_courseIDs = $DB->get_records_sql($query_courseID);
+
+
+$courses = [];
+
+
+foreach($records_courseIDs as $singleRecord){
+    $courses[$singleRecord->id] = $singleRecord->fullname;
+}
 
 
 
-$query_first_access = "
-SELECT 
-    MIN(timecreated) AS first_access 
-FROM {logstore_standard_log}
-WHERE 
-    courseid = ? AND
-    userid = ? AND
-    action = ? AND
-    target = ?
-";
-$query_last_access = "
-SELECT 
-    MAX(timecreated) AS last_access 
-FROM {logstore_standard_log}
-WHERE 
-    courseid = ? AND
-    userid = ? AND
-    action = ? AND
-    target = ?
-";
-
-
-
-$query_access = "
-SELECT 
-    timecreated
-FROM {logstore_standard_log}
-WHERE 
-    courseid = ? AND
-    userid = ?
-ORDER BY timecreated ASC
-";
-
-
-$records1 = $DB->get_record_sql($query_first_access, array($course_id, $user_id, $actionview, $target));
-$records2 = $DB->get_record_sql($query_last_access, array($course_id, $user_id, $actionview, $target));
-
-$start = microtime(true);       // measuring time of db query
-
-$records3 = $DB->get_records_sql($query_access, array($course_id, $user_id));
-
-$elapsedTime = microtime(true) - $start;
 
 echo "<strong>Course Activities</strong><br>";
 
-echo "<select>";
+echo "<div><strong>Select Course:</strong></div>";
+
+
+echo "<select id='courseSelect'>";
 
 foreach ($courses as $key => $singleCourse) {
     echo "<option value =" . $key . ">" . $key . ": " . $singleCourse . "</option>";
@@ -111,111 +130,24 @@ foreach ($courses as $key => $singleCourse) {
 
 echo "</select>";
 
-echo "<div><span>UserID: " . $user_id . "</span></div>";
-echo "<div>ElapsedTime(records3): ".$elapsedTime." us</div>";
+echo "<button id='fetchUsers' onclick='fetchUsers()'>FetchUsers</button>";
 
 
-$lastRecord = 0;
-$sessions = 0;
-$timeSpent = 0;
+echo "<div><strong>Select Users:</strong></div>";
+
+echo "<select id='userSelect'>";
 
 
-foreach ($records3 as $singleRecord) {
-    if ($singleRecord->timecreated < 1000) continue;            // there are events in the DB which dont have a proper timestamp, usually somewhere below 1000
-    if (($lastRecord + $session_timeout) < $singleRecord->timecreated) {     // time difference between 2 events is larger than $session_timeout ? must be a new session
-        $sessions++;
-    } else {
-        /**
-         * 2 events are propably in the same session, so we count the time between them and assume this as user engagement time with course
-         * however, we cant track the time if user triggers a singular event and then doesnt trigger another event within the session_timeout
-         * TODO: check logstore_standard_log with courseid = 0 (thats where loggedin and loggedout events of a user are 
-         * logged) and add that to the calculation
-         */
-        $timeSpent += $singleRecord->timecreated - $lastRecord;
-    }
-    $lastRecord = $singleRecord->timecreated;
-}
+
+echo "</select>";
+
+echo "<button id='fetchUserData' onclick='fetchUserData()'>FetchUserData</button>";
 
 
-$firstaccess = Date("d.m.y, H:i:s", $records1->first_access);
-$lastaccess = Date("d.m.y, H:i:s", $records2->last_access);
+echo "<div id='mainContent'></div>";
 
 
-$activity_array = array(
-    "course_activity" => array(
-        "first_access" => $firstaccess,
-        "last_access" => $lastaccess,
-        "total_sessions" => $sessions,
-        "total_time_spent" => $timeSpent,
-        "ratio_active_days" => 0,
-        "activity_sequence_last7days" => 0,
-        "selected_goal" => 0,
-        "course_unit_completion" => 0,
-        "course_unit_success" => 0
-    ),
-    "assignment_activity" => array(
-        "first_access" => 0,
-        "last_access" => 0,
-        "sessions" => 0,
-        "time_spent" => 0,
-        "submissions_per_instance" => 0,
-        "scores" => 0
-    ),
-    "quiz_activity" => array(
-        "first_access" => 0,
-        "last_access" => 0,
-        "sessions" => 0,
-        "time_spent" => 0,
-        "count_attempts" => 0,
-        "count_unique_quizes" => 0,
-        "count_unique_repeated_quizes" => 0,
-        "count_attempts_per_quiz" => 0,
-        "avg_attempt_time_per_task" => 0,
-        "reattempt_delay" => 0,
-        "scores" => 0
-    ),
-    "safran_activity" => array(
-        "first_access" => 0,
-        "last_access" => 0,
-        "sessions" => 0,
-        "time_spent" => 0,
-    ),
-    "longpage_activity" => array(
-        "first_access" => 0,
-        "last_access" => 0,
-        "sessions" => 0,
-        "time_spent" => 0,
-        "ratio_read_text" => 0,
-        "count_opened_quizzes" => 0,
-        "count_marks" => 0,
-        "count_bookmarks" => 0,
-        "count_public_comments" => 0,
-        "count_private_comments" => 0
-    ),
-    "dashboard_activity" => array(
-        "count_goal_changes" => 0,
-        "count_reflection_attempts" => 0,
-        "count_reflection_submissions" => 0,
-        "count_bookmark_additions" => 0
-    ),
-    "hypervideo_activity" => array(
-        "first_access" => 0,
-        "last_access" => 0,
-    )
-);
 
-foreach ($activity_array as $key1 => $activity) {
-    echo "<strong>" . $key1 . "</strong><br>";
-
-    $table_headers = "<thead><tr>";
-    $table_data = "<tbody><tr>";
-
-    foreach ($activity as $key2 => $entry) {
-        $table_headers .= "<th>" . $key2 . " </th>";
-        $table_data .= "<td>" . $entry . " </td>";
-    }
-    echo "<div><table>" . $table_headers . "</tr></thead>" . $table_data . "</tr></tbody></table></div>";
-}
 
 $rr = (array) $records1;
 echo print_r($rr);
