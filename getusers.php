@@ -11,8 +11,11 @@ $course_id = $_REQUEST["q"];
 
 $query_UserID = "
 SELECT DISTINCT
-    userid
+    userid,
+    users.username
 FROM {logstore_standard_log}
+JOIN {user} as users
+    ON users.id = userid
 WHERE
     courseid = ?
 ORDER BY userid ASC";

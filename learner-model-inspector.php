@@ -39,9 +39,12 @@ echo "<script>
                         if (this.readyState == 4 && this.status == 200) {
                             var users = Object.values(JSON.parse(this.responseText));
                             var userSelect = document.getElementById('userSelect');
+                            while (userSelect.length > 0){
+                                userSelect.remove(userSelect.length - 1);
+                            }
                             for (let user of users){
                                 let newOption = document.createElement('option');
-                                newOption.text = user.userid;
+                                newOption.text = user.userid + ': ' + user.username;
                                 newOption.value = user.userid;
                                 userSelect.add(newOption);
                             }
