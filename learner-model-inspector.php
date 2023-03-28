@@ -19,6 +19,10 @@ echo    "<style>
                 padding: 4px;}
             td {border: 1px solid #dddddd;
                 padding: 4px;}
+            #arrayInTableStyle {
+                max-height: 4em;
+                overflow: auto;
+            }
         </style";
 
 echo "
@@ -44,6 +48,7 @@ echo "<script>
                             }
                             for (let user of users){
                                 let newOption = document.createElement('option');
+                                if (!user.username) user.username = 'Unknown';
                                 newOption.text = user.userid + ': ' + user.username;
                                 newOption.value = user.userid;
                                 userSelect.add(newOption);
@@ -51,13 +56,15 @@ echo "<script>
                             
                         }
                     };
-                    xmlhttp.open('GET', 'getusers.php?q=' + cID, true);
+                    xmlhttp.open('GET', 'getusers.php?cID=' + cID, true);
                     xmlhttp.send();
                 }
 
                 function fetchUserData(){
-                    var cID = document.getElementById('courseSelect').value;
-                    var userID = document.getElementById('userSelect').value;
+                    let cID = document.getElementById('courseSelect').value;
+                    let userID = document.getElementById('userSelect').value;
+                    let timePeriod = document.getElementById('periodSelect').value;
+
 
                     var xmlhttp = new XMLHttpRequest();
                     xmlhttp.onreadystatechange = function() {
@@ -67,7 +74,7 @@ echo "<script>
 
                         }
                     };
-                    xmlhttp.open('GET', 'getUserData.php?q=' + userID + '&cID=' + cID, true);
+                    xmlhttp.open('GET', 'getUserData.php?uID=' + userID + '&cID=' + cID + '&tperiod=' + timePeriod, true);
                     xmlhttp.send();
 
                 }
@@ -76,7 +83,6 @@ echo "<script>
 
 global $USER, $PAGE, $DB, $CFG;
 
-$session_timeout = 1800;  // 1800s = 30m
 
 $actionview = "viewed";
 $target = "course";
@@ -113,9 +119,29 @@ $records_courseIDs = $DB->get_records_sql($query_courseID);
 $courses = [];
 
 
-foreach($records_courseIDs as $singleRecord){
+foreach ($records_courseIDs as $singleRecord) {
     $courses[$singleRecord->id] = $singleRecord->fullname;
 }
+
+
+
+$periods = [
+    "SS18",
+    "WS18",
+    "SS19",
+    "WS19",
+    "SS20",
+    "WS20",
+    "SS21",
+    "WS21",
+    "SS22",
+    "WS22",
+    "SS23",
+    "WS23"
+];
+
+
+
 
 
 
@@ -136,15 +162,28 @@ echo "</select>";
 echo "<button id='fetchUsers' onclick='fetchUsers()'>FetchUsers</button>";
 
 
-echo "<div><strong>Select Users:</strong></div>";
 
-echo "<select id='userSelect'>";
 
+echo "<div><strong>Filter by period:</strong></div>";
+
+echo "<select id='periodSelect'>";
+echo "<option value='none'>No Filter </option>";
+foreach ($periods as $key => $singleEntry) {
+    echo "<option value =" . $key . ">" . $singleEntry . "</option>";
+}
 
 
 echo "</select>";
 
+
+echo "<div><strong>Select Users:</strong></div>";
+
+echo "<select id='userSelect'>";
+
+echo "</select>";
+
 echo "<button id='fetchUserData' onclick='fetchUserData()'>FetchUserData</button>";
+
 
 
 echo "<div id='mainContent'></div>";
@@ -162,22 +201,6 @@ foreach ($records as $record) {
         echo '____' . print_r((array)$record) . '<br>';
     }
 }
-
-/*
-userid: number;
-courseid: number; 
-course_activity?: {
-        first_access?: Date; oder timestamp
-        last_access?: Date; oder timestamo
-        count_total_sessions?: number; 
-        total_time_spent?: Array<number>; Zeit in Sekunden o.ä.
-        ratio_active_days?: number;  Anzahl der Tag, an denen die Person aktiv war im Verhältnis zur Gesamtzahl an Tagen seit Semesterbeginn
-        activity_sequence_last7days?: Map<string,number>; Sequenz ohne Datum bestehend aus dem Bezeichner der Aktivität un der ID der jeweiligen Instanz. Bei Safran braucht man vermutlich zwei IDs. z.B. mod_longpage:12, mod_safran:198, mod_assign_23 
-        selected_goal?: string; Siehe component='format_ladtopics' im logstore und goal_changed o.ä. 
-        course_unit_completion?: Map<number, number>; z.B. 'meine Kurs-Sektion':0.81, 'KE 1':0.12, 'KE2':0.99
-        course_unit_success?: Map<number, number>; Wie viele Aufgaben von den bearbeiteten Aufgaben waren korrekt. z.B. 'meine Kurs-Sektion':0.81, 'KE 1':0.12, 'KE2':0.99
-    };
- */
 
 
 echo $OUTPUT->footer();
