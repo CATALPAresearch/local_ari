@@ -23,6 +23,8 @@ echo    "<style>
                 max-height: 4em;
                 overflow: auto;
             }
+            .activityDescription {
+            }
         </style";
 
 echo "
@@ -189,18 +191,6 @@ echo "<button id='fetchUserData' onclick='fetchUserData()'>FetchUserData</button
 echo "<div id='mainContent'></div>";
 
 
-
-
-$rr = (array) $records1;
-echo print_r($rr);
-$rr = (array) $records2;
-echo print_r($rr);
-echo '...';
-foreach ($records as $record) {
-    if (is_object($record)) {
-        echo '____' . print_r((array)$record) . '<br>';
-    }
-}
 
 
 echo $OUTPUT->footer();

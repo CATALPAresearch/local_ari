@@ -220,13 +220,43 @@ WHERE
 ORDER BY timecreated ASC
 ";
 
+$query_submissions = "
+SELECT 
+    ag.grade AS scores
+FROM {assign} AS assign
+JOIN {assign_grades} AS ag
+    ON ag.assignment = assign.id
+WHERE 
+    course = ? AND
+    userid = ?
+    $addTimePeriodToQuery
+ORDER BY timecreated ASC
+";
+
+
+
+$queries_activites = [
+    "mod_assign" => ["submissions" => $query_submissions],
+    "mod_quiz" => ["query1" => ""],
+    "mod_safran" => ["query1" => ""],
+    "mod_longpage" => ["query1" => ""],
+    "dashboard" => ["query1" => ""],
+    "mod_hypervideo" => ["query1" => ""],
+];
+
+
+// foreach ($activity_array as $activityName => $activityArr) {
+//     $queries_activites[$activityName];
+// }
+
+
 
 
 // $year = $today->format("y");
 
 // echo print_r("today " . $today->format("y-m-d") . " year " . $year);
 
-// $sumSem = new DateTime($year . '-03-01', new DateTimeZone('Europe/Berlin'));
+// $sumSem = new DateTime$year . '-03-01', new DateTimeZone('Europe/Berlin'));
 
 // echo $sumSem->format(" y-m-d");
 
@@ -261,7 +291,7 @@ $recordsActivityAccess = array();
 $recordsCourseAccess;
 
 
-// fetch records from DB
+// fetch common records of activites (access times) from DB
 
 $start = microtime(true);       // measuring time of db query
 
@@ -274,10 +304,15 @@ foreach ($activity_array as $activityName => $activityArr) {
         $recordsCourseAccess = $DB->get_records_sql($query_course_access, array($course_id, $user_id));
         continue;
     }
-    // queries for activities
+    // queries for activities with common attributes
     $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
     $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
 }
+
+// fetch uncommon records of activities
+$records_subs = $DB->get_records_sql($query_submissions, array($course_id, $user_id));
+
+echo print_r($records_subs);
 
 
 $elapsedTime = microtime(true) - $start;
@@ -292,6 +327,23 @@ foreach ($recordsActivityFaLa as $activityName => $activityArr) {
         if ($data != 0) $activity_array[$activityName][$dataKey] = Date("d.m.y, H:i:s", $data);
     }
 }
+
+// manual insert start
+
+foreach($records_subs as $singleRecord){
+    $tmparr[] = number_format($singleRecord->scores, 0);
+    echo "a".$singleRecord->scores;
+}
+
+$activity_array["assign_activity"]["submissions_per_instance"] = count($records_subs);
+$activity_array["assign_activity"]["scores"] = $tmparr;
+
+
+
+
+
+
+// manual insert end
 
 //echo print_r($recordsCourseAccess);
 
@@ -339,9 +391,9 @@ if ($timePeriod !== 'none') {
     $from = $periodArray[$timePeriod];
     $diff = $today->diff($from);
 
-    echo $diff->format("%r%a days");
+    //echo $diff->format("%r%a days");
 
-    echo $diff->format(" %a DIFF");
+    //echo $diff->format(" %a DIFF");
 
     $semesterDays = (int)$diff->format("%a");
 
@@ -404,7 +456,7 @@ foreach ($recordsActivityAccess as $activityName => $activityArr) {
 
 // generate html from data (activity_array)
 foreach ($activity_array as $key1 => $activity) {
-    echo "<strong>" . $key1 . "</strong><br>";
+    echo "<strong class='activityDescription'>" . $key1 . "</strong><br>";
 
     $table_headers = "<thead><tr>";
     $table_data = "<tbody><tr>";
@@ -422,7 +474,7 @@ foreach ($activity_array as $key1 => $activity) {
             $table_data .= "<td>" . $entry . " </td>";
         }
     }
-    echo "<div><table>" . $table_headers . "</tr></thead>" . $table_data . "</tr></tbody></table></div>";
+    echo "<div><table>" . $table_headers . "</tr></thead>" . $table_data . "</tr></tbody></table></div><br>";
 }
 
 /*
