@@ -182,8 +182,10 @@ SELECT
 FROM {logstore_standard_log}
 WHERE 
     courseid = ? AND
-    userid = ?" . $addTimePeriodToQuery . "
+    userid = ? AND
+    timecreated > 1000" . $addTimePeriodToQuery . "        
 ";
+// some entries in the db have a timestamp = 0 or below 1000. dont consider these
 
 $query_course_access = "
 SELECT 
@@ -205,7 +207,8 @@ FROM {logstore_standard_log}
 WHERE 
     courseid = ? AND
     userid = ? AND
-    component = ?$addTimePeriodToQuery
+    component = ? AND
+    timecreated > 1000$addTimePeriodToQuery
 ";
 
 $query_activity_access = "
@@ -240,12 +243,12 @@ FROM {quiz} AS qu
 JOIN {quiz_attempts} AS qua
     ON qu.id = qua.quiz
 WHERE 
-    course = 7 AND
-    userid = 4
+    course = ? AND
+    userid = ?
     $addTimePeriodToQuery
 ORDER BY timecreated ASC
 ";
-
+//
 
 $queries_activites = [
     "mod_assign" => ["submissions" => $query_submissions],
@@ -302,6 +305,7 @@ $recordsActivityFaLa = array();
 $recordsActivityAccess = array();
 $recordsCourseAccess;
 
+$dbman = $DB->get_manager();
 
 // fetch common records of activites (access times) from DB
 
@@ -317,8 +321,10 @@ foreach ($activity_array as $activityName => $activityArr) {
         continue;
     }
     // queries for activities with common attributes
-    $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
-    $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
+    if ($dbman->table_exists(explode("_", $activityName)[0])) {
+        $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
+        $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
+    }
 }
 
 // fetch uncommon records of activities
@@ -326,8 +332,7 @@ $records_subs = $DB->get_records_sql($query_submissions, array($course_id, $user
 
 $records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
 
-echo print_r($records_quiz_attempts);
-
+//print_r($recordsActivityFaLa);
 
 $elapsedTime = microtime(true) - $start;
 
@@ -343,29 +348,28 @@ foreach ($recordsActivityFaLa as $activityName => $activityArr) {
 }
 
 // manual insert start
-$tmparr = array();
-foreach($records_subs as $singleRecord){
-    $tmparr[] = number_format($singleRecord->scores, 0);
-    echo "a".$singleRecord->scores;
+if (count($records_subs) > 0) {
+    $tmparr = array();
+
+    foreach ($records_subs as $singleRecord) {
+        $tmparr[] = number_format($singleRecord->scores, 0);
+    }
+    $activity_array["assign_activity"]["submissions_per_instance"] = count($records_subs);
+    $activity_array["assign_activity"]["scores"] = $tmparr;
 }
 
-$activity_array["assign_activity"]["submissions_per_instance"] = count($records_subs);
-$activity_array["assign_activity"]["scores"] = $tmparr;
 
-$tmparr = array();
-$tmp = 0;
-foreach($records_quiz_attempts as $singleRecord){
-    $tmp += $singleRecord->attempt;
+if (count($records_quiz_attempts) > 0) {
+    $tmparr = array();
+    $tmp = 0;
+
+    //print_r($records_quiz_attempts);
+    foreach ($records_quiz_attempts as $singleRecord) {
+        $tmp += $singleRecord->attempt;
+    }
+    $activity_array["quiz_activity"]["count_attempts"] = $tmp;
+    $activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
 }
-$activity_array["quiz_activity"]["count_attempts"] = $tmp;
-$activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
-
-
-
-
-
-
-
 
 // manual insert end
 
