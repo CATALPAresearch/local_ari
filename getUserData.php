@@ -233,6 +233,18 @@ WHERE
 ORDER BY timecreated ASC
 ";
 
+$query_quiz_attempts = "
+SELECT 
+    qua.attempt AS attempt
+FROM {quiz} AS qu
+JOIN {quiz_attempts} AS qua
+    ON qu.id = qua.quiz
+WHERE 
+    course = 7 AND
+    userid = 4
+    $addTimePeriodToQuery
+ORDER BY timecreated ASC
+";
 
 
 $queries_activites = [
@@ -312,7 +324,9 @@ foreach ($activity_array as $activityName => $activityArr) {
 // fetch uncommon records of activities
 $records_subs = $DB->get_records_sql($query_submissions, array($course_id, $user_id));
 
-echo print_r($records_subs);
+$records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
+
+echo print_r($records_quiz_attempts);
 
 
 $elapsedTime = microtime(true) - $start;
@@ -329,7 +343,7 @@ foreach ($recordsActivityFaLa as $activityName => $activityArr) {
 }
 
 // manual insert start
-
+$tmparr = array();
 foreach($records_subs as $singleRecord){
     $tmparr[] = number_format($singleRecord->scores, 0);
     echo "a".$singleRecord->scores;
@@ -337,6 +351,16 @@ foreach($records_subs as $singleRecord){
 
 $activity_array["assign_activity"]["submissions_per_instance"] = count($records_subs);
 $activity_array["assign_activity"]["scores"] = $tmparr;
+
+$tmparr = array();
+$tmp = 0;
+foreach($records_quiz_attempts as $singleRecord){
+    $tmp += $singleRecord->attempt;
+}
+$activity_array["quiz_activity"]["count_attempts"] = $tmp;
+$activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
+
+
 
 
 
