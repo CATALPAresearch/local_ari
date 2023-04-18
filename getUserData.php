@@ -248,7 +248,42 @@ WHERE
     $addTimePeriodToQuery
 ORDER BY timecreated ASC
 ";
-//
+
+// $query_course_modules = "
+// SELECT 
+//     count(*)
+// FROM {course_modules}
+// WHERE 
+//     course = ? AND
+//     $addTimePeriodToQuery
+// ORDER BY timecreated ASC
+// "
+// ;
+
+$query_course_modules_completion = "
+SELECT
+    coursemoduleid
+FROM {course_modules_completion} as cmc
+JOIN {course_modules} as cm
+    ON cmc.coursemoduleid=cm.id
+WHERE  
+    cm.course = ? AND
+    userid = ?
+    $addTimePeriodToQuery
+ORDER BY added ASC
+";
+// query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
+$query_course_sections = "
+SELECT 
+    sequence, IFNULL(name, 'NoName') as name
+FROM {course_sections}
+WHERE 
+    course = ?
+    $addTimePeriodToQuery
+";
+//SELECT name, sequence from course_sections where course = ? ORDER BY timemodified ASC
+
+//SELECT coursemoduleid from course_modules_completion as cmc join course_modules as cm on cmc.coursemoduleid=cm.id where userid = ? AND cm.course = ? ORDER BY added ASC
 
 $queries_activites = [
     "mod_assign" => ["submissions" => $query_submissions],
@@ -313,7 +348,7 @@ $start = microtime(true);       // measuring time of db query
 
 foreach ($activity_array as $activityName => $activityArr) {
 
-    $convertComponent = "mod_" . explode("_", $activityName)[0];
+    $convertComponent = "mod_" . explode("_", $activityName)[0];    // prefix 'mod_' is relevant to entries in logstore_standard_log
     if ($convertComponent === "mod_course") {
         // queries for the whole course 
         $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_course_fa_la, array($course_id, $user_id));
@@ -332,6 +367,17 @@ $records_subs = $DB->get_records_sql($query_submissions, array($course_id, $user
 
 $records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
 
+$records_course_sections = $DB->get_records_sql($query_course_sections, array($course_id));
+
+$records_course_modules_completion = $DB->get_records_sql($query_course_modules_completion, array($course_id, $user_id));
+
+// echo print_r($records_course_sections);
+// echo "<br>";
+// echo print_r($records_course_modules_completion);
+
+
+
+
 //print_r($recordsActivityFaLa);
 
 $elapsedTime = microtime(true) - $start;
@@ -347,7 +393,7 @@ foreach ($recordsActivityFaLa as $activityName => $activityArr) {
     }
 }
 
-// manual insert start
+// uncommon records insert start
 if (count($records_subs) > 0) {
     $tmparr = array();
 
@@ -371,7 +417,30 @@ if (count($records_quiz_attempts) > 0) {
     $activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
 }
 
-// manual insert end
+if (count($records_course_sections) > 0) {
+    $tmparr = array();
+    $tmparr2 = array();
+    foreach ($records_course_sections as $singleRecord) {
+        $hits = 0;
+
+        foreach ($records_course_modules_completion as $singleRecord2) {
+            if (strpos($singleRecord->sequence, $singleRecord2->coursemoduleid)) {
+                $hits++;
+            }
+        }
+        $tmparr[] = array(
+            "section_name" => $singleRecord->name,
+            "completion_ratio" => $hits / count(explode("," ,$singleRecord->sequence))
+        );
+
+        $tmparr2[] = $singleRecord->name.": ".number_format($hits / count(explode("," ,$singleRecord->sequence)), 2);
+
+    }
+    $activity_array["course_activity"]["course_unit_completion"] = $tmparr2;
+   echo print_r($tmparr);
+}
+
+// uncommon records insert end
 
 //echo print_r($recordsCourseAccess);
 
@@ -492,7 +561,7 @@ foreach ($activity_array as $key1 => $activity) {
     foreach ($activity as $key2 => $entry) {
         $table_headers .= "<th>" . $key2 . " </th>";
         if (is_array($entry)) {
-            $arrayInTable = "<div id='arrayInTableStyle'>";
+            $arrayInTable = "<div class='arrayInTableStyle'>";
             foreach ($entry as $key => $arrayEntry) {
                 $arrayInTable .= "<div>$arrayEntry</div>";
             }

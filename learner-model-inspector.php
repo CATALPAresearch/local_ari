@@ -19,7 +19,7 @@ echo    "<style>
                 padding: 4px;}
             td {border: 1px solid #dddddd;
                 padding: 4px;}
-            #arrayInTableStyle {
+            .arrayInTableStyle {
                 max-height: 4em;
                 overflow: auto;
             }
