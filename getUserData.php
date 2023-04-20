@@ -249,6 +249,18 @@ WHERE
 ORDER BY timecreated ASC
 ";
 
+$query_quiz_scores = "
+SELECT
+    qu.name,
+    qug.grade
+FROM {quiz} as qu
+JOIN {quiz_grades} as qug
+    ON qu.id=qug.quiz
+WHERE  
+    qu.course = ? AND
+    qug.userid = ?
+";
+
 // $query_course_modules = "
 // SELECT 
 //     count(*)
@@ -262,7 +274,8 @@ ORDER BY timecreated ASC
 
 $query_course_modules_completion = "
 SELECT
-    coursemoduleid
+    coursemoduleid,
+    completionstate
 FROM {course_modules_completion} as cmc
 JOIN {course_modules} as cm
     ON cmc.coursemoduleid=cm.id
@@ -371,12 +384,14 @@ $records_course_sections = $DB->get_records_sql($query_course_sections, array($c
 
 $records_course_modules_completion = $DB->get_records_sql($query_course_modules_completion, array($course_id, $user_id));
 
+$records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id, $user_id));
+
 // echo print_r($records_course_sections);
 // echo "<br>";
 // echo print_r($records_course_modules_completion);
 
 
-
+echo print_r($records_quiz_scores);
 
 //print_r($recordsActivityFaLa);
 
@@ -418,26 +433,47 @@ if (count($records_quiz_attempts) > 0) {
 }
 
 if (count($records_course_sections) > 0) {
-    $tmparr = array();
+    $tmparr1 = array();
     $tmparr2 = array();
     foreach ($records_course_sections as $singleRecord) {
-        $hits = 0;
+        $completions = 0;
+        $completions_success = 0;
+
+        $modulesInSection = count(explode(",", $singleRecord->sequence));
 
         foreach ($records_course_modules_completion as $singleRecord2) {
+            if ($singleRecord2->completionstate == 0) continue;
             if (strpos($singleRecord->sequence, $singleRecord2->coursemoduleid)) {
-                $hits++;
+                $completions++;        // count total amount of completed modules 
+                // Available states: 0 = not completed if there’s no row in this table, 
+                // that also counts as 0. 1 = completed 2 = completed, show passed 3 = completed, show failed
+                if ($singleRecord2->completionstate == 2) $completions_success++;
             }
         }
-        $tmparr[] = array(
-            "section_name" => $singleRecord->name,
-            "completion_ratio" => $hits / count(explode("," ,$singleRecord->sequence))
-        );
-
-        $tmparr2[] = $singleRecord->name.": ".number_format($hits / count(explode("," ,$singleRecord->sequence)), 2);
-
+        // $tmparr[] = array(
+        //     "section_name" => $singleRecord->name,
+        //     "completion_ratio" => $completions / count(explode(",", $singleRecord->sequence)),
+        //     "success_ration" => $completions_success / $completions
+        // );
+        if ($modulesInSection != 0) $tmparr1[] = $singleRecord->name . ": " . number_format($completions / $modulesInSection, 2);
+        if ($completions != 0) $tmparr2[] = $singleRecord->name . ": " . number_format($completions_success / $completions, 2);
+        // $tmparr1[] = $singleRecord->name . ": " . number_format($completions / $modulesInSection, 2);
+        // $tmparr2[] = $singleRecord->name . ": " . number_format($completions_success / $completions, 2);
     }
-    $activity_array["course_activity"]["course_unit_completion"] = $tmparr2;
-   echo print_r($tmparr);
+    $activity_array["course_activity"]["course_unit_completion"] = $tmparr1;
+    $activity_array["course_activity"]["course_unit_success"] = $tmparr2;
+
+}
+
+if (count($records_quiz_scores) > 0) {
+    $tmparr = array();
+    $tmp = 0;
+
+    //print_r($records_quiz_attempts);
+    foreach ($records_quiz_scores as $singleRecord) {
+        $tmparr[] = $singleRecord->name.": ".number_format($singleRecord->grade, 2);
+    }
+    $activity_array["quiz_activity"]["scores"] = $tmparr;
 }
 
 // uncommon records insert end
