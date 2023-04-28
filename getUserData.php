@@ -132,6 +132,19 @@ if ($timePeriod !== "none") {
     $addTimePeriodToQuery = timePeriodToSemesterInterval($timePeriod, $periodArray);
 }
 
+function timeUtoHMS($timeInU)
+{
+    $hours = $timeInU / 3600;
+    $hours = floor($hours);
+    $minutes = ($timeInU - ($hours * 3600)) / 60;
+    $minutes = floor($minutes);
+    $seconds = ($timeInU - (($hours * 3600) + ($minutes * 60)));
+
+    $timeSpentFormatted = $hours . " h " . $minutes . " m " . $seconds . " s";
+
+    return $timeSpentFormatted;
+}
+
 
 // function queryGenerator($activityArray, $courseID, $userID, $component, $action, $TimePeriodToQuery)
 // {
@@ -236,16 +249,34 @@ WHERE
 ORDER BY timecreated ASC
 ";
 
+// $query_quiz_attempts = "
+// SELECT
+//     qu.name,
+//     qua.attempt
+// FROM {quiz} AS qu
+// JOIN {quiz_attempts} AS qua
+//     ON qu.id = qua.quiz
+// WHERE 
+//     qu.course = ? AND
+//     qua.userid = ?
+//     $addTimePeriodToQuery
+// ORDER BY timecreated ASC
+// ";
+
 $query_quiz_attempts = "
-SELECT 
-    qua.attempt AS attempt
+SELECT
+    AVG(qua.timefinish - qua.timestart) as avgTime,
+    MAX(qua.attempt) as attempts,
+    qu.name
 FROM {quiz} AS qu
 JOIN {quiz_attempts} AS qua
     ON qu.id = qua.quiz
 WHERE 
-    course = ? AND
-    userid = ?
+    qu.course = ? AND
+    qua.userid = ? AND
+    qua.state = 'finished'
     $addTimePeriodToQuery
+GROUP BY qu.name
 ORDER BY timecreated ASC
 ";
 
@@ -282,7 +313,6 @@ JOIN {course_modules} as cm
 WHERE  
     cm.course = ? AND
     userid = ?
-    $addTimePeriodToQuery
 ORDER BY added ASC
 ";
 // query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
@@ -292,7 +322,6 @@ SELECT
 FROM {course_sections}
 WHERE 
     course = ?
-    $addTimePeriodToQuery
 ";
 //SELECT name, sequence from course_sections where course = ? ORDER BY timemodified ASC
 
@@ -391,7 +420,7 @@ $records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id
 // echo print_r($records_course_modules_completion);
 
 
-echo print_r($records_quiz_scores);
+//echo print_r($records_quiz_scores);
 
 //print_r($recordsActivityFaLa);
 
@@ -419,17 +448,24 @@ if (count($records_subs) > 0) {
     $activity_array["assign_activity"]["scores"] = $tmparr;
 }
 
-
 if (count($records_quiz_attempts) > 0) {
     $tmparr = array();
+    $tmparr2= array();
     $tmp = 0;
+    $tmp2 = 0;
 
-    //print_r($records_quiz_attempts);
     foreach ($records_quiz_attempts as $singleRecord) {
-        $tmp += $singleRecord->attempt;
+        $tmp += $singleRecord->attempts;
+        if ($singleRecord->attempts != 1) $tmp2++;
+        $tmparr[] = $singleRecord->name . ": " . $singleRecord->attempts;
+        $tmparr2[] = $singleRecord->name . ": " . timeUtoHMS(floor($singleRecord->avgtime));
+        print_r($singleRecord);
     }
     $activity_array["quiz_activity"]["count_attempts"] = $tmp;
     $activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
+    $activity_array["quiz_activity"]["count_unique_repeated_quizes"] = $tmp2;
+    $activity_array["quiz_activity"]["avg_attempt_time_per_task"] = $tmparr2;
+    $activity_array["quiz_activity"]["count_attempts_per_quiz"] = $tmparr;
 }
 
 if (count($records_course_sections) > 0) {
@@ -462,7 +498,6 @@ if (count($records_course_sections) > 0) {
     }
     $activity_array["course_activity"]["course_unit_completion"] = $tmparr1;
     $activity_array["course_activity"]["course_unit_success"] = $tmparr2;
-
 }
 
 if (count($records_quiz_scores) > 0) {
@@ -471,7 +506,7 @@ if (count($records_quiz_scores) > 0) {
 
     //print_r($records_quiz_attempts);
     foreach ($records_quiz_scores as $singleRecord) {
-        $tmparr[] = $singleRecord->name.": ".number_format($singleRecord->grade, 2);
+        $tmparr[] = $singleRecord->name . ": " . number_format($singleRecord->grade, 2);
     }
     $activity_array["quiz_activity"]["scores"] = $tmparr;
 }
@@ -510,13 +545,9 @@ foreach ($recordsCourseAccess as $singleRecord) {
     //echo $lastDay."<br>";
 }
 
-$hours = $timeSpent / 3600;
-$hours = floor($hours);
-$minutes = ($timeSpent - ($hours * 3600)) / 60;
-$minutes = floor($minutes);
-$seconds = ($timeSpent - (($hours * 3600) + ($minutes * 60)));
 
-$timeSpentFormatted = $hours . " h " . $minutes . " m " . $seconds . " s";
+
+$totalTimeSpent = timeUtoHMS($timeSpent);
 
 if ($timePeriod !== 'none') {
 
@@ -538,7 +569,7 @@ if ($timePeriod !== 'none') {
 }
 
 $activity_array["course_activity"]["total_sessions"] = $sessions;
-$activity_array["course_activity"]["total_time_spent"] = $timeSpentFormatted;
+$activity_array["course_activity"]["total_time_spent"] = $totalTimeSpent;
 $activity_array["course_activity"]["ratio_active_days"] = $ratioActiveDays;
 $activity_array["course_activity"]["activity_sequence_last7days"] = $activitySequenceLast7Days;
 
@@ -573,13 +604,8 @@ foreach ($recordsActivityAccess as $activityName => $activityArr) {
         //$lastDay = Date("z", $lastRecord);
 
     }
-    $hours = $timeSpent / 3600;
-    $hours = floor($hours);
-    $minutes = ($timeSpent - ($hours * 3600)) / 60;
-    $minutes = floor($minutes);
-    $seconds = ($timeSpent - (($hours * 3600) + ($minutes * 60)));
 
-    $timeSpentFormatted = $hours . " h " . $minutes . " m " . $seconds . " s";
+    $timeSpentFormatted = timeUtoHMS($timeSpent);
     if ($sessions != 0) $activity_array[$activityName]["sessions"] = $sessions;
     if ($timeSpent != 0) $activity_array[$activityName]["time_spent"] = $timeSpentFormatted;
 }
