@@ -303,18 +303,66 @@ WHERE
 // "
 // ;
 
+// old completion query, considers all complete modlues
+// $query_course_modules_completion = "
+// SELECT
+//     coursemoduleid,
+//     completionstate
+// FROM {course_modules_completion} as cmc
+// JOIN {course_modules} as cm
+//     ON cmc.coursemoduleid=cm.id
+// WHERE  
+//     cm.course = ? AND
+//     userid = ?
+// ORDER BY added ASC
+// ";
+
+// considers only assign, quiz and safran
 $query_course_modules_completion = "
 SELECT
     coursemoduleid,
     completionstate
-FROM {course_modules_completion} as cmc
-JOIN {course_modules} as cm
-    ON cmc.coursemoduleid=cm.id
+FROM {course_modules_completion} as cmc,
+    {course_modules} as cm,
+    {modules} as m
 WHERE  
     cm.course = ? AND
-    userid = ?
+    cmc.userid = ? AND
+    cmc.coursemoduleid=cm.id AND
+    cm.module=m.id AND
+    cmc.completionstate=1 AND
+    (m.name='assign' OR
+    m.name='quiz' OR
+    m.name='safran')
 ORDER BY added ASC
 ";
+
+
+//TODO query_safran_fa_la and access:
+    // not possible to filter by course here because
+    // column "course" in table safran_question is erroneous
+$query_safran_fa_la = "
+SELECT 
+MIN(timecreated) AS first_access,
+MAX(timecreated) AS last_access 
+FROM {safran_q_attempt}
+WHERE 
+userid = ? AND
+timecreated > 1000
+$addTimePeriodToQuery
+";
+
+$query_safran_access = "
+SELECT 
+    timecreated
+FROM {safran_q_attempt}
+WHERE 
+    userid = ?
+    $addTimePeriodToQuery
+ORDER BY timecreated ASC
+";
+
+
 // query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
 $query_course_sections = "
 SELECT 
@@ -415,12 +463,17 @@ $records_course_modules_completion = $DB->get_records_sql($query_course_modules_
 
 $records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id, $user_id));
 
+if ($dbman->table_exists("safran_q_attempt")) {
+    $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id));
+    $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id));
+}
+
 // echo print_r($records_course_sections);
 // echo "<br>";
 // echo print_r($records_course_modules_completion);
 
 
-//echo print_r($records_quiz_scores);
+echo print_r($records_safran_fa_la);
 
 //print_r($recordsActivityFaLa);
 
@@ -509,6 +562,42 @@ if (count($records_quiz_scores) > 0) {
         $tmparr[] = $singleRecord->name . ": " . number_format($singleRecord->grade, 2);
     }
     $activity_array["quiz_activity"]["scores"] = $tmparr;
+}
+
+if (count($records_safran_fa_la) > 0){
+   
+    $activity_array["safran_activity"]["first_access"] = Date("d.m.y, H:i:s", $records_safran_fa_la->first_access);
+    $activity_array["safran_activity"]["last_access"] = Date("d.m.y, H:i:s", $records_safran_fa_la->last_access);
+}
+
+if (count($records_safran_access) > 0){
+
+    $sessionsSafran = 0;
+    $timeSpentSafran = 0;
+    $lastRecordSafran = 0;
+
+    foreach ($records_safran_access as $singleRecord) {
+        if ($singleRecord->timecreated < 1000) continue;    // there are events in the DB which dont have a proper timestamp, usually somewhere below 1000 (those are system logs, not relevant to user data)
+        if (($lastRecordSafran + $session_timeout) < $singleRecord->timecreated) {     // time difference between 2 events is larger than $session_timeout ? must be a new session
+            $sessionsSafran++;
+            $timeSpentSafran += $assumedTimeSpent;
+        } else {
+            /**
+             * 2 events are propably in the same session, so we count the time between them and assume this as user engagement time with course
+             * however, we cant track the time if user triggers a singular event and then doesnt trigger another event within the session_timeout
+             * TODO: check logstore_standard_log with courseid = 0 (thats where loggedin and loggedout events of a user are 
+             * logged) and add that to the calculation
+             */
+            $timeSpentSafran += $singleRecord->timecreated - $lastRecordSafran;
+        }
+        $lastRecordSafran = $singleRecord->timecreated;
+        //echo $lastDay."<br>";
+    }
+
+
+
+    $activity_array["safran_activity"]["sessions"] = $sessionsSafran;
+    $activity_array["safran_activity"]["time_spent"] = timeUToHMS($timeSpentSafran);
 }
 
 // uncommon records insert end
