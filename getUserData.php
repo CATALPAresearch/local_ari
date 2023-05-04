@@ -339,25 +339,36 @@ ORDER BY added ASC
 
 
 //TODO query_safran_fa_la and access:
-    // not possible to filter by course here because
-    // column "course" in table safran_question is erroneous
+// not possible to filter by course here because
+// column "course" in table safran_question is erroneous
 $query_safran_fa_la = "
 SELECT 
-MIN(timecreated) AS first_access,
-MAX(timecreated) AS last_access 
-FROM {safran_q_attempt}
+MIN(sqa.timecreated) AS first_access,
+MAX(sqa.timecreated) AS last_access 
+FROM {safran_q_attempt} as sqa,
+    {safran_question} as sq,
+    {safran} as s
 WHERE 
-userid = ? AND
-timecreated > 1000
+sqa.userid = ? AND
+sqa.timecreated > 1000 AND
+sqa.questionid = sq.id AND
+sq.course = s.id AND
+s.course = ?
 $addTimePeriodToQuery
 ";
 
 $query_safran_access = "
 SELECT 
-    timecreated
-FROM {safran_q_attempt}
+    sqa.timecreated
+FROM {safran_q_attempt} as sqa,
+    {safran_question} as sq,
+    {safran} as s
 WHERE 
-    userid = ?
+sqa.userid = ? AND
+sqa.timecreated > 1000 AND
+sqa.questionid = sq.id AND
+sq.course = s.id AND
+s.course = ?
     $addTimePeriodToQuery
 ORDER BY timecreated ASC
 ";
@@ -464,8 +475,8 @@ $records_course_modules_completion = $DB->get_records_sql($query_course_modules_
 $records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id, $user_id));
 
 if ($dbman->table_exists("safran_q_attempt")) {
-    $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id));
-    $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id));
+    $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id, $course_id));
+    $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id, $course_id));
 }
 
 // echo print_r($records_course_sections);
@@ -503,7 +514,7 @@ if (count($records_subs) > 0) {
 
 if (count($records_quiz_attempts) > 0) {
     $tmparr = array();
-    $tmparr2= array();
+    $tmparr2 = array();
     $tmp = 0;
     $tmp2 = 0;
 
@@ -564,13 +575,13 @@ if (count($records_quiz_scores) > 0) {
     $activity_array["quiz_activity"]["scores"] = $tmparr;
 }
 
-if (count($records_safran_fa_la) > 0){
-   
+if (count($records_safran_fa_la) > 0) {
+
     $activity_array["safran_activity"]["first_access"] = Date("d.m.y, H:i:s", $records_safran_fa_la->first_access);
     $activity_array["safran_activity"]["last_access"] = Date("d.m.y, H:i:s", $records_safran_fa_la->last_access);
 }
 
-if (count($records_safran_access) > 0){
+if (count($records_safran_access) > 0) {
 
     $sessionsSafran = 0;
     $timeSpentSafran = 0;
