@@ -80,6 +80,10 @@ $activity_array = array(
     "hypervideo_activity" => array(
         "first_access" => $blank,
         "last_access" => $blank,
+    ),
+    "format_ladtopics_activity" => array(
+        "first_access" => $blank,
+        "last_access" => $blank
     )
 );
 
@@ -374,6 +378,33 @@ ORDER BY timecreated ASC
 ";
 
 
+// !! column "timecreated" of format_ladtopics in the logstore_standard_log always contains value 0
+// timecreated is stored in column "other" instead. example value is "{""utc"":1569919746739   
+
+
+// $query_activity_ladtopics_fa_la = "
+// SELECT 
+//     MIN(timecreated) AS first_access,
+//     MAX(timecreated) AS last_access 
+// FROM {logstore_standard_log}
+// WHERE 
+//     courseid = ? AND
+//     userid = ? AND
+//     component = ? AND
+//     timecreated > 1000$addTimePeriodToQuery
+// ";
+
+$query_activity_ladtopics_access = "
+SELECT 
+    other
+FROM {logstore_standard_log}
+WHERE 
+    courseid = ? AND
+    userid = ? AND
+    component = ?
+";
+
+
 // query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
 $query_course_sections = "
 SELECT 
@@ -461,6 +492,18 @@ foreach ($activity_array as $activityName => $activityArr) {
         $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
         $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
     }
+    // ladtopics is special
+    if ($activityName == "format_ladtopics_activity"){
+        $convertComponent = "format_ladtopics";
+        //$tmparr = array();
+        //$recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
+        //$recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, $convertComponent));
+        //$tmparr = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, $convertComponent));
+
+        //print_r($recordsActivityFaLa[$activityName]);
+        //print_r($recordsActivityAccess[$activityName]);
+    }
+
 }
 
 // fetch uncommon records of activities
@@ -478,6 +521,8 @@ if ($dbman->table_exists("safran_q_attempt")) {
     $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id, $course_id));
     $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id, $course_id));
 }
+
+$records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
 
 // echo print_r($records_course_sections);
 // echo "<br>";
@@ -609,6 +654,42 @@ if (count($records_safran_access) > 0) {
 
     $activity_array["safran_activity"]["sessions"] = $sessionsSafran;
     $activity_array["safran_activity"]["time_spent"] = timeUToHMS($timeSpentSafran);
+}
+
+if (count($records_format_ladtopics_fa_la_access)){
+    $tmparr = array();
+    foreach($records_format_ladtopics_fa_la_access as $singleRecord){
+        $tmparr[] = explode(":", $singleRecord->other)[1];    // data is in format:         "{""utc"":1569919746765
+    }
+
+    sort($tmparr);
+
+    $activity_array["format_ladtopics_activity"]["first_access"] = Date("d.m.y, H:i:s", $tmparr[0]);
+    $activity_array["format_ladtopics_activity"]["last_access"] = Date("d.m.y, H:i:s", $tmparr[count($tmparr) - 1]);
+
+    $lastRecordLadtopics = 0;
+    $timeSpentLadtopics = 0;
+    $sessionsLadtopics = 0;
+
+    foreach ($tmparr as $singleRecord) {
+        if ($singleRecord < 1000) continue;    // there are events in the DB which dont have a proper timestamp, usually somewhere below 1000 (those are system logs, not relevant to user data)
+        if (($lastRecordLadtopics + $session_timeout) < $singleRecord) {     // time difference between 2 events is larger than $session_timeout ? must be a new session
+            $sessionsLadtopics++;
+            $timeSpentLadtopics += $assumedTimeSpent;
+        } else {
+            /**
+             * 2 events are propably in the same session, so we count the time between them and assume this as user engagement time with course
+             * however, we cant track the time if user triggers a singular event and then doesnt trigger another event within the session_timeout
+             * TODO: check logstore_standard_log with courseid = 0 (thats where loggedin and loggedout events of a user are 
+             * logged) and add that to the calculation
+             */
+            $timeSpentLadtopics += $singleRecord - $lastRecordLadtopics;
+        }
+        $lastRecordLadtopics = $singleRecord;
+    }
+
+    $activity_array["format_ladtopics_activity"]["sessions"] = $sessionsLadtopics;
+    $activity_array["format_ladtopics_activity"]["time_spent"] = timeUToHMS($timeSpentLadtopics);
 }
 
 // uncommon records insert end
