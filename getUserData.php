@@ -90,6 +90,9 @@ $activity_array = array(
 $from = 0;
 $to = 0;
 
+$fromInU = 0;
+$toInU = 0;
+
 $dayInSeconds = 86400;
 
 $session_timeout = 1800;  // 1800s = 30m
@@ -115,7 +118,8 @@ $periodArray = [
 ];
 
 $addTimePeriodToQuery = "";
-function timePeriodToSemesterInterval($startDate, $periodArray)
+$addTimePeriodToQuerySafran = "";           //column timecreated is flawed in one of the safran tables, we need a custom query
+function timePeriodToSemesterInterval($startDate, $periodArray, $timeCreatedPrefix = "")
 {
 
     $from = $periodArray[$startDate];
@@ -125,15 +129,16 @@ function timePeriodToSemesterInterval($startDate, $periodArray)
 
     $toInU = $to->format("U");
 
-    $addTimePeriodToQuery = " AND
-    timecreated > " . $fromInU . " AND
-    timecreated < " . $toInU . "";
+    $addTimePeriodToQuery = " AND ".
+    $timeCreatedPrefix."timecreated > " . $fromInU . " AND ".
+    $timeCreatedPrefix."timecreated < " . $toInU . "";
 
     return $addTimePeriodToQuery;
 }
 
 if ($timePeriod !== "none") {
     $addTimePeriodToQuery = timePeriodToSemesterInterval($timePeriod, $periodArray);
+    $addTimePeriodToQuerySafran = timePeriodToSemesterInterval($timePeriod, $periodArray, "sqa.");
 }
 
 function timeUtoHMS($timeInU)
@@ -342,9 +347,7 @@ ORDER BY added ASC
 ";
 
 
-//TODO query_safran_fa_la and access:
-// not possible to filter by course here because
-// column "course" in table safran_question is erroneous
+
 $query_safran_fa_la = "
 SELECT 
 MIN(sqa.timecreated) AS first_access,
@@ -358,7 +361,7 @@ sqa.timecreated > 1000 AND
 sqa.questionid = sq.id AND
 sq.course = s.id AND
 s.course = ?
-$addTimePeriodToQuery
+$addTimePeriodToQuerySafran
 ";
 
 $query_safran_access = "
@@ -373,8 +376,8 @@ sqa.timecreated > 1000 AND
 sqa.questionid = sq.id AND
 sq.course = s.id AND
 s.course = ?
-    $addTimePeriodToQuery
-ORDER BY timecreated ASC
+    $addTimePeriodToQuerySafran
+ORDER BY sqa.timecreated ASC
 ";
 
 
@@ -673,6 +676,10 @@ if (count($records_format_ladtopics_fa_la_access)){
 
     foreach ($tmparr as $singleRecord) {
         if ($singleRecord < 1000) continue;    // there are events in the DB which dont have a proper timestamp, usually somewhere below 1000 (those are system logs, not relevant to user data)
+        if ($timePeriod !== "none") {
+            if ($singleRecord < $fromInU || $singleRecord > $toInU) continue;
+        }
+
         if (($lastRecordLadtopics + $session_timeout) < $singleRecord) {     // time difference between 2 events is larger than $session_timeout ? must be a new session
             $sessionsLadtopics++;
             $timeSpentLadtopics += $assumedTimeSpent;
