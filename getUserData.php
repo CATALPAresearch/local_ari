@@ -4,6 +4,8 @@ require('../../config.php');
 require_once('lib.php');
 require_login();
 
+$systemContent = context_system::instance();
+require_capability('moodle/analytics:managemodels', $systemContent);
 
 global $DB;
 

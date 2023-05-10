@@ -9,6 +9,10 @@ $PAGE->set_url($CFG->wwwroot . '/local/ari/learner-model-inspector.php');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
+
+$systemContent = context_system::instance();
+require_capability('moodle/analytics:managemodels', $systemContent);
+
 //$PAGE->requires->js_call_amd('local_ari/app-lazy', 'init');
 
 
