@@ -286,8 +286,9 @@ WHERE
     qua.state = 'finished'
     $addTimePeriodToQuery
 GROUP BY qu.name
-ORDER BY timecreated ASC
 ";
+// ^ORDER BY timecreated ASC
+
 
 $query_quiz_scores = "
 SELECT
@@ -405,6 +406,56 @@ WHERE
     courseid = ? AND
     userid = ? AND
     component = ?
+";
+
+// comments are saved in this table
+// 0 = marked text, 1 = annotation, 2 = bookmarks
+$query_longpage_posts = "
+SELECT
+    SUM(lp.ispublic) as sum,
+    COUNT(lp.id) as count
+FROM {longpage_posts} AS lp,
+    {longpage} AS l
+WHERE l.course = ? AND
+    lp.creatorid = ? AND
+    lp.longpageid = l.id
+    $addTimePeriodToQuery
+";
+
+$query_longpage_annotations = "
+SELECT la.id,
+        type,
+        ispublic,
+        longpageid
+FROM {longpage_annotations} as la,
+    {longpage} as l
+WHERE l.course = ? AND
+    la.creatorid = ? AND
+    la.longpageid = l.id
+    $addTimePeriodToQuery
+";
+
+// todo add time period
+$query_longpage_instances = "
+SELECT
+    name,
+    id
+FROM
+    {longpage}
+WHERE
+    course = ?
+";
+
+$query_longpage_reading_progress = "
+SELECT
+    COUNT(DISTINCT section) as count,
+    sectioncount,
+    longpageid
+FROM {longpage_reading_progress}
+WHERE course = ? AND
+    userid = ?
+GROUP BY
+    longpageid, sectioncount
 ";
 
 
@@ -526,6 +577,13 @@ if ($dbman->table_exists("safran_q_attempt")) {
 }
 
 $records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
+
+if ($dbman->table_exists("longpage")){
+    $records_longpage_posts = $DB->get_record_sql($query_longpage_posts, array($course_id, $user_id));
+    $records_longpage_annotations = $DB->get_records_sql($query_longpage_annotations, array($course_id, $user_id));
+    $records_longpage_reading_progress = $DB->get_records_sql($query_longpage_reading_progress, array($course_id, $user_id));
+    $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array($course_id));
+}
 
 // echo print_r($records_course_sections);
 // echo "<br>";
@@ -659,7 +717,7 @@ if (count($records_safran_access) > 0) {
     $activity_array["safran_activity"]["time_spent"] = timeUToHMS($timeSpentSafran);
 }
 
-if (count($records_format_ladtopics_fa_la_access)){
+if (count($records_format_ladtopics_fa_la_access) > 0){
     $tmparr = array();
     foreach($records_format_ladtopics_fa_la_access as $singleRecord){
         $tmparr[] = explode(":", $singleRecord->other)[1];    // data is in format:         "{""utc"":1569919746765
@@ -697,6 +755,42 @@ if (count($records_format_ladtopics_fa_la_access)){
 
     $activity_array["format_ladtopics_activity"]["sessions"] = $sessionsLadtopics;
     $activity_array["format_ladtopics_activity"]["time_spent"] = timeUToHMS($timeSpentLadtopics);
+}
+
+if (count($records_longpage_annotations) > 0){
+    
+
+    $marks = 0;
+    $bookmarks = 0;
+    $publicComments = 0;
+    $privateComments = 0;
+
+    $tmparr = array();
+
+    print_r($records_longpage_annotations);
+
+    foreach($records_longpage_annotations as $singleRecord){
+        if ($singleRecord->type == 0) $marks++;
+        if ($singleRecord->type == 1){
+            if ($singleRecord->ispublic == 1) $publicComments++;
+            if ($singleRecord->ispublic == 0) $privateComments++;
+        }
+        if ($singleRecord->type == 2) $bookmarks++;
+    }
+
+    foreach($records_longpage_instances as $singleRecord){
+        $tmparr[$singleRecord->id] = array("name" => $singleRecord->name);
+    }
+    foreach($records_longpage_reading_progress as $singleRecord){
+        $tmparr[$singleRecord->longpageid] = array("count" => $singleRecord->count,
+        "sectioncount" => $singleRecord->sectioncount);
+    }
+    print_r($tmparr);
+
+    $activity_array["longpage_activity"]["count_marks"] = $marks;
+    $activity_array["longpage_activity"]["count_bookmarks"] = $bookmarks;
+    $activity_array["longpage_activity"]["count_public_comments"] = $publicComments;
+    $activity_array["longpage_activity"]["count_private_comments"] = $privateComments;
 }
 
 // uncommon records insert end
