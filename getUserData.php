@@ -588,58 +588,46 @@ foreach ($activity_array as $activityName => $activityArr) {
 }
 
 // fetch uncommon records of activities
-$transaction = $DB->start_delegated_transaction();
+
+
 $records_subs = $DB->get_records_sql($query_submissions, array($course_id, $user_id));
-$transaction->allow_commit();
+
 
 try {
-    $transaction = $DB->start_delegated_transaction();
+
+    $records_course_sections = $DB->get_records_sql($query_course_sections, array($course_id));
+    $records_course_modules_completion = $DB->get_records_sql($query_course_modules_completion, array($course_id, $user_id));
+
+    $records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id, $user_id));
     $records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
-    $transaction->allow_commit();
+
+    if ($dbman->table_exists("safran_q_attempt")) {
+        $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id, $course_id));
+        $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id, $course_id));
+    }
+    
+    $records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
+    
+    if ($dbman->table_exists("longpage")){
+        $records_longpage_posts = $DB->get_record_sql($query_longpage_posts, array($course_id, $user_id));
+        $records_longpage_annotations = $DB->get_records_sql($query_longpage_annotations, array($course_id, $user_id));
+        $records_longpage_reading_progress = $DB->get_records_sql($query_longpage_reading_progress, array($course_id, $user_id));
+        $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array($course_id));
+    }
+
+
 } catch (Exception $e){
-    //echo "DB error".print_r($e);
+    echo "DB error".print_r($e);
     $transaction->rollback($e);
 }
 
-
-$transaction = $DB->start_delegated_transaction();
-$records_course_sections = $DB->get_records_sql($query_course_sections, array($course_id));
-$transaction->allow_commit();
-
-$transaction = $DB->start_delegated_transaction();
-$records_course_modules_completion = $DB->get_records_sql($query_course_modules_completion, array($course_id, $user_id));
-$transaction->allow_commit();
-
-$transaction = $DB->start_delegated_transaction();
-$records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id, $user_id));
-$transaction->allow_commit();
-
-if ($dbman->table_exists("safran_q_attempt")) {
-    $transaction = $DB->start_delegated_transaction();
-    $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id, $course_id));
-    $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id, $course_id));
-    $transaction->allow_commit();
-}
-
-$transaction = $DB->start_delegated_transaction();
-$records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
-$transaction->allow_commit();
-
-if ($dbman->table_exists("longpage")){
-    $transaction = $DB->start_delegated_transaction();
-    $records_longpage_posts = $DB->get_record_sql($query_longpage_posts, array($course_id, $user_id));
-    $records_longpage_annotations = $DB->get_records_sql($query_longpage_annotations, array($course_id, $user_id));
-    $records_longpage_reading_progress = $DB->get_records_sql($query_longpage_reading_progress, array($course_id, $user_id));
-    $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array($course_id));
-    $transaction->allow_commit();
-}
 
 // echo print_r($records_course_sections);
 // echo "<br>";
 // echo print_r($records_course_modules_completion);
 
 
-echo print_r($records_safran_fa_la);
+//echo print_r($records_safran_fa_la);
 
 //print_r($recordsActivityFaLa);
 
@@ -679,7 +667,7 @@ if (count($records_quiz_attempts) > 0) {
         if ($singleRecord->attempts != 1) $tmp2++;
         $tmparr[] = $singleRecord->name . ": " . $singleRecord->attempts;
         $tmparr2[] = $singleRecord->name . ": " . timeUtoHMS(floor($singleRecord->avgtime));
-        print_r($singleRecord);
+        //print_r($singleRecord);
     }
     $activity_array["quiz_activity"]["count_attempts"] = $tmp;
     $activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
@@ -820,7 +808,7 @@ if (count($records_longpage_annotations) > 0){
 
     $tmparr = array();
 
-    print_r($records_longpage_annotations);
+    //print_r($records_longpage_annotations);
 
     foreach($records_longpage_annotations as $singleRecord){
         if ($singleRecord->type == 0) $marks++;
