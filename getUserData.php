@@ -212,7 +212,8 @@ WHERE
 // some entries in the db have a timestamp = 0 or below 1000. dont consider these
 
 $query_course_access = "
-SELECT 
+SELECT
+    id,
     timecreated,
     component,
     contextid
@@ -237,6 +238,7 @@ WHERE
 
 $query_activity_access = "
 SELECT 
+    id,
     timecreated
 FROM {logstore_standard_log}
 WHERE 
@@ -369,6 +371,7 @@ $addTimePeriodToQuerySafran
 
 $query_safran_access = "
 SELECT 
+    sqa.id,
     sqa.timecreated
 FROM {safran_q_attempt} as sqa,
     {safran_question} as sq,
@@ -528,7 +531,10 @@ $recordsActivityFaLa = array();
 $recordsActivityAccess = array();
 $recordsCourseAccess;
 
+//$DB->set_debug(true);
+
 $dbman = $DB->get_manager();
+
 
 // fetch common records of activites (access times) from DB
 
@@ -539,14 +545,33 @@ foreach ($activity_array as $activityName => $activityArr) {
     $convertComponent = "mod_" . explode("_", $activityName)[0];    // prefix 'mod_' is relevant to entries in logstore_standard_log
     if ($convertComponent === "mod_course") {
         // queries for the whole course 
-        $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_course_fa_la, array($course_id, $user_id));
-        $recordsCourseAccess = $DB->get_records_sql($query_course_access, array($course_id, $user_id));
+        try {
+
+            $transaction = $DB->start_delegated_transaction();
+            $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_course_fa_la, array($course_id, $user_id));
+            $recordsCourseAccess = $DB->get_records_sql($query_course_access, array($course_id, $user_id));
+            $transaction->allow_commit();
+
+        } catch (Exception $e)
+        {
+            echo "DB error".print_r($e);
+            $transaction->rollback($e);
+        }
         continue;
     }
     // queries for activities with common attributes
     if ($dbman->table_exists(explode("_", $activityName)[0])) {
-        $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
-        $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
+        try {
+            $transaction = $DB->start_delegated_transaction();
+            $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
+            $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
+            $transaction->allow_commit();
+
+        } catch (Exception $e)
+        {
+            echo "DB error".print_r($e);
+            $transaction->rollback($e);
+        }
     }
     // ladtopics is special
     if ($activityName == "format_ladtopics_activity"){
@@ -563,28 +588,50 @@ foreach ($activity_array as $activityName => $activityArr) {
 }
 
 // fetch uncommon records of activities
+$transaction = $DB->start_delegated_transaction();
 $records_subs = $DB->get_records_sql($query_submissions, array($course_id, $user_id));
+$transaction->allow_commit();
 
-$records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
-
-$records_course_sections = $DB->get_records_sql($query_course_sections, array($course_id));
-
-$records_course_modules_completion = $DB->get_records_sql($query_course_modules_completion, array($course_id, $user_id));
-
-$records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id, $user_id));
-
-if ($dbman->table_exists("safran_q_attempt")) {
-    $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id, $course_id));
-    $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id, $course_id));
+try {
+    $transaction = $DB->start_delegated_transaction();
+    $records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
+    $transaction->allow_commit();
+} catch (Exception $e){
+    //echo "DB error".print_r($e);
+    $transaction->rollback($e);
 }
 
+
+$transaction = $DB->start_delegated_transaction();
+$records_course_sections = $DB->get_records_sql($query_course_sections, array($course_id));
+$transaction->allow_commit();
+
+$transaction = $DB->start_delegated_transaction();
+$records_course_modules_completion = $DB->get_records_sql($query_course_modules_completion, array($course_id, $user_id));
+$transaction->allow_commit();
+
+$transaction = $DB->start_delegated_transaction();
+$records_quiz_scores = $DB->get_records_sql($query_quiz_scores, array($course_id, $user_id));
+$transaction->allow_commit();
+
+if ($dbman->table_exists("safran_q_attempt")) {
+    $transaction = $DB->start_delegated_transaction();
+    $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id, $course_id));
+    $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id, $course_id));
+    $transaction->allow_commit();
+}
+
+$transaction = $DB->start_delegated_transaction();
 $records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
+$transaction->allow_commit();
 
 if ($dbman->table_exists("longpage")){
+    $transaction = $DB->start_delegated_transaction();
     $records_longpage_posts = $DB->get_record_sql($query_longpage_posts, array($course_id, $user_id));
     $records_longpage_annotations = $DB->get_records_sql($query_longpage_annotations, array($course_id, $user_id));
     $records_longpage_reading_progress = $DB->get_records_sql($query_longpage_reading_progress, array($course_id, $user_id));
     $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array($course_id));
+    $transaction->allow_commit();
 }
 
 // echo print_r($records_course_sections);
@@ -621,6 +668,7 @@ if (count($records_subs) > 0) {
 }
 
 if (count($records_quiz_attempts) > 0) {
+    try {
     $tmparr = array();
     $tmparr2 = array();
     $tmp = 0;
@@ -638,6 +686,9 @@ if (count($records_quiz_attempts) > 0) {
     $activity_array["quiz_activity"]["count_unique_repeated_quizes"] = $tmp2;
     $activity_array["quiz_activity"]["avg_attempt_time_per_task"] = $tmparr2;
     $activity_array["quiz_activity"]["count_attempts_per_quiz"] = $tmparr;
+}catch(Exception $e){
+    echo print_r($e);
+}
 }
 
 if (count($records_course_sections) > 0) {
