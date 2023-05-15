@@ -18,7 +18,12 @@ $course_id = $_REQUEST["cID"];
 $actionview = "viewed";
 $target = "course";
 
-$timePeriod = $_REQUEST["tperiod"];
+if(isset($_REQUEST["tperiod"])){
+    $timePeriod = $_REQUEST["tperiod"];
+} else{
+    $timePeriod = 11;
+}
+
 
 $blank = "---";
 
@@ -366,8 +371,8 @@ sqa.timecreated > 1000 AND
 sqa.questionid = sq.id AND
 sq.course = s.id AND
 s.course = ?
-$addTimePeriodToQuerySafran
 ";
+// FIXME $addTimePeriodToQuerySafran
 
 $query_safran_access = "
 SELECT 
@@ -382,9 +387,9 @@ sqa.timecreated > 1000 AND
 sqa.questionid = sq.id AND
 sq.course = s.id AND
 s.course = ?
-    $addTimePeriodToQuerySafran
 ORDER BY sqa.timecreated ASC
 ";
+// FIXME: $addTimePeriodToQuerySafran
 
 
 // !! column "timecreated" of format_ladtopics in the logstore_standard_log always contains value 0
@@ -465,9 +470,10 @@ GROUP BY
 
 
 // query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
+// removed "IFNULL(name, 'NoName')"
 $query_course_sections = "
 SELECT 
-    id, sequence, IFNULL(name, 'NoName') AS name
+    id, sequence, name AS name
 FROM {course_sections}
 WHERE 
     course = ?
@@ -602,8 +608,8 @@ try {
     $records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
 
     if ($dbman->table_exists("safran_q_attempt")) {
-        $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array($user_id, $course_id));
-        $records_safran_access = $DB->get_records_sql($query_safran_access, array($user_id, $course_id));
+        $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array( (int) $user_id, (int) $course_id));
+        $records_safran_access = $DB->get_records_sql($query_safran_access, array( (int) $user_id, (int) $course_id));
     }
     
     $records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
