@@ -17,7 +17,7 @@ SELECT DISTINCT
     userid,
     users.username
 FROM {logstore_standard_log}
-LEFT JOIN {user} as users
+LEFT JOIN {user} AS users
     ON users.id = userid
 WHERE
     courseid = ?

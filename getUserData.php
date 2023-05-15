@@ -278,8 +278,8 @@ ORDER BY timecreated ASC
 
 $query_quiz_attempts = "
 SELECT
-    AVG(qua.timefinish - qua.timestart) as avgTime,
-    MAX(qua.attempt) as attempts,
+    AVG(qua.timefinish - qua.timestart) AS avgTime,
+    MAX(qua.attempt) AS attempts,
     qu.name
 FROM {quiz} AS qu
 JOIN {quiz_attempts} AS qua
@@ -298,8 +298,8 @@ $query_quiz_scores = "
 SELECT
     qu.name,
     qug.grade
-FROM {quiz} as qu
-JOIN {quiz_grades} as qug
+FROM {quiz} AS qu
+JOIN {quiz_grades} AS qug
     ON qu.id=qug.quiz
 WHERE  
     qu.course = ? AND
@@ -336,9 +336,9 @@ $query_course_modules_completion = "
 SELECT
     coursemoduleid,
     completionstate
-FROM {course_modules_completion} as cmc,
-    {course_modules} as cm,
-    {modules} as m
+FROM {course_modules_completion} AS cmc,
+    {course_modules} AS cm,
+    {modules} AS m
 WHERE  
     cm.course = ? AND
     cmc.userid = ? AND
@@ -357,9 +357,9 @@ $query_safran_fa_la = "
 SELECT 
 MIN(sqa.timecreated) AS first_access,
 MAX(sqa.timecreated) AS last_access 
-FROM {safran_q_attempt} as sqa,
-    {safran_question} as sq,
-    {safran} as s
+FROM {safran_q_attempt} AS sqa,
+    {safran_question} AS sq,
+    {safran} AS s
 WHERE 
 sqa.userid = ? AND
 sqa.timecreated > 1000 AND
@@ -373,9 +373,9 @@ $query_safran_access = "
 SELECT 
     sqa.id,
     sqa.timecreated
-FROM {safran_q_attempt} as sqa,
-    {safran_question} as sq,
-    {safran} as s
+FROM {safran_q_attempt} AS sqa,
+    {safran_question} AS sq,
+    {safran} AS s
 WHERE 
 sqa.userid = ? AND
 sqa.timecreated > 1000 AND
@@ -417,8 +417,8 @@ WHERE
 // 0 = marked text, 1 = annotation, 2 = bookmarks
 $query_longpage_posts = "
 SELECT
-    SUM(lp.ispublic) as sum,
-    COUNT(lp.id) as count
+    SUM(lp.ispublic) AS sum,
+    COUNT(lp.id) AS count
 FROM {longpage_posts} AS lp,
     {longpage} AS l
 WHERE l.course = ? AND
@@ -432,8 +432,8 @@ SELECT la.id,
         type,
         ispublic,
         longpageid
-FROM {longpage_annotations} as la,
-    {longpage} as l
+FROM {longpage_annotations} AS la,
+    {longpage} AS l
 WHERE l.course = ? AND
     la.creatorid = ? AND
     la.longpageid = l.id
@@ -453,7 +453,7 @@ WHERE
 
 $query_longpage_reading_progress = "
 SELECT
-    COUNT(DISTINCT section) as count,
+    COUNT(DISTINCT section) AS count,
     sectioncount,
     longpageid
 FROM {longpage_reading_progress}
@@ -467,7 +467,7 @@ GROUP BY
 // query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
 $query_course_sections = "
 SELECT 
-    sequence, IFNULL(name, 'NoName') as name
+    id, sequence, IFNULL(name, 'NoName') AS name
 FROM {course_sections}
 WHERE 
     course = ?
