@@ -356,7 +356,7 @@ WHERE
 ORDER BY added ASC
 ";
 
-
+//cast column timecreated to int ?
 
 $query_safran_fa_la = "
 SELECT 
@@ -367,7 +367,6 @@ FROM {safran_q_attempt} AS sqa,
     {safran} AS s
 WHERE 
 sqa.userid = ? AND
-sqa.timecreated > 1000 AND
 sqa.questionid = sq.id AND
 sq.course = s.id AND
 s.course = ?
@@ -383,7 +382,6 @@ FROM {safran_q_attempt} AS sqa,
     {safran} AS s
 WHERE 
 sqa.userid = ? AND
-sqa.timecreated > 1000 AND
 sqa.questionid = sq.id AND
 sq.course = s.id AND
 s.course = ?
@@ -471,9 +469,14 @@ GROUP BY
 
 // query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
 // removed "IFNULL(name, 'NoName')"
+// IFNULL is not available on target platform (postgres), swapped it with a case statement
 $query_course_sections = "
 SELECT 
-    id, sequence, name AS name
+    id, sequence, 
+    CASE WHEN name IS NULL
+    THEN 'NoName'
+    ELSE name
+END AS name
 FROM {course_sections}
 WHERE 
     course = ?
