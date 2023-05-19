@@ -18,9 +18,9 @@ $course_id = $_REQUEST["cID"];
 $actionview = "viewed";
 $target = "course";
 
-if(isset($_REQUEST["tperiod"])){
+if (isset($_REQUEST["tperiod"])) {
     $timePeriod = $_REQUEST["tperiod"];
-} else{
+} else {
     $timePeriod = 11;
 }
 
@@ -136,9 +136,9 @@ function timePeriodToSemesterInterval($startDate, $periodArray, $timeCreatedPref
 
     $toInU = $to->format("U");
 
-    $addTimePeriodToQuery = " AND ".
-    $timeCreatedPrefix."timecreated > " . $fromInU . " AND ".
-    $timeCreatedPrefix."timecreated < " . $toInU . "";
+    $addTimePeriodToQuery = " AND " .
+        $timeCreatedPrefix . "timecreated > " . $fromInU . " AND " .
+        $timeCreatedPrefix . "timecreated < " . $toInU . "";
 
     return $addTimePeriodToQuery;
 }
@@ -162,45 +162,6 @@ function timeUtoHMS($timeInU)
 }
 
 
-// function queryGenerator($activityArray, $courseID, $userID, $component, $action, $TimePeriodToQuery)
-// {
-//     $queriesFaLa = [];
-
-//     foreach ($activityArray as $component => $activity) {
-
-//         $convertComponent = "mod_" . explode("_", $component)[0];
-//         if ($convertComponent === "mod_course") {
-//             $convertComponent = "core";
-//         }
-//         $queriesFaLa[$component] = "
-//         SELECT 
-//             MIN(timecreated) AS first_access,
-//             MAX(timecreated) AS last_access
-//         FROM {logstore_standard_log}
-//         WHERE 
-//             courseid = $courseID AND
-//             userid = $userID AND
-//             component = $component AND
-//             action = $action
-//             $TimePeriodToQuery
-//         ";
-//     }
-
-//     $queryFaLa_template = "
-//     SELECT 
-//         MIN(timecreated) AS first_access,
-//         MAX(timecreated) AS last_access
-//     FROM {logstore_standard_log}
-//     WHERE 
-//         courseid = $courseID AND
-//         userid = ? $userID AND
-//         component = ? $component AND
-//         action = $action AND
-//         $TimePeriodToQuery
-//     ";
-
-//     return $queriesFaLa;
-// };
 
 
 
@@ -446,8 +407,8 @@ WHERE l.course = ? AND
 // todo add time period
 $query_longpage_instances = "
 SELECT
-    name,
-    id
+    id,
+    name
 FROM
     {longpage}
 WHERE
@@ -467,7 +428,6 @@ GROUP BY
 ";
 
 
-// query doesnt continue execution after IFNULL(...), thats why its at the end of the select statement
 // removed "IFNULL(name, 'NoName')"
 // IFNULL is not available on target platform (postgres), swapped it with a case statement
 $query_course_sections = "
@@ -495,24 +455,6 @@ $queries_activites = [
 ];
 
 
-// foreach ($activity_array as $activityName => $activityArr) {
-//     $queries_activites[$activityName];
-// }
-
-
-
-
-// $year = $today->format("y");
-
-// echo print_r("today " . $today->format("y-m-d") . " year " . $year);
-
-// $sumSem = new DateTime$year . '-03-01', new DateTimeZone('Europe/Berlin'));
-
-// echo $sumSem->format(" y-m-d");
-
-// $winSem = new DateTimeImmutable($year . '-09-01', new DateTimeZone('Europe/Berlin'));
-
-// echo $winSem->format(" y-m-d ");
 
 
 
@@ -560,10 +502,8 @@ foreach ($activity_array as $activityName => $activityArr) {
             $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_course_fa_la, array($course_id, $user_id));
             $recordsCourseAccess = $DB->get_records_sql($query_course_access, array($course_id, $user_id));
             $transaction->allow_commit();
-
-        } catch (Exception $e)
-        {
-            echo "DB error".print_r($e);
+        } catch (Exception $e) {
+            echo "DB error" . print_r($e);
             $transaction->rollback($e);
         }
         continue;
@@ -575,15 +515,13 @@ foreach ($activity_array as $activityName => $activityArr) {
             $recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
             $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
             $transaction->allow_commit();
-
-        } catch (Exception $e)
-        {
-            echo "DB error".print_r($e);
+        } catch (Exception $e) {
+            echo "DB error" . print_r($e);
             $transaction->rollback($e);
         }
     }
     // ladtopics is special
-    if ($activityName == "format_ladtopics_activity"){
+    if ($activityName == "format_ladtopics_activity") {
         $convertComponent = "format_ladtopics";
         //$tmparr = array();
         //$recordsActivityFaLa[$activityName] = $DB->get_record_sql($query_activity_fa_la, array($course_id, $user_id, $convertComponent));
@@ -593,7 +531,6 @@ foreach ($activity_array as $activityName => $activityArr) {
         //print_r($recordsActivityFaLa[$activityName]);
         //print_r($recordsActivityAccess[$activityName]);
     }
-
 }
 
 // fetch uncommon records of activities
@@ -611,22 +548,20 @@ try {
     $records_quiz_attempts = $DB->get_records_sql($query_quiz_attempts, array($course_id, $user_id));
 
     if ($dbman->table_exists("safran_q_attempt")) {
-        $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array( (int) $user_id, (int) $course_id));
-        $records_safran_access = $DB->get_records_sql($query_safran_access, array( (int) $user_id, (int) $course_id));
+        $records_safran_fa_la = $DB->get_record_sql($query_safran_fa_la, array((int) $user_id, (int) $course_id));
+        $records_safran_access = $DB->get_records_sql($query_safran_access, array((int) $user_id, (int) $course_id));
     }
-    
+
     $records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
-    
-    if ($dbman->table_exists("longpage")){
+
+    if ($dbman->table_exists("longpage")) {
         $records_longpage_posts = $DB->get_record_sql($query_longpage_posts, array($course_id, $user_id));
         $records_longpage_annotations = $DB->get_records_sql($query_longpage_annotations, array($course_id, $user_id));
         $records_longpage_reading_progress = $DB->get_records_sql($query_longpage_reading_progress, array($course_id, $user_id));
         $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array($course_id));
     }
-
-
-} catch (Exception $e){
-    echo "DB error".print_r($e);
+} catch (Exception $e) {
+    echo "DB error" . print_r($e);
     $transaction->rollback($e);
 }
 
@@ -646,13 +581,6 @@ echo "<div>ElapsedTime(DBfetch): " . number_format($elapsedTime, 10) . " us</div
 
 
 
-//insert first_access and last_access data from DB into activity_array
-foreach ($recordsActivityFaLa as $activityName => $activityArr) {
-    foreach ($activityArr as $dataKey => $data) {
-        if ($data != 0) $activity_array[$activityName][$dataKey] = Date("d.m.y, H:i:s", $data);
-    }
-}
-
 // uncommon records insert start
 if (count($records_subs) > 0) {
     $tmparr = array();
@@ -666,26 +594,26 @@ if (count($records_subs) > 0) {
 
 if (count($records_quiz_attempts) > 0) {
     try {
-    $tmparr = array();
-    $tmparr2 = array();
-    $tmp = 0;
-    $tmp2 = 0;
+        $tmparr = array();
+        $tmparr2 = array();
+        $tmp = 0;
+        $tmp2 = 0;
 
-    foreach ($records_quiz_attempts as $singleRecord) {
-        $tmp += $singleRecord->attempts;
-        if ($singleRecord->attempts != 1) $tmp2++;
-        $tmparr[] = $singleRecord->name . ": " . $singleRecord->attempts;
-        $tmparr2[] = $singleRecord->name . ": " . timeUtoHMS(floor($singleRecord->avgtime));
-        //print_r($singleRecord);
+        foreach ($records_quiz_attempts as $singleRecord) {
+            $tmp += $singleRecord->attempts;
+            if ($singleRecord->attempts != 1) $tmp2++;
+            $tmparr[] = $singleRecord->name . ": " . $singleRecord->attempts;
+            $tmparr2[] = $singleRecord->name . ": " . timeUtoHMS(floor($singleRecord->avgtime));
+            //print_r($singleRecord);
+        }
+        $activity_array["quiz_activity"]["count_attempts"] = $tmp;
+        $activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
+        $activity_array["quiz_activity"]["count_unique_repeated_quizes"] = $tmp2;
+        $activity_array["quiz_activity"]["avg_attempt_time_per_task"] = $tmparr2;
+        $activity_array["quiz_activity"]["count_attempts_per_quiz"] = $tmparr;
+    } catch (Exception $e) {
+        echo print_r($e);
     }
-    $activity_array["quiz_activity"]["count_attempts"] = $tmp;
-    $activity_array["quiz_activity"]["count_unique_quizes"] = count($records_quiz_attempts);
-    $activity_array["quiz_activity"]["count_unique_repeated_quizes"] = $tmp2;
-    $activity_array["quiz_activity"]["avg_attempt_time_per_task"] = $tmparr2;
-    $activity_array["quiz_activity"]["count_attempts_per_quiz"] = $tmparr;
-}catch(Exception $e){
-    echo print_r($e);
-}
 }
 
 if (count($records_course_sections) > 0) {
@@ -767,9 +695,9 @@ if (count($records_safran_access) > 0) {
     $activity_array["safran_activity"]["time_spent"] = timeUToHMS($timeSpentSafran);
 }
 
-if (count($records_format_ladtopics_fa_la_access) > 0){
+if (count($records_format_ladtopics_fa_la_access) > 0) {
     $tmparr = array();
-    foreach($records_format_ladtopics_fa_la_access as $singleRecord){
+    foreach ($records_format_ladtopics_fa_la_access as $singleRecord) {
         $tmparr[] = explode(":", $singleRecord->other)[1];    // data is in format:         "{""utc"":1569919746765
     }
 
@@ -807,45 +735,84 @@ if (count($records_format_ladtopics_fa_la_access) > 0){
     $activity_array["format_ladtopics_activity"]["time_spent"] = timeUToHMS($timeSpentLadtopics);
 }
 
-if (count($records_longpage_annotations) > 0){
-    
+if (count($records_longpage_annotations) > 0) {
+
 
     $marks = 0;
     $bookmarks = 0;
     $publicComments = 0;
     $privateComments = 0;
 
+    $countMarks = array();
+    $countBookmarks = array();
+    $countPublicComments = array();
+    $countPrivateComments = array();
+    $ratioReadText = array();
+
     $tmparr = array();
 
-    //print_r($records_longpage_annotations);
+    //initiate array members for easier counting
+    foreach ($records_longpage_instances as $singleRecord) {
+        $tmparr[$singleRecord->id]["marks"] = 0;
+        $tmparr[$singleRecord->id]["bookmarks"] = 0;
+        $tmparr[$singleRecord->id]["publicComments"] = 0;
+        $tmparr[$singleRecord->id]["privateComments"] = 0;
+        $tmparr[$singleRecord->id]["name"] = "NoName";
+        $tmparr[$singleRecord->id]["count"] = 0;
+        $tmparr[$singleRecord->id]["sectionCount"] = 0;
+    }
 
-    foreach($records_longpage_annotations as $singleRecord){
-        if ($singleRecord->type == 0) $marks++;
-        if ($singleRecord->type == 1){
-            if ($singleRecord->ispublic == 1) $publicComments++;
-            if ($singleRecord->ispublic == 0) $privateComments++;
+    foreach ($records_longpage_annotations as $singleRecord) {
+        if ($singleRecord->type == 0) $tmparr[$singleRecord->longpageid]["marks"] += 1;
+        if ($singleRecord->type == 1) {
+            if ($singleRecord->ispublic == 1) $tmparr[$singleRecord->longpageid]["publicComments"] += 1;
+            if ($singleRecord->ispublic == 0) $tmparr[$singleRecord->longpageid]["privateComments"] += 1;
         }
-        if ($singleRecord->type == 2) $bookmarks++;
+        if ($singleRecord->type == 2) $tmparr[$singleRecord->longpageid]["bookmarks"] += 1;
     }
 
-    foreach($records_longpage_instances as $singleRecord){
-        $tmparr[$singleRecord->id] = array("name" => $singleRecord->name);
+    foreach ($records_longpage_instances as $singleRecord) {
+        $tmparr[$singleRecord->id]["name"] = $singleRecord->name;
     }
-    foreach($records_longpage_reading_progress as $singleRecord){
-        $tmparr[$singleRecord->longpageid] = array("count" => $singleRecord->count,
-        "sectioncount" => $singleRecord->sectioncount);
+    foreach ($records_longpage_reading_progress as $singleRecord) {
+        $tmparr[$singleRecord->longpageid]["count"] = $singleRecord->count;
+        $tmparr[$singleRecord->longpageid]["sectionCount"] = $singleRecord->sectioncount;
     }
-    print_r($tmparr);
+  
 
-    $activity_array["longpage_activity"]["count_marks"] = $marks;
-    $activity_array["longpage_activity"]["count_bookmarks"] = $bookmarks;
-    $activity_array["longpage_activity"]["count_public_comments"] = $publicComments;
-    $activity_array["longpage_activity"]["count_private_comments"] = $privateComments;
+
+
+    foreach($tmparr as $singleRecord){
+        $countMarks[] = $singleRecord["name"].": ".$singleRecord["marks"];
+        $countBookmarks[] = $singleRecord["name"].": ".$singleRecord["bookmarks"];
+        $countPublicComments[] = $singleRecord["name"].": ".$singleRecord["publicComments"];
+        $countPrivateComments[] = $singleRecord["name"].": ".$singleRecord["privateComments"];
+        if ($singleRecord["sectionCount"] != 0) {
+            $ratioReadText[] = $singleRecord["name"].": ".number_format($singleRecord["count"] / $singleRecord["sectionCount"], 2)." %";
+        }
+    }
+
+    $activity_array["longpage_activity"]["count_marks"] = $countMarks;
+    $activity_array["longpage_activity"]["count_bookmarks"] = $countBookmarks;
+    $activity_array["longpage_activity"]["count_public_comments"] = $countPublicComments;
+    $activity_array["longpage_activity"]["count_private_comments"] = $countPrivateComments;
+
+    $activity_array["longpage_activity"]["ratio_read_text"] = $ratioReadText;
+
 }
 
 // uncommon records insert end
 
 //echo print_r($recordsCourseAccess);
+
+
+
+//insert first_access and last_access data from DB into activity_array
+foreach ($recordsActivityFaLa as $activityName => $activityArr) {
+    foreach ($activityArr as $dataKey => $data) {
+        if ($data != 0) $activity_array[$activityName][$dataKey] = Date("d.m.y, H:i:s", $data);
+    }
+}
 
 $lastRecord = 0;
 $sessions = 0;
@@ -983,3 +950,56 @@ course_activity?: {
         course_unit_success?: Map<number, number>; Wie viele Aufgaben von den bearbeiteten Aufgaben waren korrekt. z.B. 'meine Kurs-Sektion':0.81, 'KE 1':0.12, 'KE2':0.99
     };
  */
+
+
+// foreach ($activity_array as $activityName => $activityArr) {
+//     $queries_activites[$activityName];
+// }
+
+// $year = $today->format("y");
+// echo print_r("today " . $today->format("y-m-d") . " year " . $year);
+// $sumSem = new DateTime$year . '-03-01', new DateTimeZone('Europe/Berlin'));
+// echo $sumSem->format(" y-m-d");
+// $winSem = new DateTimeImmutable($year . '-09-01', new DateTimeZone('Europe/Berlin'));
+// echo $winSem->format(" y-m-d ");
+
+
+// function queryGenerator($activityArray, $courseID, $userID, $component, $action, $TimePeriodToQuery)
+// {
+//     $queriesFaLa = [];
+
+//     foreach ($activityArray as $component => $activity) {
+
+//         $convertComponent = "mod_" . explode("_", $component)[0];
+//         if ($convertComponent === "mod_course") {
+//             $convertComponent = "core";
+//         }
+//         $queriesFaLa[$component] = "
+//         SELECT 
+//             MIN(timecreated) AS first_access,
+//             MAX(timecreated) AS last_access
+//         FROM {logstore_standard_log}
+//         WHERE 
+//             courseid = $courseID AND
+//             userid = $userID AND
+//             component = $component AND
+//             action = $action
+//             $TimePeriodToQuery
+//         ";
+//     }
+
+//     $queryFaLa_template = "
+//     SELECT 
+//         MIN(timecreated) AS first_access,
+//         MAX(timecreated) AS last_access
+//     FROM {logstore_standard_log}
+//     WHERE 
+//         courseid = $courseID AND
+//         userid = ? $userID AND
+//         component = ? $component AND
+//         action = $action AND
+//         $TimePeriodToQuery
+//     ";
+
+//     return $queriesFaLa;
+// };
