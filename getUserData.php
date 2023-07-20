@@ -8,7 +8,7 @@ $systemContent = context_system::instance();
 require_capability('moodle/analytics:managemodels', $systemContent);
 
 global $DB;
-
+$dubug = '';
 
 
 $user_id = $_REQUEST["uID"];
@@ -29,15 +29,17 @@ $blank = "---";
 
 $activity_array = array(
     "course_activity" => array(
-        "first_access" => $blank,
-        "last_access" => $blank,
-        "total_sessions" => $blank,
-        "total_time_spent" => $blank,
-        "ratio_active_days" => $blank,
-        "activity_sequence_last7days" => $blank,
-        "selected_goal" => $blank,
-        "course_unit_completion" => $blank,
-        "course_unit_success" => $blank
+        "first_access" => null,
+        "first_access_utc" => 0,
+        "last_access" => null,
+        "last_access_utc" => 0,
+        "total_sessions" => 0,
+        "total_time_spent" => 0,
+        "ratio_active_days" => 0,
+        "activity_sequence_last7days" => array(),
+        "selected_goal" => '',
+        "course_unit_completion" => 0,
+        "course_unit_success" => 0
     ),
     "assign_activity" => array(
         "first_access" => $blank,
@@ -62,6 +64,7 @@ $activity_array = array(
     ),
     "safran_activity" => array(
         "first_access" => $blank,
+        "first_access_utc" => $blank,
         "last_access" => $blank,
         "sessions" => $blank,
         "time_spent" => $blank,
@@ -503,7 +506,7 @@ foreach ($activity_array as $activityName => $activityArr) {
             $recordsCourseAccess = $DB->get_records_sql($query_course_access, array($course_id, $user_id));
             $transaction->allow_commit();
         } catch (Exception $e) {
-            echo "DB error" . print_r($e);
+            $dubug .= "DB error" . print_r($e);
             $transaction->rollback($e);
         }
         continue;
@@ -516,7 +519,7 @@ foreach ($activity_array as $activityName => $activityArr) {
             $recordsActivityAccess[$activityName] = $DB->get_records_sql($query_activity_access, array($course_id, $user_id, $convertComponent));
             $transaction->allow_commit();
         } catch (Exception $e) {
-            echo "DB error" . print_r($e);
+            $dubug .= "DB error" . print_r($e);
             $transaction->rollback($e);
         }
     }
@@ -561,7 +564,7 @@ try {
         $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array($course_id));
     }
 } catch (Exception $e) {
-    echo "DB error" . print_r($e);
+    $dubug .= "DB error" . print_r($e);
     $transaction->rollback($e);
 }
 
@@ -577,12 +580,12 @@ try {
 
 $elapsedTime = microtime(true) - $start;
 
-echo "<div>ElapsedTime(DBfetch): " . number_format($elapsedTime, 10) . " us</div>";
+
 
 
 
 // uncommon records insert start
-if (count($records_subs) > 0) {
+if (!empty($records_subs)) {
     $tmparr = array();
 
     foreach ($records_subs as $singleRecord) {
@@ -592,7 +595,7 @@ if (count($records_subs) > 0) {
     $activity_array["assign_activity"]["scores"] = $tmparr;
 }
 
-if (count($records_quiz_attempts) > 0) {
+if (!empty($records_quiz_attempts)) {
     try {
         $tmparr = array();
         $tmparr2 = array();
@@ -612,11 +615,11 @@ if (count($records_quiz_attempts) > 0) {
         $activity_array["quiz_activity"]["avg_attempt_time_per_task"] = $tmparr2;
         $activity_array["quiz_activity"]["count_attempts_per_quiz"] = $tmparr;
     } catch (Exception $e) {
-        echo print_r($e);
+        $dubug .= print_r($e);
     }
 }
 
-if (count($records_course_sections) > 0) {
+if (!empty($records_course_sections)) {
     $tmparr1 = array();
     $tmparr2 = array();
     foreach ($records_course_sections as $singleRecord) {
@@ -648,7 +651,7 @@ if (count($records_course_sections) > 0) {
     $activity_array["course_activity"]["course_unit_success"] = $tmparr2;
 }
 
-if (count($records_quiz_scores) > 0) {
+if (!empty($records_quiz_scores)) {
     $tmparr = array();
     $tmp = 0;
 
@@ -659,13 +662,13 @@ if (count($records_quiz_scores) > 0) {
     $activity_array["quiz_activity"]["scores"] = $tmparr;
 }
 
-if (count($records_safran_fa_la) > 0) {
-
+if (!empty($records_safran_fa_la)) {
     $activity_array["safran_activity"]["first_access"] = Date("d.m.y, H:i:s", $records_safran_fa_la->first_access);
+    $activity_array["safran_activity"]["first_access_utc"] = (int)$records_safran_fa_la->first_access;
     $activity_array["safran_activity"]["last_access"] = Date("d.m.y, H:i:s", $records_safran_fa_la->last_access);
 }
 
-if (count($records_safran_access) > 0) {
+if (empty($records_safran_access)) {
 
     $sessionsSafran = 0;
     $timeSpentSafran = 0;
@@ -695,7 +698,7 @@ if (count($records_safran_access) > 0) {
     $activity_array["safran_activity"]["time_spent"] = timeUToHMS($timeSpentSafran);
 }
 
-if (count($records_format_ladtopics_fa_la_access) > 0) {
+if (!empty($records_format_ladtopics_fa_la_access)) {
     $tmparr = array();
     foreach ($records_format_ladtopics_fa_la_access as $singleRecord) {
         $tmparr[] = explode(":", $singleRecord->other)[1];    // data is in format:         "{""utc"":1569919746765
@@ -735,7 +738,7 @@ if (count($records_format_ladtopics_fa_la_access) > 0) {
     $activity_array["format_ladtopics_activity"]["time_spent"] = timeUToHMS($timeSpentLadtopics);
 }
 
-if (count($records_longpage_annotations) > 0) {
+if (!empty($records_longpage_annotations)) {
 
 
     $marks = 0;
@@ -912,28 +915,50 @@ foreach ($recordsActivityAccess as $activityName => $activityArr) {
 
 
 
-// generate html from data (activity_array)
-foreach ($activity_array as $key1 => $activity) {
-    echo "<strong class='activityDescription'>" . $key1 . "</strong><br>";
 
-    $table_headers = "<thead><tr>";
-    $table_data = "<tbody><tr>";
+# OUTPUT
 
-    foreach ($activity as $key2 => $entry) {
-        $table_headers .= "<th>" . $key2 . " </th>";
-        if (is_array($entry)) {
-            $arrayInTable = "<div class='arrayInTableStyle'>";
-            foreach ($entry as $key => $arrayEntry) {
-                $arrayInTable .= "<div>$arrayEntry</div>";
-            }
-            $arrayInTable .= "</div>";
-            $table_data .= "<td>" . $arrayInTable . " </td>";
-        } else {
-            $table_data .= "<td>" . $entry . " </td>";
-        }
-    }
-    echo "<div><table>" . $table_headers . "</tr></thead>" . $table_data . "</tr></tbody></table></div><br>";
+$output_format = 'json';
+$accepted_output_formats = ['html', 'json'];
+
+if (isset($_REQUEST["format"]) && in_array($_REQUEST["format"], $accepted_output_formats)) {
+    $output_format = $_REQUEST["format"];
 }
+
+if($output_format == 'json'){
+    header('Content-Type: application/json; charset=utf-8');
+    print_r(json_encode($activity_array));
+}
+
+if($output_format == 'html'){
+    echo "<div>ElapsedTime(DBfetch): " . number_format($elapsedTime, 10) . " us</div>";
+    // generate html from data (activity_array)
+    foreach ($activity_array as $key1 => $activity) {
+        echo "<strong class='activityDescription'>" . $key1 . "</strong><br>";
+
+        $table_headers = "<thead><tr>";
+        $table_data = "<tbody><tr>";
+
+        foreach ($activity as $key2 => $entry) {
+            $table_headers .= "<th>" . $key2 . " </th>";
+            if (is_array($entry)) {
+                $arrayInTable = "<div class='arrayInTableStyle'>";
+                foreach ($entry as $key => $arrayEntry) {
+                    $arrayInTable .= "<div>$arrayEntry</div>";
+                }
+                $arrayInTable .= "</div>";
+                $table_data .= "<td>" . $arrayInTable . " </td>";
+            } else {
+                $table_data .= "<td>" . $entry . " </td>";
+            }
+        }
+        echo "<div><table>" . $table_headers . "</tr></thead>" . $table_data . "</tr></tbody></table></div><br>";
+    }
+}
+
+
+
+
 
 /*
 userid: number;

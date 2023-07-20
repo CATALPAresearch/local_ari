@@ -80,7 +80,7 @@ echo "<script>
 
                         }
                     };
-                    xmlhttp.open('GET', 'getUserData.php?uID=' + userID + '&cID=' + cID + '&tperiod=' + timePeriod, true);
+                    xmlhttp.open('GET', 'getUserData.php?uID=' + userID + '&cID=' + cID + '&tperiod=' + timePeriod + '&format=html', true);
                     xmlhttp.send();
 
                 }
