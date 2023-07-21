@@ -572,10 +572,7 @@ try {
 // echo print_r($records_course_sections);
 // echo "<br>";
 // echo print_r($records_course_modules_completion);
-
-
 //echo print_r($records_safran_fa_la);
-
 //print_r($recordsActivityFaLa);
 
 $elapsedTime = microtime(true) - $start;

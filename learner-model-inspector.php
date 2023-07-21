@@ -62,7 +62,7 @@ echo "<script>
                             
                         }
                     };
-                    xmlhttp.open('GET', 'getusers.php?cID=' + cID, true);
+                    xmlhttp.open('GET', 'getusers.php?course_id=' + cID, true);
                     xmlhttp.send();
                 }
 
