@@ -7,7 +7,6 @@ require_login();
 $systemContent = context_system::instance();
 require_capability('moodle/analytics:managemodels', $systemContent);
 
-
 global $DB;
 
 if(isset($_REQUEST["course_id"])){
@@ -16,7 +15,7 @@ if(isset($_REQUEST["course_id"])){
     echo json_encode(['error' => "HTTP GET parameter 'course_id' was not set or set in wrong format."]);
 }
 
-if($course_id > 0 && is_int($course_id)){
+if(is_int($course_id) && $course_id > 0){
     $query_user_ids = "
         SELECT DISTINCT
             userid,

@@ -9,37 +9,58 @@ require_capability('moodle/analytics:managemodels', $systemContent);
 
 global $DB;
 $dubug = '';
-
-
-$user_id = $_REQUEST["uID"];
-
-$course_id = $_REQUEST["cID"];
-
 $actionview = "viewed";
 $target = "course";
 
-if (isset($_REQUEST["tperiod"])) {
-    $timePeriod = $_REQUEST["tperiod"];
+
+# Load request parameters
+if(isset($_REQUEST["user_id"])){
+    $user_id = $_REQUEST["user_id"];
+} else{
+    die;
+}
+
+if(isset($_REQUEST["course_id"])){
+    $course_id = $_REQUEST["course_id"];
+} else{
+    die;
+}
+
+if (isset($_REQUEST["period"])) {
+    $timePeriod = $_REQUEST["period"];
 } else {
     $timePeriod = 11;
 }
 
 
-$blank = "---";
 
+# Define data structure
+$blank = "---";
 $activity_array = array(
+    "user" => array(
+        "user_id" => 0,
+        "semester" => '',
+        "semester_from" => '',
+        "semester_to" => '',
+    ),
     "course_activity" => array(
-        "first_access" => null,
-        "first_access_utc" => 0,
-        "last_access" => null,
-        "last_access_utc" => 0,
-        "total_sessions" => 0,
+        "first_access" => 0,
+        "first_access_date" => null,
+        "last_access" => 0,
+        "last_access_date" => null,
+        "number_of_sessions" => 0,
+        "mean_session_length" => 0,
+        "sd_session_length" => 0,
         "total_time_spent" => 0,
-        "ratio_active_days" => 0,
-        "activity_sequence_last7days" => array(),
-        "selected_goal" => '',
+        "total_time_spent_hms" => 0,
+        "active_days" => 0,
+        "activity_span" => 0,
+        "course_overview_page_visits" => 0,
+        "goal_changes" => -1,
+        "goal_selected" => null,
         "course_unit_completion" => 0,
-        "course_unit_success" => 0
+        "course_unit_success" => 0,
+        "activity_sequence_last7days" => array(),
     ),
     "assign_activity" => array(
         "first_access" => $blank,
@@ -97,6 +118,9 @@ $activity_array = array(
     )
 );
 
+
+
+# Handle time periods
 $from = 0;
 $to = 0;
 
@@ -110,38 +134,36 @@ $session_timeout = 1800;  // 1800s = 30m
 // we use this to guess the time a user had interaction with a course within a single session when we dont have further data available
 $assumedTimeSpent = 300; // = 300s = 5m 
 
-// todo: clean it up and make it safer
+
 $periodArray = [
-    new DateTimeImmutable("2018-03-01"),
-    new DateTimeImmutable("2018-09-01"),
-    new DateTimeImmutable("2019-03-01"),
-    new DateTimeImmutable("2019-09-01"),
-    new DateTimeImmutable("2020-03-01"),
-    new DateTimeImmutable("2020-09-01"),
-    new DateTimeImmutable("2021-03-01"),
-    new DateTimeImmutable("2021-09-01"),
-    new DateTimeImmutable("2022-03-01"),
-    new DateTimeImmutable("2022-09-01"),
-    new DateTimeImmutable("2023-03-01"),
-    new DateTimeImmutable("2023-09-01"),
-    new DateTimeImmutable("2024-03-01")
+    'WS18' => ['from' => new DateTimeImmutable("2018-10-01"), 'to'=>new DateTimeImmutable("2019-03-31")],
+    'SS18' => ['from' => new DateTimeImmutable("2018-04-01"), 'to'=>new DateTimeImmutable("2018-09-30")],
+    'WS19' => ['from' => new DateTimeImmutable("2019-10-01"), 'to'=>new DateTimeImmutable("2020-03-31")],
+    'SS19' => ['from' => new DateTimeImmutable("2019-04-01"), 'to'=>new DateTimeImmutable("2019-09-30")],
+    'WS20' => ['from' => new DateTimeImmutable("2020-10-01"), 'to'=>new DateTimeImmutable("2021-03-31")],
+    'SS20' => ['from' => new DateTimeImmutable("2020-04-01"), 'to'=>new DateTimeImmutable("2020-09-30")],
+    'WS21' => ['from' => new DateTimeImmutable("2021-10-01"), 'to'=>new DateTimeImmutable("2022-03-31")],
+    'SS21' => ['from' => new DateTimeImmutable("2021-04-01"), 'to'=>new DateTimeImmutable("2021-09-30")],
+    'WS22' => ['from' => new DateTimeImmutable("2022-10-01"), 'to'=>new DateTimeImmutable("2023-03-31")],
+    'SS22' => ['from' => new DateTimeImmutable("2022-04-01"), 'to'=>new DateTimeImmutable("2022-09-30")],
+    'WS23' => ['from' => new DateTimeImmutable("2023-10-01"), 'to'=>new DateTimeImmutable("2023-03-31")],
+    'SS23' => ['from' => new DateTimeImmutable("2023-04-01"), 'to'=>new DateTimeImmutable("2023-09-30")],
+    'WS24' => ['from' => new DateTimeImmutable("2024-10-01"), 'to'=>new DateTimeImmutable("2024-03-31")],
+    'SS24' => ['from' => new DateTimeImmutable("2024-04-01"), 'to'=>new DateTimeImmutable("2024-09-30")]
 ];
 
+
+# Concat string for filter queries for time ranges
 $addTimePeriodToQuery = "";
-$addTimePeriodToQuerySafran = "";           //column timecreated is flawed in one of the safran tables, we need a custom query
-function timePeriodToSemesterInterval($startDate, $periodArray, $timeCreatedPrefix = "")
-{
+$addTimePeriodToQuerySafran = ""; //column timecreated is flawed in one of the safran tables, we need a custom query
 
-    $from = $periodArray[$startDate];
-    $fromInU = $from->format("U");
-
-    $to = $periodArray[$startDate + 1]->sub(new DateInterval('P1D'));
-
-    $toInU = $to->format("U");
-
+function timePeriodToSemesterInterval($timePeriod, $periodArray, $timeCreatedPrefix = ""){
+    $from = $periodArray[$timePeriod]["from"]->format("U");
+    $to = $periodArray[$timePeriod]["to"]->format("U");
+    
     $addTimePeriodToQuery = " AND " .
-        $timeCreatedPrefix . "timecreated > " . $fromInU . " AND " .
-        $timeCreatedPrefix . "timecreated < " . $toInU . "";
+        $timeCreatedPrefix . "timecreated > " . $from . " AND " .
+        $timeCreatedPrefix . "timecreated < " . $to . "";
 
     return $addTimePeriodToQuery;
 }
@@ -151,8 +173,10 @@ if ($timePeriod !== "none") {
     $addTimePeriodToQuerySafran = timePeriodToSemesterInterval($timePeriod, $periodArray, "sqa.");
 }
 
-function timeUtoHMS($timeInU)
-{
+
+
+# Convert time in human readbale format
+function timeUtoHMS($timeInU){
     $hours = $timeInU / 3600;
     $hours = floor($hours);
     $minutes = ($timeInU - ($hours * 3600)) / 60;
@@ -166,8 +190,7 @@ function timeUtoHMS($timeInU)
 
 
 
-
-
+# SQL queries
 $query_course_fa_la = "
 SELECT 
     MIN(timecreated) AS first_access,
@@ -189,7 +212,8 @@ SELECT
 FROM {logstore_standard_log}
 WHERE 
     courseid = ? AND
-    userid = ?$addTimePeriodToQuery
+    userid = ? $addTimePeriodToQuery AND
+    timecreated > 1000
 ORDER BY timecreated ASC
 ";
 
@@ -407,7 +431,7 @@ WHERE l.course = ? AND
     $addTimePeriodToQuery
 ";
 
-// todo add time period
+// xxx add time period
 $query_longpage_instances = "
 SELECT
     id,
@@ -469,12 +493,11 @@ $activeDays = 0;
 $lastDay = 0;
 
 
-
-$today = new DateTimeImmutable("now", new DateTimeZone('Europe/Berlin'));
-
-$sevenDaysAgo = $today->sub(new DateInterval('P7D'));
-
-$sevenDaysAgoInU = $sevenDaysAgo->format("U");
+function get_date_7days_ago(){
+    $today = new DateTimeImmutable("now", new DateTimeZone('Europe/Berlin'));
+    $sevenDaysAgo = $today->sub(new DateInterval('P7D'));
+    return $sevenDaysAgo->format("U");
+}
 
 $activitySequenceLast7Days = [];
 
@@ -814,63 +837,8 @@ foreach ($recordsActivityFaLa as $activityName => $activityArr) {
     }
 }
 
-$lastRecord = 0;
-$sessions = 0;
-$timeSpent = 0;
-
-$activeDays = 0;
-$lastDay = 0;
-
-// calculate sessions,total time spent and ratio of active days for the whole course
-// collect activity of last 7 days ($activitySequenceLast7Days[])
-foreach ($recordsCourseAccess as $singleRecord) {
-    if ($singleRecord->timecreated < 1000) continue;    // there are events in the DB which dont have a proper timestamp, usually somewhere below 1000 (those are system logs, not relevant to user data)
-    if ((int)Date("z", $singleRecord->timecreated) != (int)$lastDay) $activeDays++;
-    if ($singleRecord->timecreated > $sevenDaysAgoInU && $singleRecord->component != "core") $activitySequenceLast7Days[] = $singleRecord->component . ":" . $singleRecord->contextid;
-    if (($lastRecord + $session_timeout) < $singleRecord->timecreated) {     // time difference between 2 events is larger than $session_timeout ? must be a new session
-        $sessions++;
-        $timeSpent += $assumedTimeSpent;
-    } else {
-        /**
-         * 2 events are propably in the same session, so we count the time between them and assume this as user engagement time with course
-         * however, we cant track the time if user triggers a singular event and then doesnt trigger another event within the session_timeout
-         * TODO: check logstore_standard_log with courseid = 0 (thats where loggedin and loggedout events of a user are 
-         * logged) and add that to the calculation
-         */
-        $timeSpent += $singleRecord->timecreated - $lastRecord;
-    }
-    $lastRecord = $singleRecord->timecreated;
-    $lastDay = Date("z", $lastRecord);
-    //echo $lastDay."<br>";
-}
 
 
-
-$totalTimeSpent = timeUtoHMS($timeSpent);
-
-if ($timePeriod !== 'none') {
-
-    $today = new DateTimeImmutable("now", new DateTimeZone('Europe/Berlin'));
-    $from = $periodArray[$timePeriod];
-    $diff = $today->diff($from);
-
-    //echo $diff->format("%r%a days");
-
-    //echo $diff->format(" %a DIFF");
-
-    $semesterDays = (int)$diff->format("%a");
-
-    if ($semesterDays > 180) $semesterDays = 180;
-
-    $ratioActiveDays = $activeDays . " / " . $semesterDays . " = " . number_format($activeDays / $semesterDays, 4);
-} else {
-    $ratioActiveDays = "---";
-}
-
-$activity_array["course_activity"]["total_sessions"] = $sessions;
-$activity_array["course_activity"]["total_time_spent"] = $totalTimeSpent;
-$activity_array["course_activity"]["ratio_active_days"] = $ratioActiveDays;
-$activity_array["course_activity"]["activity_sequence_last7days"] = $activitySequenceLast7Days;
 
 
 
@@ -886,7 +854,7 @@ foreach ($recordsActivityAccess as $activityName => $activityArr) {
         //$activity_array[$activityName][$dataKey] = Date("d.m.y, H:i:s", $data);
         if ($data->timecreated < 1000) continue;    // there are events in the DB which dont have a proper timestamp, usually somewhere below 1000 (those are system logs, not relevant to user data)
         //if ((int)Date("z", $data->timecreated) != (int)$lastDay) $activeDays++;
-        //if ($data->timecreated > $sevenDaysAgoInU && $data->component != "core") $activitySequenceLast7Days[] = $data->component . ":" . $data->contextid;
+        //if ($data->timecreated > get_date_7days_ago() && $data->component != "core") $activitySequenceLast7Days[] = $data->component . ":" . $data->contextid;
         if (($lastRecord + $session_timeout) < $data->timecreated) {     // time difference between 2 events is larger than $session_timeout ? must be a new session
             $sessions++;
             $timeSpent += $assumedTimeSpent;
@@ -912,14 +880,132 @@ foreach ($recordsActivityAccess as $activityName => $activityArr) {
 
 
 
+/**
+ * course_activity
+ */
+
+
+/**
+ * get_course_activities: calculates and returns array of: 
+ * - number of sessions, 
+ * - total time spent 
+ * - ratio of active days for the whole course
+ * - collect activity of last 7 days ($activitySequenceLast7Days[])
+ */
+function get_course_activities($recordsCourseAccess, $session_timeout){
+    $number_of_sessions = 0;
+    $time_spent = 0;
+    $active_days = 0;
+    $activity_span = 0;
+    $activity_sequence_last_7_days = [];
+    $last_record_time = 0;
+    $last_day = 0;
+    
+    foreach ($recordsCourseAccess as $singleRecord) {
+        // there are events in the DB which dont have a proper timestamp, usually somewhere below 1000 (those are system logs, not relevant to user data)
+        if ($singleRecord->timecreated < 1000){
+            continue;
+        } 
+        if ((int)Date("z", $singleRecord->timecreated) != (int)$last_day){
+            $active_days++;
+        }
+        if ($singleRecord->timecreated > get_date_7days_ago() && $singleRecord->component != "core"){
+            $activity_sequence_last_7_days[] = $singleRecord->component . ":" . $singleRecord->contextid;
+        }
+        // time difference between 2 events is larger than $session_timeout ? must be a new session
+        if (($last_record_time + $session_timeout) < $singleRecord->timecreated) {
+            $number_of_sessions++;
+            #$time_spent += $singleRecord->timecreated - $last_record_time;
+            #$last_record_time = $singleRecord->timecreated;
+        } else {
+            /**
+             * 2 events are propably in the same session, so we count the time between them and assume this as user engagement time with course
+             * however, we cant track the time if user triggers a singular event and then doesnt trigger another event within the session_timeout
+             * TODO: check logstore_standard_log with courseid = 0 (thats where loggedin and loggedout events of a user are 
+             * logged) and add that to the calculation
+             */
+            $time_spent += $singleRecord->timecreated - $last_record_time;
+        }
+        $last_record_time = $singleRecord->timecreated;
+        $last_day = Date("z", $last_record_time);
+    }
+    $recordsCourseAccess_arr = json_decode(json_encode($recordsCourseAccess), true);
+    $first_day =  Date("z", reset($recordsCourseAccess_arr)['timecreated']);
+    $last_day =  Date("z", end($recordsCourseAccess_arr)['timecreated']);
+    # consider German winter semester (October - April) and summer semester (April - September)
+    $activity_span = $first_day < $last_day ? $last_day - $first_day : (365 - $first_day) + $last_day; 
+    return [$number_of_sessions, $time_spent, $active_days, $activity_span, $activity_sequence_last_7_days];
+}
+
+/**
+ * Determine the timestamp and date of the first and last course access
+ */
+function get_course_access_dates($DB, $query_course_fa_la, $course_id, $user_id){
+    $course_activity_access_res = $DB->get_record_sql($query_course_fa_la, array($course_id, $user_id));
+    $first_access = (int)$course_activity_access_res->first_access ? $course_activity_access_res->first_access : null;
+    $first_access_date = $course_activity_access_res->first_access ? Date("d.m.y, H:i:s", $course_activity_access_res->first_access) : null;
+    $last_access = (int)$course_activity_access_res->last_access ? $course_activity_access_res->last_access : null;
+    $last_access_date = $course_activity_access_res->last_access ? Date("d.m.y, H:i:s", $course_activity_access_res->last_access) : null;
+    return [$first_access, $first_access_date, $last_access, $last_access_date];
+}
+
+/**
+ * Determine how often a course-related goal has been changed be the user
+ */
+function get_goal_changes($DB, $course_id, $user_id, $TimePeriodToQuery){
+    $query = "
+    SELECT
+    count(*) as count
+    from {logstore_standard_log}
+    WHERE 
+    userid = ? AND
+    courseid = ? AND
+    component='format_ladtopics' AND 
+    action='change_goal' $TimePeriodToQuery
+    ;
+    ";
+    $res = $DB->get_record_sql($query, array($course_id, $user_id));
+    return (int)$res->count;
+}
+
+
+# Assemble results for course-related activities
+$activity_array["user"]["user_id"] = $user_id;
+$activity_array["user"]["semester"] = $timePeriod;
+$activity_array["user"]["semester_from"] = $periodArray[$timePeriod]['from'];
+$activity_array["user"]["semester_to"] = $periodArray[$timePeriod]['to'];
+
+[$first_access, $first_access_date, $last_access, $last_access_date] = get_course_access_dates($DB, $query_course_fa_la, $course_id, $user_id);
+$activity_array["course_activity"]["first_access"] = $first_access;
+$activity_array["course_activity"]["first_access_date"] = $first_access_date;
+$activity_array["course_activity"]["last_access"] = $last_access;
+$activity_array["course_activity"]["last_access_date"] = $last_access_date;
+
+[$number_of_sessions, $time_spent, $active_days, $activity_span, $activity_sequence_last_7_days] = get_course_activities($recordsCourseAccess, $session_timeout);
+$activity_array["course_activity"]["number_of_sessions"] = (int)$number_of_sessions;
+$activity_array["course_activity"]["mean_session_length"] = "xxx";
+$activity_array["course_activity"]["sd_session_length"] = "xxx";
+$activity_array["course_activity"]["total_time_spent"] = $time_spent;
+$activity_array["course_activity"]["total_time_spent_hms"] = Date("H:i:s", $time_spent);
+$activity_array["course_activity"]["active_days"] = $active_days;
+$activity_array["course_activity"]["activity_span"] = $activity_span;
+$activity_array["course_activity"]["course_overview_page_visits"] = "xxx";
+$activity_array["course_activity"]["goal_changes"] = get_goal_changes($DB, $course_id, $user_id, $TimePeriodToQuery);
+$activity_array["course_activity"]["goal_selected"] = "xxx";
+$activity_array["course_activity"]["activity_sequence_last7days"] = $activity_sequence_last_7_days;
+$activity_array["course_activity"]["course_unit_completion"] = "xxx";
+$activity_array["course_activity"]["course_unit_success"] = "xxx";
+
 
 # OUTPUT
 
 $output_format = 'json';
-$accepted_output_formats = ['html', 'json'];
+$accepted_output_formats = ['html', 'json', 'echo'];
 
 if (isset($_REQUEST["format"]) && in_array($_REQUEST["format"], $accepted_output_formats)) {
     $output_format = $_REQUEST["format"];
+} else{
+    die;
 }
 
 if($output_format == 'json'){
@@ -954,8 +1040,134 @@ if($output_format == 'html'){
 }
 
 
+// END
+
+/*
+
+semester
+userid 			==== unique user id
+
+first_enrollment	==== unix timestamp (more easy for calculations)
+first_enrollment_date 	==== unix timestamp converted to human readable date
+last_enrollment		==== see above
+last_enrollment_date	==== see above
+enrollment_span		==== days between first and last login. Amount sometime more than half a year since the platform was not closed
+active_days		==== days with any user activity
+number_of_sessions
+course_overview_page_visits
+mean_session_length
+sd_session_length
+
+srl_monitoring
+srl_planning
+srl_reflections
+srl_goal_changes
+srl_goal_last_change
+
+page_total_views	==== long page activities 
+page_KE1_views
+page_KE2_views
+page_KE3_views
+page_KE4_views
+page_total_scroll
+page_KE1_scroll
+page_KE2_scroll
+page_KE3_scroll
+page_KE4_scroll
+count_reading_sessions
+total_reading_session_length
+mean_reasing_session_length
+sd_reading_session_length
 
 
+quiz_total_viewed	==================> quiz includes assessments that are _no_ self assessments (e.g. multiple choice)
+quiz_KE1_viewed
+quiz_KE2_viewed
+quiz_KE3_viewed
+quiz_KE4_viewed
+quiz_total_submitted
+quiz_KE1_submitted
+quiz_KE2_submitted
+quiz_KE3_submitted
+quiz_KE4_submitted
+quiz_total_submitted_unique
+quiz_KE1_submitted_unique
+quiz_KE2_submitted_unique
+quiz_KE3_submitted_unique
+quiz_KE4_submitted_unique
+quiz_total_repetitions
+quiz_KE1_repetitions
+quiz_KE2_repetitions
+quiz_KE3_repetitions
+quiz_KE4_repetitions
+quiz_total_mean_score
+quiz_KE1_mean_score
+quiz_KE2_mean_score
+quiz_KE3_mean_score
+quiz_KE4_mean_score
+
+saq_total_viewed 	=======> saq = self-assessment implemented with the mod_quiz plug before ws2022/23
+saq_KE1_viewed
+saq_KE2_viewed
+saq_KE3_viewed
+saq_KE4_viewed
+saq_total_submitted
+saq_KE1_submitted
+saq_KE2_submitted
+saq_KE3_submitted
+saq_KE4_submitted
+saq_total_submitted_unique
+saq_KE1_submitted_unique
+saq_KE2_submitted_unique
+saq_KE3_submitted_unique
+saq_KE4_submitted_unique
+saq_total_repetitions
+saq_KE1_repetitions
+saq_KE2_repetitions
+saq_KE3_repetitions
+saq_KE4_repetitions
+saq_total_mean_score
+saq_KE1_mean_score
+saq_KE2_mean_score
+saq_KE3_mean_score
+saq_KE4_mean_score
+
+sa_total_unique_task_views =====> sa = SAFRAN data, available since ws2022/23
+sa_total_unique_task_submissions
+sa_total_task_views
+sa_KE1_task_views
+sa_KE2_task_views
+sa_KE3_task_views
+sa_KE4_task_views
+sa_total_submissions
+sa_KE1_submissions
+sa_KE2_submissions
+sa_KE3_submissions
+sa_KE4_submissions
+sa_total_repetitions
+sa_KE1_repetitions
+sa_KE2_repetitions
+sa_KE3_repetitions
+sa_KE4_repetitions
+sa_total_mean_score
+sa_KE1_mean_score
+sa_KE2_mean_score
+sa_KE3_mean_score
+sa_KE4_mean_score
+
+assignments_first_submission 	==== assignments are submission task (German: Einsendeaufgaben)
+assignments_total_submitted
+assignments_KE1_submitted
+assignments_KE2_submitted
+assignments_KE3_submitted
+assignments_KE4_submitted
+assignments_mean_rel_grades
+assignments_KE1_mean_rel_grades
+assignments_KE2_mean_rel_grades
+assignments_KE3_mean_rel_grades
+assignments_KE4_mean_rel_grades
+
+ */
 
 /*
 userid: number;
