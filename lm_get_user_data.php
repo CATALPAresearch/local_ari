@@ -37,8 +37,13 @@ if (isset($_REQUEST["period"])) {
 # Define data structure
 $blank = "---";
 $activity_array = array(
+    "api_path" => "",
+    "execution_time_utc" => "",
+    "execution_time" => "",
+    "execution_duration" => "",
     "user" => array(
         "user_id" => 0,
+        "course_id" => 0,
         "semester" => '',
         "semester_from" => '',
         "semester_to" => '',
@@ -62,6 +67,20 @@ $activity_array = array(
         "course_unit_success" => 0,
         "activity_sequence_last7days" => array(),
     ),
+    "longpage_activity" => array(
+        "first_access" => $blank,
+        "last_access" => $blank,
+        "sessions" => $blank,
+        "time_spent" => $blank,
+        "ratio_read_text" => $blank,
+        "count_opened_quizzes" => $blank,
+        "count_marks" => $blank,
+        "count_bookmarks" => $blank,
+        "count_public_comments" => $blank,
+        "count_private_comments" => $blank,
+        "instances" => array()
+    ),
+    "questionnaire" => array(),
     "assign_activity" => array(
         "first_access" => $blank,
         "last_access" => $blank,
@@ -89,18 +108,6 @@ $activity_array = array(
         "last_access" => $blank,
         "sessions" => $blank,
         "time_spent" => $blank,
-    ),
-    "longpage_activity" => array(
-        "first_access" => $blank,
-        "last_access" => $blank,
-        "sessions" => $blank,
-        "time_spent" => $blank,
-        "ratio_read_text" => $blank,
-        "count_opened_quizzes" => $blank,
-        "count_marks" => $blank,
-        "count_bookmarks" => $blank,
-        "count_public_comments" => $blank,
-        "count_private_comments" => $blank
     ),
     "dashboard_activity" => array(
         "count_goal_changes" => $blank,
@@ -404,55 +411,7 @@ WHERE
     component = ?
 ";
 
-// comments are saved in this table
-// 0 = marked text, 1 = annotation, 2 = bookmarks
-$query_longpage_posts = "
-SELECT
-    SUM(lp.ispublic) AS sum,
-    COUNT(lp.id) AS count
-FROM {longpage_posts} AS lp,
-    {longpage} AS l
-WHERE l.course = ? AND
-    lp.creatorid = ? AND
-    lp.longpageid = l.id
-    $addTimePeriodToQuery
-";
 
-$query_longpage_annotations = "
-SELECT la.id,
-        type,
-        ispublic,
-        longpageid
-FROM {longpage_annotations} AS la,
-    {longpage} AS l
-WHERE l.course = ? AND
-    la.creatorid = ? AND
-    la.longpageid = l.id
-    $addTimePeriodToQuery
-";
-
-// xxx add time period
-$query_longpage_instances = "
-SELECT
-    id,
-    name
-FROM
-    {longpage}
-WHERE
-    course = ?
-";
-
-$query_longpage_reading_progress = "
-SELECT
-    COUNT(DISTINCT section) AS count,
-    sectioncount,
-    longpageid
-FROM {longpage_reading_progress}
-WHERE course = ? AND
-    userid = ?
-GROUP BY
-    longpageid, sectioncount
-";
 
 
 // removed "IFNULL(name, 'NoName')"
@@ -515,7 +474,7 @@ $dbman = $DB->get_manager();
 
 // fetch common records of activites (access times) from DB
 
-$start = microtime(true);       // measuring time of db query
+$start_time = microtime(true);       // measuring time of db query
 
 foreach ($activity_array as $activityName => $activityArr) {
 
@@ -580,12 +539,7 @@ try {
 
     $records_format_ladtopics_fa_la_access = $DB->get_records_sql($query_activity_ladtopics_access, array($course_id, $user_id, "format_ladtopics"));
 
-    if ($dbman->table_exists("longpage")) {
-        $records_longpage_posts = $DB->get_record_sql($query_longpage_posts, array($course_id, $user_id));
-        $records_longpage_annotations = $DB->get_records_sql($query_longpage_annotations, array($course_id, $user_id));
-        $records_longpage_reading_progress = $DB->get_records_sql($query_longpage_reading_progress, array($course_id, $user_id));
-        $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array($course_id));
-    }
+    
 } catch (Exception $e) {
     $dubug .= "DB error" . print_r($e);
     $transaction->rollback($e);
@@ -598,7 +552,7 @@ try {
 //echo print_r($records_safran_fa_la);
 //print_r($recordsActivityFaLa);
 
-$elapsedTime = microtime(true) - $start;
+$elapsedTime = microtime(true) - $start_time;
 
 
 
@@ -688,7 +642,7 @@ if (!empty($records_safran_fa_la)) {
     $activity_array["safran_activity"]["last_access"] = Date("d.m.y, H:i:s", $records_safran_fa_la->last_access);
 }
 
-if (empty($records_safran_access)) {
+if (!empty($records_safran_access)) {
 
     $sessionsSafran = 0;
     $timeSpentSafran = 0;
@@ -758,13 +712,66 @@ if (!empty($records_format_ladtopics_fa_la_access)) {
     $activity_array["format_ladtopics_activity"]["time_spent"] = timeUToHMS($timeSpentLadtopics);
 }
 
-if (!empty($records_longpage_annotations)) {
 
 
-    $marks = 0;
-    $bookmarks = 0;
-    $publicComments = 0;
-    $privateComments = 0;
+
+/**
+ * 
+ */
+function get_longpage_data(){
+    global $debug, $course_id, $user_id, $DB, $addTimePeriodToQuery;
+    // comments are saved in this table
+    // 0 = marked text, 1 = annotation, 2 = bookmarks
+    $query_longpage_posts = "
+    SELECT SUM(lp.ispublic) AS sum, COUNT(lp.id) AS count
+    FROM {longpage_posts} lp
+    JOIN {longpage} l ON lp.longpageid = l.id
+    WHERE l.course = :course_id AND lp.creatorid = :user_id $addTimePeriodToQuery
+    ;";
+
+    $query_longpage_post_reading = "
+    SELECT COUNT(lpr.id) AS count
+    FROM {longpage_post_readings} lpr
+    JOIN {longpage} l ON lpr.postid = l.id
+    WHERE l.course = :course_id AND lpr.userid = :user_id $addTimePeriodToQuery
+    ;";
+
+    $query_longpage_annotations = "
+    SELECT la.id, type, ispublic, longpageid
+    FROM {longpage_annotations} la 
+    JOIN {longpage} l ON la.longpageid = l.id
+    WHERE l.course = :course_id AND la.creatorid = :user_id  $addTimePeriodToQuery
+    ;";
+
+    // TODO: add $addTimePeriodToQuery
+    $query_longpage_instances = "
+    SELECT id, name
+    FROM {longpage}
+    WHERE course = :course_id 
+    ;";
+
+    // TODO: add $addTimePeriodToQuery
+    $query_longpage_reading_progress = "
+    SELECT COUNT(DISTINCT section) AS count, sectioncount, longpageid
+    FROM {longpage_reading_progress}
+    WHERE course = :course_id AND userid = :user_id 
+    GROUP BY longpageid, sectioncount
+    ;";
+
+    try{
+        if ($DB->count_records("longpage") > 0) {
+            // TODO: post creation
+            //$records_longpage_posts = $DB->get_records_sql($query_longpage_posts, array('course_id'=>$course_id, 'user_id'=>$user_id));
+            // TODO: post reading
+            //$records_longpage_post_readings = $DB->get_records_sql($query_longpage_post_readings, array('course_id' => $course_id, 'user_id' => $user_id));
+            $records_longpage_annotations = $DB->get_records_sql($query_longpage_annotations, array('course_id'=>$course_id, 'user_id'=>$user_id));
+            $records_longpage_reading_progress = $DB->get_records_sql($query_longpage_reading_progress, array('course_id'=>$course_id, 'user_id'=>$user_id));
+            $records_longpage_instances = $DB->get_records_sql($query_longpage_instances, array('course_id' => $course_id));
+        }
+    } catch (Exception $e) {
+        $debug .= "DB error" . print_r($e);
+        
+    }
 
     $countMarks = array();
     $countBookmarks = array();
@@ -780,22 +787,31 @@ if (!empty($records_longpage_annotations)) {
         $tmparr[$singleRecord->id]["bookmarks"] = 0;
         $tmparr[$singleRecord->id]["publicComments"] = 0;
         $tmparr[$singleRecord->id]["privateComments"] = 0;
-        $tmparr[$singleRecord->id]["name"] = "NoName";
+
+        $tmparr[$singleRecord->id]["title"] = "none";
         $tmparr[$singleRecord->id]["count"] = 0;
         $tmparr[$singleRecord->id]["sectionCount"] = 0;
     }
 
     foreach ($records_longpage_annotations as $singleRecord) {
-        if ($singleRecord->type == 0) $tmparr[$singleRecord->longpageid]["marks"] += 1;
-        if ($singleRecord->type == 1) {
-            if ($singleRecord->ispublic == 1) $tmparr[$singleRecord->longpageid]["publicComments"] += 1;
-            if ($singleRecord->ispublic == 0) $tmparr[$singleRecord->longpageid]["privateComments"] += 1;
+        switch($singleRecord->type){
+            case 0:
+                $tmparr[$singleRecord->longpageid]["marks"] += 1;
+                break;
+            case 1:
+                if ($singleRecord->ispublic == 1){
+                    $tmparr[$singleRecord->longpageid]["publicComments"] += 1;
+                } else if ($singleRecord->ispublic == 0){ 
+                    $tmparr[$singleRecord->longpageid]["privateComments"] += 1;
+                }
+                break;
+            case 2:
+                $tmparr[$singleRecord->longpageid]["bookmarks"] += 1;
         }
-        if ($singleRecord->type == 2) $tmparr[$singleRecord->longpageid]["bookmarks"] += 1;
     }
 
     foreach ($records_longpage_instances as $singleRecord) {
-        $tmparr[$singleRecord->id]["name"] = $singleRecord->name;
+        $tmparr[$singleRecord->id]["title"] = $singleRecord->name;
     }
     foreach ($records_longpage_reading_progress as $singleRecord) {
         $tmparr[$singleRecord->longpageid]["count"] = $singleRecord->count;
@@ -803,33 +819,57 @@ if (!empty($records_longpage_annotations)) {
     }
   
 
-
-
     foreach($tmparr as $singleRecord){
-        $countMarks[] = $singleRecord["name"].": ".$singleRecord["marks"];
-        $countBookmarks[] = $singleRecord["name"].": ".$singleRecord["bookmarks"];
-        $countPublicComments[] = $singleRecord["name"].": ".$singleRecord["publicComments"];
-        $countPrivateComments[] = $singleRecord["name"].": ".$singleRecord["privateComments"];
+        $countMarks[] = $singleRecord["title"].": ".$singleRecord["marks"];
+        $countBookmarks[] = $singleRecord["title"].": ".$singleRecord["bookmarks"];
+        $countPublicComments[] = $singleRecord["title"].": ".$singleRecord["publicComments"];
+        $countPrivateComments[] = $singleRecord["title"].": ".$singleRecord["privateComments"];
         if ($singleRecord["sectionCount"] != 0) {
-            $ratioReadText[] = $singleRecord["name"].": ".number_format($singleRecord["count"] / $singleRecord["sectionCount"], 2)." %";
+            $ratioReadText[] = $singleRecord["title"].": ".number_format($singleRecord["count"] / $singleRecord["sectionCount"], 2)." %";
         }
     }
+    
+    return $tmparr;
+}
 
+$longpage_instances_data = get_longpage_data();
+
+//echo "Longpage<br><pre>".print_r($longpage_instances_data, true)."</pre>";
+    
+
+
+    /*
+ "first_access" => $blank,
+        "last_access" => $blank,
+        "sessions" => $blank,
+        "time_spent" => $blank,
+        "ratio_read_text" => $blank,
+        "count_opened_quizzes" => $blank,
+        "count_marks" => $blank,
+        "count_bookmarks" => $blank,
+        "count_public_comments" => $blank,
+        "count_private_comments" => $blank
+        */
+    
     $activity_array["longpage_activity"]["count_marks"] = $countMarks;
     $activity_array["longpage_activity"]["count_bookmarks"] = $countBookmarks;
     $activity_array["longpage_activity"]["count_public_comments"] = $countPublicComments;
     $activity_array["longpage_activity"]["count_private_comments"] = $countPrivateComments;
-
     $activity_array["longpage_activity"]["ratio_read_text"] = $ratioReadText;
+    $activity_array["longpage_activity"]["instances"] = $longpage_instances_data;
 
-}
+
+
+
+
+
 
 // uncommon records insert end
 
 //echo print_r($recordsCourseAccess);
 
 
-
+// TODO
 //insert first_access and last_access data from DB into activity_array
 foreach ($recordsActivityFaLa as $activityName => $activityArr) {
     foreach ($activityArr as $dataKey => $data) {
@@ -837,11 +877,7 @@ foreach ($recordsActivityFaLa as $activityName => $activityArr) {
     }
 }
 
-
-
-
-
-
+// TODO
 //calculate sessions and time spent for individual activities
 foreach ($recordsActivityAccess as $activityName => $activityArr) {
     $lastRecord = 0;
@@ -880,8 +916,158 @@ foreach ($recordsActivityAccess as $activityName => $activityArr) {
 
 
 
+
 /**
- * course_activity
+ * TOPIC: Collect questionnaire data
+ */
+function get_questionnaire_data($DB, $course_id, $user_id, $TimePeriodToQuery){
+    $query = "
+    SELECT 
+concat(s.id,'-',q.id,'-',resp_results.id) AS uid, 
+s.id as questionnaire_id, s.title AS questionnaire_name, 
+-- s.courseid, 
+-- r.id as response_id, 
+r.questionnaireid, 
+r.submitted AS timecreated, 
+-- r.complete, 
+r.userid, 
+q.id as question_id, 
+q.surveyid, 
+q.name AS question_title, 
+q.type_id AS question_type, 
+
+-- q.content AS question_text, 
+qtype.typeid, qtype.type AS questiontype, -- qtype.response_table, 
+-- question types
+resp_results.id as resp_item, 
+-- resp_results.question_id, 
+-- resp_results.response_id, 
+-- resp_results.id, 
+-- resp_results.response_type, 
+resp_results.choice_id, resp_results.response, resp_results.rankvalue
+
+FROM 
+{questionnaire_survey} s 
+JOIN {questionnaire_response} r ON s.id = r.questionnaireid 
+JOIN {questionnaire_question} q ON s.id = q.surveyid 
+JOIN {questionnaire_question_type} qtype ON q.type_id = qtype.typeid 
+-- 
+JOIN (
+    SELECT resp_.id , 'resp_single' as response_type, resp_.response_id, resp_.question_id, 
+    resp_.choice_id, 
+    -1 as rankvalue, 
+    '' as response 
+    FROM {questionnaire_resp_single} resp_
+
+    UNION
+
+    SELECT resp_.id , 'response_text' as response_type, resp_.response_id, resp_.question_id, 
+    resp_.response, 
+    -1 as choice_id, 
+    -1 as rankvalue
+    FROM {questionnaire_response_text} resp_ 
+
+    UNION
+
+    SELECT resp_.id , 'resp_multiple' as response_type, resp_.response_id, resp_.question_id, 
+    resp_.choice_id, 
+    -1 as rankvalue, 
+    '' as response 
+    FROM {questionnaire_resp_multiple} resp_
+
+    UNION 
+
+    SELECT resp_.id , 'response_bool' as response_type, resp_.response_id, resp_.question_id, 
+    resp_.choice_id, 
+    -1 as rankvalue, 
+    '' as response 
+    FROM {questionnaire_response_bool} resp_
+
+    UNION
+
+    SELECT resp_.id , 'response_date' as response_type, resp_.response_id, resp_.question_id, 
+    resp_.response, 
+    -1 as choice_id, 
+    -1 as rankvalue
+    FROM {questionnaire_response_date} resp_ 
+
+    UNION 
+
+    SELECT resp_.id , 'response_other' as response_type, resp_.response_id, resp_.question_id, 
+    resp_.response, 
+    -1 as choice_id, 
+    -1 as rankvalue
+    FROM {questionnaire_response_other} resp_ 
+
+    UNION
+
+    SELECT resp_.id , 'response_rank' as response_type, resp_.response_id, resp_.question_id, 
+    resp_.choice_id, 
+    resp_.rankvalue, 
+    '' as response
+    FROM {questionnaire_response_rank} resp_ 
+
+) resp_results ON  
+r.id = resp_results.response_id AND   
+q.id = resp_results.question_id AND
+qtype.response_table = resp_results.response_type
+-- 
+WHERE s.courseid = :course_id AND r.userid = :user_id AND r.complete = 'y' 
+    ;
+    ";
+    // -- $TimePeriodToQuery
+    $res = $DB->get_records_sql($query, array('course_id' => $course_id, 'user_id' => $user_id));
+    return $res;
+}
+
+
+/**
+ * Transforms array list of questionnair responses into a nested assoc. array structured by questionnaire, question, and response items
+ */
+function transform_questionnaire_data($data){
+    $qi = [];
+    foreach($data as $item) {
+        $item = (array)$item;
+        $item_result = $item;
+        if(!$qi['questionnaire-'.$item['questionnaire_id']]){
+            $qi['questionnaire-'.$item['questionnaire_id']]['questionnaire_id'] = $item_result['questionnaire_id'];
+            $qi['questionnaire-'.$item['questionnaire_id']]['questionnaire_name'] = $item_result['questionnaire_name'];
+            $qi['questionnaire-'.$item['questionnaire_id']]['questions'] = [];
+        }
+        if(! $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]){
+            $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_id'] = $item_result['question_id'];
+            $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_title'] = $item_result['question_title'];
+            $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_type_id'] = $item_result['question_type'];
+            $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_type_name'] = $item_result['questiontype'];
+            $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['items'] = [];
+        }
+        unset($item_result['uid']);
+        unset($item_result['userid']);
+        unset($item_result['questionnaire_id']);
+        unset($item_result['questionnaireid']);
+        unset($item_result['question_id']);
+        unset($item_result['questionnaire_name']);
+        unset($item_result['surveyid']);
+        unset($item_result['typeid']);
+        unset($item_result['questiontype']);
+        unset($item_result['question_type']);
+        unset($item_result['question_title']);
+        
+        $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['items']['item-'.$item['resp_item']] = $item_result;
+        
+    }
+    return $qi;
+}
+
+//echo "<pre>".print_r($qi, true)."</pre>";
+$questionnaire_data = get_questionnaire_data($DB, $course_id, $user_id, $TimePeriodToQuery);
+$activity_array["questionnaire"] = transform_questionnaire_data($questionnaire_data);
+
+
+
+
+/**
+ * TOPIC: course_activity
  */
 
 
@@ -946,7 +1132,7 @@ function get_course_access_dates($DB, $query_course_fa_la, $course_id, $user_id)
     $first_access_date = $course_activity_access_res->first_access ? Date("d.m.y, H:i:s", $course_activity_access_res->first_access) : null;
     $last_access = (int)$course_activity_access_res->last_access ? $course_activity_access_res->last_access : null;
     $last_access_date = $course_activity_access_res->last_access ? Date("d.m.y, H:i:s", $course_activity_access_res->last_access) : null;
-    return [$first_access, $first_access_date, $last_access, $last_access_date];
+    return [(int)$first_access, $first_access_date, (int)$last_access, $last_access_date];
 }
 
 /**
@@ -969,8 +1155,15 @@ function get_goal_changes($DB, $course_id, $user_id, $TimePeriodToQuery){
 }
 
 
+
 # Assemble results for course-related activities
-$activity_array["user"]["user_id"] = $user_id;
+$activity_array["api_path"] = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$activity_array["execution_time_utc"] = (int)microtime(true);
+$activity_array["execution_time"] = Date("d.m.y, H:i:s", microtime(true));
+$activity_array["execution_duration"] = $elapsedTime;
+    
+$activity_array["user"]["user_id"] = (int)$user_id;
+$activity_array["user"]["course_id"] = (int)$course_id;
 $activity_array["user"]["semester"] = $timePeriod;
 $activity_array["user"]["semester_from"] = $periodArray[$timePeriod]['from'];
 $activity_array["user"]["semester_to"] = $periodArray[$timePeriod]['to'];
@@ -998,9 +1191,8 @@ $activity_array["course_activity"]["course_unit_success"] = "xxx";
 
 
 # OUTPUT
-
-$output_format = 'json';
-$accepted_output_formats = ['html', 'json', 'echo'];
+$output_format = 'json'; # default
+$accepted_output_formats = ['json', 'html', 'debug'];
 
 if (isset($_REQUEST["format"]) && in_array($_REQUEST["format"], $accepted_output_formats)) {
     $output_format = $_REQUEST["format"];
@@ -1038,6 +1230,8 @@ if($output_format == 'html'){
         echo "<div><table>" . $table_headers . "</tr></thead>" . $table_data . "</tr></tbody></table></div><br>";
     }
 }
+
+
 
 
 // END
