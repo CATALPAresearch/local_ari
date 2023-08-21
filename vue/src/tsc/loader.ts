@@ -8,9 +8,9 @@ import { Controller } from "./controller";
  * 
  */
 
-export function init(path:string){
+export function init(path:string, user_id:number, group_id:number){
 	try{	
-		new Controller(path);
+		new Controller(path, user_id, group_id);
 	} catch(error){
 		console.log(error);
 	}

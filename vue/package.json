@@ -9,7 +9,7 @@
     "dev": "cross-env webpack --mode development --progress --hide-modules",
     "watch": "cross-env webpack --mode development --watch --hide-modules",
     "watch-hot": "cross-env webpack-dev-server --mode development --hot --inline --progress",
-    "build": "cross-env webpack --mode production --progress --hide-modules",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider cross-env webpack --mode production --progress --hide-modules",
     "nodemon": "nodemon"
   },
   "dependencies": {

@@ -19,9 +19,17 @@ function initPromptPanel() {
     
 }
 
-function initAdaptations(path:string){
+function initAdaptations(path:string, user_id:number, course_id:number){
+    console.log(user_id, course_id);
+    if(user_id == null){
+        return;
+    }
+    if(course_id == null){
+        course_id = 0;
+    }
+    
 	try{	
-		new Controller(path);
+		new Controller(path, user_id, course_id);
 	} catch(error){
 		console.log(error);
 	}

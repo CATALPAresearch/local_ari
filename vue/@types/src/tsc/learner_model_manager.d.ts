@@ -1,12 +1,42 @@
 export declare class LearnerModelManager {
+    private wwwroot;
+    private user_id;
+    private course_id;
     static model: ILearnerModel;
-    constructor();
+    constructor(wwwroot: string, user_id: number, course_id: number);
     checkRules(): void;
-    update(): void;
+    getLearnerModel(): void;
 }
 export interface ILearnerModel {
-    userid: number;
-    courseid: number;
+    debug: Array<string>;
+    api_path: String;
+    execution_time_utc: number;
+    execution_time: string;
+    user: {
+        user_id: number;
+        course_id: number;
+        semester: string;
+        semester_from: {
+            date: Date;
+            timezone_type: string;
+            timezone: string;
+        };
+        semester_to: {
+            date: Date;
+            timezone_type: string;
+            timezone: string;
+        };
+    };
+    course?: {};
+    mod_longpage?: {};
+    mod_assign?: {};
+    mod_quiz?: {};
+    mod_safran?: {};
+    mod_questionnaire?: {};
+    mod_hypervideo?: {};
+    format_serial3?: {};
+    userid?: number;
+    courseid?: number;
     course_activity?: {
         first_access?: Date;
         last_access?: Date;
@@ -35,7 +65,7 @@ export interface ILearnerModel {
         count_unique_quizes?: number;
         count_unique_repeated_quizes?: number;
         count_attempts_per_quiz?: Array<number>;
-        avg_attpempt_time_per_task?: Map<number, number>;
+        avg_attempt_time_per_task?: Map<number, number>;
         reattempt_delay?: Array<number>;
         scores?: Array<number>;
     };

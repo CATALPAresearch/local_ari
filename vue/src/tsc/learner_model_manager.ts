@@ -10,24 +10,44 @@ import { RuleManager } from './rule_manager';
 
 //@ts-ignore
 export class LearnerModelManager {
-    public static model: ILearnerModel = {
+    private wwwroot: string;
+    private user_id: number;
+    private course_id: number;
+    public static model: ILearnerModel;
+    /*public static model: ILearnerModel = {
         userid: 2,
         courseid: 2,
         quiz_activity: {
             count_attempts: [33],
             avg_attempt_time_per_task: new Map<number, number>([[22, 4.3], [34, 20.4]]),
         },
-    };
+    };*/
 
-    constructor() {
-       this.checkRules();
+    constructor(wwwroot:string, user_id:number, course_id:number) {
+        this.wwwroot = wwwroot;
+        this.course_id = course_id;
+        this.user_id = user_id;
+        this.getLearnerModel();
+        this.checkRules();
     };
 
     public checkRules(): void {
         new RuleManager(LearnerModelManager.model);
     };
 
-    public update(): void { }
+    public getLearnerModel(): void { 
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                LearnerModelManager.model = JSON.parse(this.responseText);
+            }
+        };
+        // FIXME: add the current semester as a parameter of the path
+        var path:string = this.wwwroot + '/local/ari/lm_get_user_data.php?format=json&&period=SS23&course_id=' + this.course_id + '&user_id=' + this.user_id;
+        console.log(path);
+        xmlhttp.open('GET', path, true);
+        xmlhttp.send();
+    }
 }
 
 
@@ -44,8 +64,42 @@ Forum
 */
 
 export interface ILearnerModel {
-    userid: number;
-    courseid: number;
+    // mandatory elements
+    debug: Array<string>;
+    api_path: String;
+    execution_time_utc: number;
+    execution_time: string;
+    user: {
+        user_id: number;
+        course_id: number;
+        semester: string; 
+        semester_from: {
+            date: Date;
+            timezone_type: string;
+            timezone: string;
+        };
+        semester_to: {
+            date: Date;
+            timezone_type: string;
+            timezone: string;
+        };
+    }
+
+    // optional elements
+    course?: {}
+    mod_longpage?: {}
+    mod_assign?: {}
+    mod_quiz?: {}
+    mod_safran?: {}
+    mod_questionnaire?: {}
+    mod_hypervideo?: {}
+    format_serial3?: {}
+
+
+    
+    // old stuff
+    userid?: number;
+    courseid?: number;
     course_activity?: {
         first_access?: Date;
         last_access?: Date;

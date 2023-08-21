@@ -14,9 +14,9 @@ export class Controller{
   
   private wwwroot:string;
 
-  constructor(wwwroot: string) { 
+  constructor(wwwroot: string, user_id:number, course_id:number) { 
     // new Promise(() => {  runTF(); });
-    new LearnerModelManager(); 
+    new LearnerModelManager(wwwroot, user_id, course_id); 
     this.wwwroot = wwwroot;
     console.log('----------------------------------------------------------------------')
     console.log('ARI is up and running', this.wwwroot);
