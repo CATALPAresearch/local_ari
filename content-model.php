@@ -269,7 +269,7 @@ FROM (
 SELECT keyword, id, document_frequency
 FROM mdl_ari_content_model  a1
 WHERE 
-course_id=? AND
+course_id=:course_id AND
 instance_id = 1
 ORDER BY document_frequency DESC
 LIMIT 10
@@ -277,10 +277,10 @@ LIMIT 10
 JOIN mdl_ari_content_model a2 ON a2.keyword = aa1.keyword
 WHERE 
 aa1.id <> a2.id AND
-course_id=?
+course_id=:course_id
 ORDER BY aa1.document_frequency DESC
 ";
-$records = $DB->get_records_sql($query, array($course_id, $course_id));   
+$records = $DB->get_records_sql($query, array("course_id"=>$course_id));   
     echo 'res: ' . count($records) .' instances <br>';
     foreach($records as $record){    
         echo $record->id .' '. $record->search_term . '<br>';
