@@ -53,12 +53,41 @@ class LearnerModel{
         self::$activity_array["user"]["semester_from"] = $this->periodArray[$this->timePeriod]['from'];
         self::$activity_array["user"]["semester_to"] = $this->periodArray[$this->timePeriod]['to'];
 
+        $query = "
+            SELECT 
+                tp.currentversionid
+                -- REPLACE(u.username, 'q', '') as matrikelnumber
+            FROM {user} u
+            JOIN {tool_policy_acceptances} pa ON pa.userid = u.id
+            JOIN {tool_policy} tp ON tp.currentversionid = pa.policyversionid
+            JOIN {user_enrolments} ur ON ur.userid = u.id
+            JOIN {enrol} e ON e.id = ur.enrolid
+            JOIN {course} m ON e.courseid = m.id
+            WHERE 
+            -- u.username LIKE 'q%' AND 
+            u.id=:user_id AND
+            (tp.currentversionid > 0 OR tp.currentversionid=4 OR tp.currentversionid=1) AND 
+            e.courseid IS NOT NULL
+            ORDER BY 
+            u.username
+        ";
+        $res = $GLOBALS["DB"]->get_records_sql($query, array("user_id" => self::$user_id));
+        $accepted_policies = [];
+        foreach($res as $key=>$val){
+            array_push($accepted_policies, (int)$val->currentversionid);
+        }
+        //echo '<pre>'.print_r($res, true).'</pre>';
+        
+        self::$activity_array["user"]["accepted_policies"] = $accepted_policies;
+
         // TODO
         // - sozio demografische Angaben
         // - studiengänge
-        // - belegte kurse je studiengang
         // - Studienleistungen
         
+        $lme = new LearnerModelEnrollments();
+        $lme->build_model();
+
         $lml = new LearnerModelLongpage();
         $lml->build_model();
         $lma = new LearnerModelAssignment();
@@ -453,6 +482,62 @@ class LearnerModel{
 
 $lm = new LearnerModel();
 $lm->init();
+
+class LearnerModelEnrollments extends LearnerModel{
+    
+    
+    function build_model(){
+        // initial data structure
+        $arr = [
+            "total_enrollments" => 0,
+            "total_unique_enrollments" => 0,
+            "repeated_courses" => 0,
+            "enrolled_courses" => [],
+        ];
+
+        
+        // aggregated enrollment information
+        $query="
+            SELECT
+                
+                COUNT(e.id) as total_enrollments,
+                COUNT(DISTINCT e.enrolled_course_id) as total_unique_courses,
+                (SELECT COUNT(ee.id) FROM {ari_user_enrollments} ee JOIN {user} uu ON uu.username=e.username WHERE uu.id=u.id AND ee.enrollment_repeated > 0 ) as repeated_courses
+            FROM {ari_user_enrollments} e 
+            JOIN {user} u ON u.username=e.username 
+            -- WHERE 
+                -- u.id=:user_id
+            ";
+        $res = $GLOBALS["DB"]->get_record_sql($query, array('user_id'=>parent::$user_id));
+        // echo '<pre>'.print_r($res, true).'</pre>';
+        $arr['total_enrollments'] = (int)$res->total_enrollments;
+        $arr['total_unique_enrollments'] = (int)$res->total_unique_courses;
+        $arr['repeated_courses'] = (int)$res->repeated_courses;
+
+        // list of enrolled courses
+        $query = "
+            SELECT 
+                DISTINCT e.enrolled_course_id
+            FROM {ari_user_enrollments} e 
+            JOIN {user} u ON u.username=e.username 
+            WHERE 
+                u.id=:user_id
+        ";
+        $res = $GLOBALS["DB"]->get_records_sql($query, array('user_id'=>parent::$user_id));
+        foreach($res as $enrollment => $val){
+            array_push($arr["enrolled_courses"], $val->enrolled_course_id);
+            //parent::$activity_array['course_enrollments']['total_enrollments'] += 1;
+        }
+
+        //echo '<pre>'.print_r($arr, true).'</pre>';
+        //echo '<pre>'.print_r($res, true).'</pre>';
+        
+        parent::$activity_array['course_enrollments'] = $arr;
+    }
+
+    
+}
+
 
 
 class LearnerModelLongpage extends LearnerModel{
@@ -1115,7 +1200,10 @@ class LearnerModelQuiz extends LearnerModel {
     }
 }
 
-
+/**
+ * TODO:
+ * - total_existing_unique_quizes
+ */
 class LearnerModelSafran extends LearnerModel {
 
     function build_model(){
@@ -1125,7 +1213,7 @@ class LearnerModelSafran extends LearnerModel {
         }
         $this->get_default_entries('mod_safran');
         //parent::$activity_array['mod_safran'] = array_merge(parent::$activity_array['mod_safran'], $this->get_progress_per_section());
-        $this->get_progress_per_section();
+        //$this->get_progress_per_section();
         
     }
 
@@ -1134,14 +1222,14 @@ class LearnerModelSafran extends LearnerModel {
                     qa.id,
                     qa.status,
                     qa.user_error_situation,
-                    qa.	achived_points_percentage as rel_scores,
+                    (SELECT SUM(sa.achived_points_percentage) FROM {safran_q_attempt} sa WHERE sa.status='request_feedback' AND sa.questionid=qa.questionid)  as rel_scores,
                     qa.attempt,
                     q.id activity_id,
                     m.name activity,
                     cm.id module_id,
                     cm.section,
                     cs.name as section_title,
-                    (select count(*) from {course_modules} cmm JOIN {modules} m ON m.id = cmm.module WHERE m.name = 'quiz' AND cmm.course=cm.course AND cmm.section = cm.section AND cmm.visible = 1 AND cm.visible = 1) number_of_quizes,
+                    (select count(*) from {course_modules} cmm JOIN {modules} m ON m.id = cmm.module WHERE m.name = 'safran' AND cmm.course=cm.course AND cmm.section = cm.section AND cmm.visible = 1 AND cm.visible = 1) number_of_quizes,
                     -- q.grade, 
                     -- max_score, 
                     -- qa.sumgrades achieved_score,
@@ -1198,7 +1286,7 @@ class LearnerModelSafran extends LearnerModel {
                 $arr["total_repeated_unique_quizes"]++;
             }
             $arr["total_attempts"] += $item->number_of_attempts;
-            $arr["achieved_scores"] += $item->achieved_score;
+            $arr["achieved_scores"] += $item->rel_scores;
             $arr["max_scores"] += $item->max_score;
             
             // per section
@@ -1224,19 +1312,25 @@ class LearnerModelSafran extends LearnerModel {
             
         }
         $total_number_of_quizzes = 10;
-        if($arr["max_scores"] > 0){
-            $sum_items = 0;
+        
+        $sum_items = 0;
+        if($arr["max_scores"]>0){
             $arr["mean_relative_score"] = $arr["achieved_scores"] / $arr["max_scores"];
-            foreach($arr["sections"] as $key => $section){
-                $sum_items += $arr["sections"][$key]["total_existing_unique_quizes"];
+        }
+        foreach($arr["sections"] as $key => $section){
+            $sum_items += $arr["sections"][$key]["total_existing_unique_quizes"];
+            if($section["max_scores"]>0){
                 $arr["sections"][$key]["mean_relative_score"] = $section["achieved_scores"] / $section["max_scores"];
             }
-            $arr["rel_quizes"] = $arr["total_performed_unique_quizes"] / $sum_items;
-            $arr["total_existing_unique_quizes"] = $sum_items;
         }
+        $arr["rel_quizes"] = $arr["total_performed_unique_quizes"] / $sum_items;
+        $arr["total_existing_unique_quizes"] = $sum_items;
+    
+    
+        
 
-        echo '<pre>'.print_r($arr, true).'</pre>';
-        echo '<pre>'.print_r($res, true).'</pre>';
+        //echo '<pre>'.print_r($arr, true).'</pre>';
+        //echo '<pre>'.print_r($res, true).'</pre>';
 
         //return $arr;
     }
