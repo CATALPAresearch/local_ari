@@ -7,6 +7,16 @@ require_login();
 
 /**
  * LearnerModel
+ * 
+ * TODO
+ * - @course total progress and total rel scores
+ * - course-section-wise metrics
+ * 
+ * 
+ * LATER TODO
+ * - need description of the LM in German and english
+ * - semantic layer: Not all provided resources and activties are relevant for learning. Example quizzes, syllabus, and other resources with a more organisational purpus need to be excluded from the learner model.
+ * - distinguish productive and receptive LM elements to filter them at/after the request
  */
 class LearnerModel{
     
@@ -80,12 +90,7 @@ class LearnerModel{
         
         self::$activity_array["user"]["accepted_policies"] = $accepted_policies;
 
-        // TODO
-        // - sozio demografische Angaben
-        // - studiengänge
-        // - Studienleistungen
-        
-        $lme = new LearnerModelEnrollments();
+        $lme = new LearnerModelUniversityData();
         $lme->build_model();
 
         $lml = new LearnerModelLongpage();
@@ -142,142 +147,7 @@ class LearnerModel{
     }
 
     function declare_data_structure(){
-        $blank = "---";
-        self::$activity_array = array(
-            "debug" => [],
-            /*"mod_longpage" => array(
-                "first_access" => 0,
-                "first_access_date" => null,
-                "last_access" => 0,
-                "last_access_date" => null,
-                "number_of_sessions" => 0,
-                "mean_session_length" => 0,
-                "sd_session_length" => 0,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-                "active_days" => 0,
-                "activity_span" => 0,
-                "ratio_read_text" => $blank,
-                "count_opened_quizzes" => $blank,
-                "count_marks" => $blank,
-                "count_bookmarks" => $blank,
-                "count_public_comments" => $blank,
-                "count_private_comments" => $blank,
-                "number_of_sections" => 0,
-                "instances" => array()
-            ),
-            "api_path" => "",
-            "execution_time_utc" => "",
-            "execution_time" => "",
-            "execution_duration" => "",
-            "user" => array(
-                "user_id" => 0,
-                "course_id" => 0,
-                "semester" => '',
-                "semester_from" => '',
-                "semester_to" => '',
-            ),
-            "course" => array(
-                "first_access" => 0,
-                "first_access_date" => null,
-                "last_access" => 0,
-                "last_access_date" => null,
-                "number_of_sessions" => 0,
-                "mean_session_length" => 0,
-                "sd_session_length" => 0,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-                "active_days" => 0,
-                "activity_span" => 0,
-                "course_overview_page_visits" => 0,
-                "goal_changes" => -1,
-                "goal_selected" => null,
-                "course_unit_completion" => 0,
-                "course_unit_success" => 0,
-                "activity_sequence_last7days" => array(),
-            ),
-            "questionnaire" => array(),
-            "mod_assign" => array(
-                "first_access" => 0,
-                "first_access_date" => null,
-                "last_access" => 0,
-                "last_access_date" => null,
-                "number_of_sessions" => 0,
-                "mean_session_length" => 0,
-                "sd_session_length" => 0,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-                "active_days" => 0,
-                "activity_span" => 0,
-            ),
-            "mod_quiz" => array(
-                "first_access" => 0,
-                "first_access_date" => null,
-                "last_access" => 0,
-                "last_access_date" => null,
-                "number_of_sessions" => 0,
-                "mean_session_length" => 0,
-                "sd_session_length" => 0,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-                "active_days" => 0,
-                "activity_span" => 0,
-                "count_attempts" => $blank,
-                "count_unique_quizes" => $blank,
-                "count_unique_repeated_quizes" => $blank,
-                "count_attempts_per_quiz" => $blank,
-                "avg_attempt_time_per_task" => $blank,
-                "reattempt_delay" => $blank,
-                "scores" => $blank
-            ),
-            "mod_safran" => array(
-                "first_access" => 0,
-                "first_access_date" => null,
-                "last_access" => 0,
-                "last_access_date" => null,
-                "number_of_sessions" => 0,
-                "mean_session_length" => 0,
-                "sd_session_length" => 0,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-                "active_days" => 0,
-                "activity_span" => 0,
-            ),
-            "mod_hypervideo" => array(
-                "first_access" => 0,
-                "first_access_date" => null,
-                "last_access" => 0,
-                "last_access_date" => null,
-                "number_of_sessions" => 0,
-                "mean_session_length" => 0,
-                "sd_session_length" => 0,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-                "active_days" => 0,
-                "activity_span" => 0,
-            ),
-            "dashboard_activity" => array(
-                "count_goal_changes" => $blank,
-                "count_reflection_attempts" => $blank,
-                "count_reflection_submissions" => $blank,
-                "count_bookmark_additions" => $blank,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-            ),
-            "format_serial" => array(
-                "first_access" => 0,
-                "first_access_date" => null,
-                "last_access" => 0,
-                "last_access_date" => null,
-                "number_of_sessions" => 0,
-                "mean_session_length" => 0,
-                "sd_session_length" => 0,
-                "total_time_spent" => 0,
-                "total_time_spent_hms" => 0,
-                "active_days" => 0,
-                "activity_span" => 0,
-            )*/
-        );
+        self::$activity_array = array("debug" => []);
     }
 
     function set_time_periods(){
@@ -334,9 +204,7 @@ class LearnerModel{
         $minutes = ($timeInU - ($hours * 3600)) / 60;
         $minutes = floor($minutes);
         $seconds = ($timeInU - (($hours * 3600) + ($minutes * 60)));
-
         $timeSpentFormatted = $hours . "h " . $minutes . "m " . $seconds . "s";
-
         return $timeSpentFormatted;
     }
 
@@ -349,16 +217,21 @@ class LearnerModel{
     /**
      * Assembles default entries of the learner model for a single component or the overall course
      */
-    function get_default_entries($component_name = ""){
+    function get_default_entries($component_name){
         
         [$first_access, $last_access] = $this->get_first_last_access($component_name);
+        $logs = $this->get_log_records($component_name);
+        [$number_of_sessions, $time_spent, $active_days, $activity_span, $activity_sequence_last_7_days] = $this->get_activity_stats($logs);
+        $last_activity = $this->get_last_activity();
+
+        if($component_name == ""){
+            $component_name = "course";
+        }
         self::$activity_array[$component_name]["first_access"] = $first_access;
         self::$activity_array[$component_name]["first_access_date"] = Date("d.m.y, H:i:s", $first_access);
         self::$activity_array[$component_name]["last_access"] = $last_access;
         self::$activity_array[$component_name]["last_access_date"] = Date("d.m.y, H:i:s", $last_access);
-
-        $logs = $this->get_log_records($component_name);
-        [$number_of_sessions, $time_spent, $active_days, $activity_span, $activity_sequence_last_7_days] = $this->get_activity_stats($logs);
+        self::$activity_array[$component_name]["last_access_days_ago"] = (int)(new DateTime())->diff(new DateTime(Date("d.m.Y", $last_access)))->format("%a");
         self::$activity_array[$component_name]["number_of_sessions"] = (int)$number_of_sessions;
         self::$activity_array[$component_name]["mean_session_length"] = "xxx"; //(double)mean_session_length;
         self::$activity_array[$component_name]["sd_session_length"] = "xxx"; //(double)sd_session_length;
@@ -367,6 +240,7 @@ class LearnerModel{
         self::$activity_array[$component_name]["active_days"] = $active_days;
         self::$activity_array[$component_name]["activity_span"] = $activity_span;
         self::$activity_array[$component_name]["activity_sequence_last7days"] = $activity_sequence_last_7_days;
+        self::$activity_array[$component_name]["last_activity"] = $last_activity;
     }
 
     /**
@@ -408,7 +282,8 @@ class LearnerModel{
                 id,
                 timecreated,
                 component,
-                contextid
+                contextid,
+                contextinstanceid
             FROM {logstore_standard_log}
             WHERE 
                 courseid = :course_id AND
@@ -421,6 +296,36 @@ class LearnerModel{
             'user_id' => self::$user_id
         ));
         return $res;
+    }
+
+    /**
+     * 
+     */
+    function get_last_activity($component = ""){
+        if($component != ""){
+            $component = " AND component='". $component . "'";
+        }
+        $addTimePeriodToQuery = self::$addTimePeriodToQuery;
+        $query_course_records = "
+            SELECT
+                contextinstanceid
+            FROM {logstore_standard_log}
+            WHERE 
+                courseid = :course_id AND
+                userid = :user_id AND
+                component <> 'core' AND
+                timecreated > 1000 $addTimePeriodToQuery $component
+            ORDER BY timecreated DESC
+            LIMIT 1
+        ";
+        $res = $GLOBALS["DB"]->get_record_sql($query_course_records, array(
+            'course_id' => self::$course_id, 
+            'user_id' => self::$user_id
+        ));
+        
+        $url = new moodle_url('/mod/'. explode('_', $res->component)[1] .'/view.php', array('id' => $res->contextinstanceid));
+        
+        return (string) $url;
     }
 
     /**
@@ -483,10 +388,19 @@ class LearnerModel{
 $lm = new LearnerModel();
 $lm->init();
 
-class LearnerModelEnrollments extends LearnerModel{
-    
+class LearnerModelUniversityData extends LearnerModel{
     
     function build_model(){
+        parent::$activity_array['course_enrollments'] = $this->getEnrollmentData();
+        // TODO
+        // - sozio demografische Angaben
+        // - studiengänge
+        // - Studienleistungen
+        
+    }
+
+    function getEnrollmentData(){
+        // TODO add further fatures of student enrollment. See EDM'22 Paper.
         // initial data structure
         $arr = [
             "total_enrollments" => 0,
@@ -495,18 +409,16 @@ class LearnerModelEnrollments extends LearnerModel{
             "enrolled_courses" => [],
         ];
 
-        
         // aggregated enrollment information
         $query="
             SELECT
-                
                 COUNT(e.id) as total_enrollments,
                 COUNT(DISTINCT e.enrolled_course_id) as total_unique_courses,
                 (SELECT COUNT(ee.id) FROM {ari_user_enrollments} ee JOIN {user} uu ON uu.username=e.username WHERE uu.id=u.id AND ee.enrollment_repeated > 0 ) as repeated_courses
             FROM {ari_user_enrollments} e 
             JOIN {user} u ON u.username=e.username 
-            -- WHERE 
-                -- u.id=:user_id
+            WHERE 
+                u.id=:user_id
             ";
         $res = $GLOBALS["DB"]->get_record_sql($query, array('user_id'=>parent::$user_id));
         // echo '<pre>'.print_r($res, true).'</pre>';
@@ -526,13 +438,11 @@ class LearnerModelEnrollments extends LearnerModel{
         $res = $GLOBALS["DB"]->get_records_sql($query, array('user_id'=>parent::$user_id));
         foreach($res as $enrollment => $val){
             array_push($arr["enrolled_courses"], $val->enrolled_course_id);
-            //parent::$activity_array['course_enrollments']['total_enrollments'] += 1;
         }
 
         //echo '<pre>'.print_r($arr, true).'</pre>';
         //echo '<pre>'.print_r($res, true).'</pre>';
-        
-        parent::$activity_array['course_enrollments'] = $arr;
+        return $arr;
     }
 
     
@@ -889,9 +799,8 @@ class LearnerModelCourse extends LearnerModel{
         parent::$activity_array["course"]["course_overview_page_visits"] = "xxx";
         parent::$activity_array["course"]["goal_changes"] = $this->get_goal_changes();
         parent::$activity_array["course"]["goal_selected"] = "xxx";
-        parent::$activity_array["course"]["course_unit_completion"] = "xxx";
-        parent::$activity_array["course"]["course_unit_success"] = "xxx";
-
+        parent::$activity_array["course"]["relative_progress"] = round((( parent::$activity_array['mod_assign']['rel_submissions'] + parent::$activity_array['mod_quiz']['rel_quizes']) / 2) * 100, 1);
+        parent::$activity_array["course"]["relative_success"] = round((( parent::$activity_array['mod_assign']['mean_relative_score'] + parent::$activity_array['mod_quiz']['mean_relative_score']) / 2) * 100, 1);
     }
 
 

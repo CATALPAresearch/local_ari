@@ -11,8 +11,9 @@ Für die Untersuchung der Titel bzw. das Herausfiltern von Keywords aus den Tite
 
 python3.9 -m pip install rake_spacy
 python3.9 -m pip install compound_split
+python3.9 -m pip install -U pydantic spacy
 python3.9 -m spacy download de_core_news_lg
-python3.9 -m pip install csv
+python3.9 -m pip install python-csv
 """
 
 import os
@@ -54,7 +55,7 @@ class Keywords:
     Class to extract keywords and add it to existing course metadata
     """
 
-    def __init__(self, method="rake", input=""):
+    def __init__(self, method="rake", input="moodle-course-text.csv"):
         self.method = method
         self.input = input
         self.commonTerms = [
@@ -230,7 +231,7 @@ class Keywords:
         """
         df = pd.DataFrame()
         # open file
-        filepath = '/Volumes/DATA0/nise/Downloads/moodle-course-text.csv'
+        filepath = './moodle-course-text.csv'
         with open(filepath, newline='') as csvfile:
             instancereader = csv.reader(csvfile, delimiter=';') #, quotechar='|'
             # skip header

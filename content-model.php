@@ -188,9 +188,9 @@ if(in_array('mod_safran', $selected_course_activities)){
         ON cs.id = cm.section
     RIGHT OUTER JOIN {safran_question} AS q
         ON cm.instance = q.id 
-    JOIN mdl_safran_feedback f 
+    JOIN {safran_feedback} f 
         ON q.id = f.taskid 
-    JOIN mdl_safran_criteria c 
+    JOIN {safran_criteria} c 
         ON q.id = c.taskid
     WHERE 
         m.name = 'safran' AND
@@ -226,13 +226,14 @@ echo $html_str;
 
 
 // upload CSV of instance id and assigned keywords and save it to the database
+$addToDatabase = true;
 $addToDatabase = false;
 $row = 1;
-if ($addToDatabase && ($handle = fopen("content-model.csv", "r")) !== FALSE) {
+if ($addToDatabase && ($handle = fopen("./content_model/content-model.csv", "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
         $num = count($data);
         //echo "<p> $num fields in line $row: <br /></p>\n";
-        $row++;
+        //$row++;
         for ($c=0; $c < $num; $c++) {
             //echo explode($data[$c][0], ';') . "<br />\n";
             $row = explode(',',$data[$c]);
@@ -259,31 +260,35 @@ echo "<strong>Some query</strong><br>";
 // query
 $query = "
 SELECT DISTINCT
-a2.id,
-aa1.keyword AS search_term,
-a2.instance_id,
-a2.component,
-aa1.document_frequency AS freq1,
-a2.document_frequency AS freq2
+    a2.id,
+    aa1.keyword AS search_term,
+    a2.instance_id,
+a2.instance_url_id,
+    a2.component,
+    aa1.document_frequency AS freq1,
+    a2.document_frequency AS freq2
 FROM (
-SELECT keyword, id, document_frequency
-FROM mdl_ari_content_model  a1
+    SELECT course_id, keyword, id, document_frequency, instance_url_id
+    FROM mthreeeleven_ari_content_model  a1
+    WHERE 
+    course_id=:course_id AND
+    instance_url_id = :url_id 
+    ORDER BY document_frequency DESC
+    LIMIT 10
+    ) as aa1
+JOIN mthreeeleven_ari_content_model a2 ON a2.keyword = aa1.keyword
 WHERE 
-course_id=:course_id AND
-instance_id = 1
-ORDER BY document_frequency DESC
-LIMIT 10
-) as aa1
-JOIN mdl_ari_content_model a2 ON a2.keyword = aa1.keyword
-WHERE 
-aa1.id <> a2.id AND
-course_id=:course_id
-ORDER BY aa1.document_frequency DESC
-";
-$records = $DB->get_records_sql($query, array("course_id"=>$course_id));   
+    aa1.id <> a2.id AND
+    a2.course_id=aa1.course_id AND
+aa1.instance_url_id <> a2.instance_url_id
+ORDER BY 
+    aa1.document_frequency DESC
+
+;";
+$records = $DB->get_records_sql($query, array("course_id"=>2, "url_id"=>412,));   
     echo 'res: ' . count($records) .' instances <br>';
     foreach($records as $record){    
-        echo $record->id .' '. $record->search_term . '<br>';
+        echo $record->search_term . ' - freq1=' . $record->freq1 . ' - freq2=' . $record->freq2 .'<br>';
     }
 
 // visualize content model using a D3.js network

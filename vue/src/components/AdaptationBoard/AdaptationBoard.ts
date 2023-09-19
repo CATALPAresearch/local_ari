@@ -1,38 +1,45 @@
+
 import { defineComponent } from 'vue';
-import { EConditionCount, EConditionDate, EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules } from '@/tsc/rules';
+import { ETargetContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules, EActionType, EActionCategory, EActionAugmentation, ETiming } from '@/tsc/rules';
 import Communication from '../../../scripts/communication';
+import { RuleManager } from '@/tsc/rule_manager';
+
+import { mapGetters } from 'vuex'
+import store  from "./store";
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+
+import Multiselect from 'vue-multiselect';
+//Vue.component('multiselect', Multiselect)
 
 export default defineComponent({
     name: "AdaptationBoard",
+    
     data() {
         return {
+            selected: null,
             rulesLoaded: false,
-            existingRules: [] as IRule[],
-            newRules: [] as IRule[],
             contextFilter: "None",
             executions: [] as any[],
             chosenTimeRangeFilter: null as any,
+            show:false,
         }
     },
-    mounted: function () {
+    mounted: function ():void {
+        // @ts-expect-error
         this.fetchRules();
+        // @ts-expect-error
         this.fetchAllRuleExecutions();
     },
+
+    store: store as any,
+    components: {
+        Multiselect: Multiselect
+      },
+    
+
     methods: {
         // Fetch all rule executions from database
-        fetchAllRuleExecutions() {
-            // Could also be used with rule id as parameter
-            // const rule = {
-            //     rule_id: id
-            // };
-            // Communication.webservice("get_rule_execution", {
-            //     data: rule,
-            // }).then((response) => {
-            //     let json = JSON.parse(response.data);
-            //     console.log(json);
-            // }).catch((error) => {
-            //     console.log(error);
-            // });
+        fetchAllRuleExecutions():void {
             Communication.webservice("get_rule_execution", {
                 data: {},
             }).then((response) => {
@@ -60,113 +67,81 @@ export default defineComponent({
                 // Count all executions
                 return this.executions.filter((execution) => parseInt(execution.rule_id) === id).length;
             }
+            
         },
 
         // Get condition as date or numerical value
-        getConditionValue: function (condition: IRuleCondition) {
+        getConditionValue: function (condition: IRuleCondition):number {
             // TODO check if date or duration
-            // If condition is of type date, return date as string, else return numerical value
-            return ((<any>Object).values(EConditionDate).includes(condition.key) ?
-                this.convertTimestampToDate(condition.value) : condition.value)
+            //return ((<any>Object).values(EConditionDate).includes(condition.key) ? this.convertTimestampToDate(condition.value) : condition.value)
+            return condition.value;
         },
 
         // Convert timestamp to date string
-        convertTimestampToDate: function (timestamp: number) {
+        convertTimestampToDate: function (timestamp: number):string {
             return new Date(timestamp).toDateString();
         },
 
         // Fetch all rules from static typescript file
-        fetchRules() {
-            // TODO fetch rules from database
-            this.existingRules = (new Rules()).getAll();
+        fetchRules: function() {
+            store.commit('createExistingRules', (new Rules()).getAll());
             this.rulesLoaded = true;
-        },
-
-        // Add new rule from template to list of new rules, only local for UI
-        newRule() {
-            console.log("newRule");
-            let newRule = (new Rules()).rule;
-            // TODO get new ID from db
-            newRule.id = Math.max(...this.allRules.map((rule) => rule.id)) + 1;
-            this.newRules.push(newRule);
-        },
-
-        // Save new rule
-        saveRule(id: number) {
-            console.log("[saveRule] with id " + id + ", database not implemented yet.");
-
-            // get rule and remove it from newRules
-            let newRule = this.newRules.splice(this.newRules.findIndex((rule) => rule.id === id), 1);
-
-            // add rule to local copy of existing rules, TODO: remove later when saving to db is implemented, existing rules should be fetched from db
-            this.existingRules.push(newRule[0]);
-
-            console.log(newRule);
+            
         },
 
         // Edit Rule
-        editRule(id: number) {
-            console.log("[editRule] at id " + id + ", not implemented yet.");
-
-            // get rule and remove it from existingRules
-            let ruleToEdit = this.existingRules.splice(this.existingRules.findIndex((rule) => rule.id === id), 1);
-
-            // add rule to local copy of new rules
-            this.newRules.push(ruleToEdit[0]);
-
+        editRule(id: number):void {
+            console.log("[editRule] with id " + id );
+            let ruleToEdit = store.commit('moveExistingToNewRule', id);
             console.log(ruleToEdit);
         },
 
-        // Delete Rule
-        deleteRule(id: number) {
-            console.log("[deleteRule] with id " + id + ", database not implemented yet.");
-            this.newRules = this.newRules.filter((rule) => rule.id !== id);
-
-            // TODO remove later, save changes to database if in existingRules
-            this.existingRules = this.existingRules.filter((rule) => rule.id !== id);
-        }
+        
     },
     computed: {
+        ...mapGetters([]),
+
         operators() {
             return EOperators;
         },
-        contexts() {
-            return EMoodleContext;
+        action_target_context() {
+            return ETargetContext;
         },
-        actors() {
+        action_actors() {
             return ERuleActor;
         },
-        allRules(): IRule[] {
-            return [...this.existingRules, ...this.newRules];
+        action_type() {
+            return EActionType;
         },
-        // Filter rules by context
+        action_category() {
+            return EActionCategory;
+        },
+        action_augmentation() {
+            return Object.values(EActionAugmentation);
+        },
+        action_timing() {
+            return ETiming;
+        },
         ruleInFilter(): IRule[] {
             console.log("chosen filter: " + this.contextFilter);
-            return this.contextFilter === "None" ? this.existingRules : this.existingRules.filter((rule) => rule.Action.moodle_context === this.contextFilter);
+            return this.contextFilter === "None" ? store.getters.existingRules : store.getters.filter((rule) => rule.Action.some(mc => mc.target_context === this.contextFilter));
+        },
+        advancedActionOptions(id:number):Boolean{
+            return this.advancedActionOptions[id];
         },
         // Get all conditions for UI filters
         conditionsKeys(): string[] {
-            return (<any>Object).values(EConditionCount).concat((<any>Object).values(EConditionDate));
+            return RuleManager.getNestedKeys(RuleManager.lm, 'lm');
         },
         timeRangeFilterExecutions(): { name: string, value: any }[] {
             // Array with name and value of time range filter in days
             return [
-                { name: "Alle", value: null },
-                { name: "Heute", value: 0 },
-                { name: "Letzte 7 Tage", value: 7 },
-                { name: "Letzte 30 Tage", value: 30 },
-                { name: "Seit Semesterbeginn", value: 180 },  // TODO get date from semester start
+                { name: "all", value: null },
+                { name: "today", value: 0 },
+                { name: "last 7 days", value: 7 },
+                { name: "last 30 days", value: 30 },
+                { name: "since semester start", value: 180 },  // TODO get date from semester start
             ]
         }
-        /*
-            alertType: function(){
-                return this.$store.getters.getAlertType;
-            },
-            showAlert: function(){
-                return this.$store.getters.getAlertState;
-            },
-            alertMessage: function(){
-                return this.$store.getters.getAlertMessage;
-            }*/
     }
 });

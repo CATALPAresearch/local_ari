@@ -26,4 +26,27 @@ echo <<<'EOT'
 <div id="adaptationDashboardApp"></div>
 EOT;
 
+function install(){
+    /*
+     INSERT INTO `mthreeeleven_ari_rule_moodle_context` (`id`, `title`) VALUES
+(1,	'login_page'),
+(2,	'home_page'),
+(3,	'profile_page'),
+(4,	'course_participants'),
+(5,	'course_overview'),
+(6,	'mod_page'),
+(7,	'mod_longpage'),
+(8,	'mod_safran'),
+(9,	'mod_assignment'),
+(10,	'mod_usenet'),
+(11,	'mod_quiz'),
+(12,	'mod_quiz_attempt'),
+(13,	'mod_quiz_summary'),
+(14,	'mod_quiz_review'),
+(15,	'mod_safran_review'),
+(16,	'unknown'),
+(17,	'mod_hypervideo');
+     */
+}
+
 echo $OUTPUT->footer();

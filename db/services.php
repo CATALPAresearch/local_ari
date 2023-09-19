@@ -29,6 +29,16 @@
             'loginrequired' => true
         ),
 
+        'local_ari_get_rules' => array(
+            'classname'    => 'local_ari_external',
+            'classpath'   => 'local/ari/db/external.php',
+            'methodname'   => 'get_rules',
+            'description' => 'Get all rules',
+            'type'        => 'read',
+            'ajax'        => true,
+            'loginrequired' => true
+        ),
+
         'local_ari_get_rule_execution' => array(
             'classname'    => 'local_ari\external\rule',
             'methodname'   => 'get_rule_execution',

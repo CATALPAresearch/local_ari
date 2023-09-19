@@ -6,10 +6,12 @@ import PromptPanelApp from "./promptPanelApp.vue";
 import Communication from "../scripts/communication";
 import { Controller } from "./tsc/controller";
 
+
 function initAdaptationDashboard() {
     // __webpack_public_path__ = M.cfg.wwwroot + "/local/ari/build/";
     Communication.setPluginName("local_ari");
     new Vue({ el: "#adaptationDashboardApp", render: (h) => h(AdaptationDashboardApp) });
+    
 }
 
 function initPromptPanel() {

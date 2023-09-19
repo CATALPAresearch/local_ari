@@ -9,36 +9,92 @@
  * - action context which is currently missing refers to to the context where the action should executed.
  */
 //import * as ruleset from "./rules/test-rule";
+import Communication from '../../scripts/communication';
 
 export class Rules {
 
     constructor() {
-        // TODO load from json file or from database
+        Communication.setPluginName('local_ari');
+        this.loadRules();
     }
 
+    // Wie kann ich eine Condition definieren, die je section geprüft wird und je section eine action auslöst?
+    // basic example
     public rule:IRule = {
         id: 100,
-        active: true,
-        title: "Test HTML Prompt",
+        isActive: true,
+        title: "Course-Progress",
         Condition: [
             {
-              context: "quiz_activity",
-              key: EConditionCount.count_quiz_attempts,
-              value: 0,
-              operator: EOperators.Greater,
+                source_context: "mod_assign",
+                key: 'mean_rel_submissions',
+                value: 0.5,
+                operator: EOperators.Smaller,
+            },
+            {
+                source_context: "mod_quiz",
+                key: 'mean_rel_submissions',
+                value: 0.5,
+                operator: EOperators.Smaller,
             }
           ],
-        Action: {
-          method: ERuleActor.HtmlPrompt,
-          text:   'Sie haben diese Aufgabe innerhalb kurzer Zeit sehr oft wiederholt ohne sich zu verbessern. In <a href="http://localhost/moodle/mod/longpage/view.php?id=48">KE1</a> finden Sie Hinweise wie diese Aufgabe zu gelöst werden kann. Wie Sie Ihr Leseverständnis steigern können, erfahren Sie <a href="#/strategies/readingcomprehension">hier</a>',
-          moodle_context: EMoodleContext.COURSE_OVERVIEW_PAGE,
-          moodle_course: 3,
-          dom_content_selector: ".prompt.quiz-6",
-          dom_indicator_selector: ".completion-item-quiz-6",
-          delay: 1000, // miliseconds
-          repetitions: 1,
-          timing: ETiming.NOW,
-        },
+        Action: [
+            {
+                actor: ERuleActor.StoredPrompt,
+                type: EActionType.SCOPE_COURSE, 
+                category: EActionCategory.TIME_MANAGEMENT,
+                action_title: 'Titel der Empfehlung',
+                action_text:   'Hallo Herr {user.firstname} {user.lastname}, Sie haben bislang weniger als die Hälfte der Einsende- und Quizaufgaben bearbeitet. ',
+                target_context: ETargetContext.TEST,
+                moodle_course: 2,
+                dom_content_selector: ".page-header-headings",//".testbed",//".page-header-headings",
+                //dom_indicator_selector: ".completion-item-quiz-6",
+                //delay: 1000, // miliseconds
+                repetitions: 2,
+                timing: ETiming.NOW,
+            }
+        ],
+      };
+
+
+      public rule_long_absense:IRule = {
+        id: 100,
+        isActive: true,
+        title: "Long course absense, low progress",
+        Condition: [
+            {
+                source_context: "course",
+                key: 'last_access_days_ago',
+                value: 14,
+                operator: EOperators.Greater,
+            },
+            {
+                source_context: "mod_assign",
+                key: 'mean_rel_submissions',
+                value: 0.5,
+                operator: EOperators.Smaller,
+            },
+            {
+                source_context: "mod_quiz",
+                key: 'mean_rel_submissions',
+                value: 0.5,
+                operator: EOperators.Smaller,
+            }
+          ],
+        Action: [
+            {
+                actor: ERuleActor.StoredPrompt,
+                type: EActionType.SCOPE_COURSE, 
+                category: EActionCategory.TIME_MANAGEMENT,
+                action_title: 'Willkommen',
+                action_text:   "Hallo Herr {user.firstname} {user.lastname}, Ihr letzter Besuch im Kurs liegt bereits {lm.course.last_access_days_ago} Tage zurück. Bislang haben Sie {lm.course.relative_progress} % der Aufgaben im Kurs mit einer Erfolgsqoute von {lm.course.relative_success} % bearbeitet. Sie haben dafür insgesamt {lm.course.total_time_spent_hms} Stunden aufgewendet.",
+                target_context: ETargetContext.TEST,
+                moodle_course: 2,
+                dom_content_selector: ".page-header-headings",
+                repetitions: 2,
+                timing: ETiming.NOW,
+            }
+        ],
       };
 
     
@@ -50,8 +106,28 @@ export class Rules {
         return this.the_rules;
     }
 
-    public consistencyCheck(): Boolean {
-        // TODO: test the existence of the required keys and data types.
+    public async loadRules():Promise<void> {
+        await Communication.webservice("get_rules", {
+            data: { course_id: 2 }, // FIXME: static param 
+        }).then((response:any) => {
+            try{
+                const json:IRule = <IRule>JSON.parse(response.data)["rule1"];
+                this.the_rules.push(json); 
+            }catch(e){
+                console.error('Error at get_rules. Cast to IRules failed', response);
+            }
+        }).catch((error) => {
+            console.log("Error at get_rules. Could not load rules from database. ", error);
+        });
+    }
+
+    public ruleConsistencyCheck(): Boolean {
+        // @TODO: test the existence of the required keys and data types.
+        return true;
+    }
+
+    public modelConsistencyCheck(): Boolean {
+        // @TODO Check wheter all elements and values defined in the rule interface IRule have been represented in the database.
         return true;
     }
 }
@@ -59,72 +135,111 @@ export class Rules {
 
 export interface IRule {
     id: number,
-    active: boolean,
     title: string,
+    isActive: boolean,
+    isPerSectionRule?: boolean, // apply rule on every section of the course
+    // perType: EActionCategory[], // apply rule to all activities of this type
     Condition: IRuleCondition[];
-    Action: IRuleAction; // todo: think about enabling multiple actions per rule
+    Action: IRuleAction[]; 
 };
 
 export interface IRuleCondition {
-    context: string,
-    key: EConditionKey,
+    id?: number,
+    source_context: string,
+    key: string, // this is a path used by json-path-plus
     value: number,
     operator: EOperators
 };
 
 export interface IRuleAction {
-    method: ERuleActor,
-    text: string,
-    moodle_context: EMoodleContext,
+    id?: number,
+    actor: ERuleActor,
+    type: EActionType,
+    category: EActionCategory,
+    action_title: string,
+    action_text: string,
+    augmentations?: EActionAugmentation[],
+    target_context: ETargetContext,
     moodle_course?: number,
     dom_content_selector?: string,
     dom_indicator_selector?: string,
-    viewport_selector?: string,
+    viewport_selector?: string, // ??
     timing?: ETiming,
     delay?: number,
     priority?: number,
     repetitions: number, // number of time the action should be repeated after being dismissed by the user
 };
 
-export enum EMoodleContext {
-    LOGIN_PAGE = 'login page',
-    HOME_PAGE = 'home page',
-    PROFILE_PAGE = 'profile page',
-    COURSE_PARTICIPANTS = 'course participants',
-    COURSE_OVERVIEW_PAGE = 'course overview page',
-    MOD_PAGE = 'mod page',
-    MOD_LONGPAGE = 'mod longpage',
-    MOD_SAFRAN = 'mod safran',
-    MOD_ASSIGNMENT = 'mod assignment',
-    MOD_NEWSMOD = 'mod newsmod',
-    MOD_QUIZ = 'mod quiz',
-    MOD_QUIZ_ATTEMPT = 'mod quiz attempt',
-    MOD_QUIZ_SUMMARY = 'mod quiz summary',
-    MOD_QUIZ_REVIEW = 'mod quiz review',
-    MOD_SAFRAN_REVIEW = 'mod safran review',
-    UNKNOWN = 'unknown'
+export enum EActionType {
+    SCOPE_COURSE = 'scope_course',
+    SCOME_COURSE_UNIT = 'scope_course_unit',
+    SCOPE_ACTIVITY_TYPE = 'scope_activity_type',
+    SCOPE_ACTIVITY = 'scope_activity',
+    NEXT_STEP = 'next_step',
+}
+
+export enum EActionCategory {
+    TIME_MANAGEMENT = 'time_management',
+    PROGRESS = 'progress',
+    SUCCESS = 'success',
+    SOCIAL = 'social',
+    COMPETENCY = 'competency',
+    
+    // TODO
+}
+
+export enum EActionAugmentation {
+    USER_DATA = 'user_data',
+    LEARNER_MODEL = 'learner_model',
+    RELATED_RESOURCE = 'related_resource',
+    NEXT_STEP = 'next_step',
+    LLM_PROMPT = 'LLM_prompt',
+}
+
+
+export enum ESourceContext {
+    MOD_PAGE = 'mod_page',
+    MOD_LONGPAGE = 'mod_longpage',
+    MOD_SAFRAN = 'mod_safran',
+    MOD_ASSIGNMENT = 'mod_assign',
+    MOD_NEWSMOD = 'mod_usenet',
+    MOD_HYPERVIDEO = 'mod_hypervideo',
+    MOD_QUIZ = 'mod_quiz',
+    MOD_QUESTIONNAIRE = 'mod_questionnaire',
+    USER = 'user',
+    COURSE_ENROLLMENT = 'course_enrollment'
 };
 
-export enum EConditionCount {
-    count_quiz_attempts = 'count_attempts',
-    count_active_milestones = 'count_active_milestones',
-    count_milestone_list_views = 'count_milestone_list_views',
+export enum ETargetContext {
+    // Standard locations
+    LOGIN_PAGE = 'login_page',
+    HOME_PAGE = 'home_page',
+    PROFILE_PAGE = 'profile_page',
+    COURSE_PARTICIPANTS = 'course_participants',
+    COURSE_OVERVIEW_PAGE = 'course_overview_page',
+    
+    // activity plugins
+    MOD_PAGE = 'mod_page',
+    MOD_LONGPAGE = 'mod_longpage',
+    MOD_SAFRAN = 'mod_safran',
+    MOD_ASSIGNMENT = 'mod_assign',
+    MOD_NEWSMOD = 'mod_usenet',
+    MOD_HYPERVIDEO = 'mod_hypervideo',
+    MOD_QUIZ = 'mod_quiz',
+
+    TEST = 'local_ari',
+    
+    // specific locations (not deployed in DB)
+    MOD_QUIZ_ATTEMPT = 'mod_quiz_attempt',
+    MOD_QUIZ_SUMMARY = 'mod_quiz_summary',
+    MOD_QUIZ_REVIEW = 'mod_quiz_review',
+    MOD_SAFRAN_REVIEW = 'mod_safran_review',
+
+
+    
+    UNKNOWN = 'action context unknown',
 };
 
-export enum EConditionDate {
-    milestone_start_date = 'milestone start date',
-    milestone_start = 'milestone start',
-    milestone_end_date = 'milestone end date',
-};
-
-export type EConditionKey = EConditionCount | EConditionDate;
-// export enum EConditionKey {
-//     count_active_milestones = 'count active milestones',
-//     count_milestone_list_views = 'count milestone list views',
-//     milestone_start_date = 'milestone start date',
-//     milestone_start = 'milestone start',
-//     milestone_end_date = 'milestone end date',
-// }
 
 export enum EOperators {
     Smaller = '<',
@@ -146,6 +261,10 @@ export enum ERuleActor {
     Style = 'style',
     Modal = 'modal',
     HtmlPrompt = 'htmlPrompt',
+    StoredPrompt = 'storedPrompt',
+    DashboardCourse = 'dashboard_course',
+    DashboardCourseUnit = 'dashboard_course_unit',
+    DashboardActivity = 'dashboard_activity',
 };
 
 export enum ETiming {

@@ -39,7 +39,16 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
-        <TABLE NAME="ari_rule_moodle_context" COMMENT="Default comment for the table, please edit me">
+        <TABLE NAME="ari_rule_source_context" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="title" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ari_rule_target_context" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="title" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
@@ -106,6 +115,39 @@
                 <KEY NAME="method_id" TYPE="foreign" FIELDS="method_id" REFTABLE="ari_rule_actor" REFFIELDS="id"/>
                 <KEY NAME="moodle_context_id" TYPE="foreign" FIELDS="moodle_context_id" REFTABLE="ari_rule_moodle_context" REFFIELDS="id"/>
                 <KEY NAME="timing_id" TYPE="foreign" FIELDS="timing_id" REFTABLE="ari_rule_timing" REFFIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ari_content_model" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="component" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="instance_url_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="instance_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="instance_section_num" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="keyword" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="document_frequency" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ari_user_enrollments" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="username" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="enrolled_course__id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="enrolled_course_title" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="enrolled_repeated" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="semesteryear" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="semester" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="year" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="credits" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="booked_weekly_hours" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
     </TABLES>

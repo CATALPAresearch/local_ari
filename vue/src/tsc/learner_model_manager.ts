@@ -28,7 +28,7 @@ export class LearnerModelManager {
         this.course_id = course_id;
         this.user_id = user_id;
         this.getLearnerModel();
-        this.checkRules();
+        
     };
 
     public checkRules(): void {
@@ -36,15 +36,18 @@ export class LearnerModelManager {
     };
 
     public getLearnerModel(): void { 
+        var _this:LearnerModelManager = this;
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 LearnerModelManager.model = JSON.parse(this.responseText);
+                _this.checkRules();
+                //console.log('ARI: LOAD LEARNER MODEL', JSON.parse(this.responseText));
             }
         };
         // FIXME: add the current semester as a parameter of the path
         var path:string = this.wwwroot + '/local/ari/lm_get_user_data.php?format=json&&period=SS23&course_id=' + this.course_id + '&user_id=' + this.user_id;
-        console.log(path);
+        //console.log(path);
         xmlhttp.open('GET', path, true);
         xmlhttp.send();
     }

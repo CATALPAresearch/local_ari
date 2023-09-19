@@ -1,32 +1,27 @@
-import { EMoodleContext, EOperators, ERuleActor, IRule, IRuleCondition } from '@/tsc/rules';
-declare const _default: import("vue").DefineComponent<Readonly<{}>, {}, {
+import { ETargetContext, EOperators, ERuleActor, IRule, EActionType, EActionCategory, EActionAugmentation, ETiming } from '@/tsc/rules';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+declare const _default: import("vue").DefineComponent<{}, unknown, {
+    selected: null;
     rulesLoaded: boolean;
-    existingRules: IRule[];
-    newRules: IRule[];
     contextFilter: string;
     executions: any[];
     chosenTimeRangeFilter: any;
+    show: boolean;
 }, {
     operators(): typeof EOperators;
-    contexts(): typeof EMoodleContext;
-    actors(): typeof ERuleActor;
-    allRules(): IRule[];
+    action_target_context(): typeof ETargetContext;
+    action_actors(): typeof ERuleActor;
+    action_type(): typeof EActionType;
+    action_category(): typeof EActionCategory;
+    action_augmentation(): EActionAugmentation[];
+    action_timing(): typeof ETiming;
     ruleInFilter(): IRule[];
+    advancedActionOptions(id: number): Boolean;
     conditionsKeys(): string[];
     timeRangeFilterExecutions(): {
         name: string;
         value: any;
     }[];
-}, {
-    fetchAllRuleExecutions(): void;
-    getExecutionCount(id: number): number;
-    getConditionValue: (condition: IRuleCondition) => string | number;
-    convertTimestampToDate: (timestamp: number) => string;
-    fetchRules(): void;
-    newRule(): void;
-    saveRule(id: number): void;
-    editRule(id: number): void;
-    deleteRule(id: number): void;
-}, import("vue/types/v3-component-options").ComponentOptionsMixin, import("vue/types/v3-component-options").ComponentOptionsMixin, {}, string, Readonly<import("vue").ExtractPropTypes<Readonly<{}>>>, {}>;
+}, {}, import("vue/types/v3-component-options").ComponentOptionsMixin, import("vue/types/v3-component-options").ComponentOptionsMixin, {}, string, Readonly<import("vue").ExtractPropTypes<{}>>, {}>;
 export default _default;
 //# sourceMappingURL=../../../../@maps/src/components/AdaptationBoard/AdaptationBoard.d.ts.map

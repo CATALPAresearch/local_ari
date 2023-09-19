@@ -16,10 +16,10 @@ export default class Communication{
                     methodname: `${Communication.fullName}_${method}`,
                     args: param?param:{},
                     timeout: 3000,
-                    done: function(data){                                                                
+                    done: function(data){   
                         return resolve(data);
                     },
-                    fail: function(error){                                                                
+                    fail: function(error){
                         return reject(error);
                     }                  
                 }]);
