@@ -251,7 +251,7 @@ class LearnerModel{
         if($component != ""){
             $component = " AND component='". $component . "'";
         }
-
+        $addTimePeriodToQuery = self::$addTimePeriodToQuery;
         $query_course_fa_la = "
             SELECT 
                 MIN(timecreated) AS first_access,
@@ -260,7 +260,7 @@ class LearnerModel{
             WHERE 
                 courseid = ? AND
                 userid = ? AND
-                timecreated > 1000 $this->addTimePeriodToQuery $component     
+                timecreated > 1000 $addTimePeriodToQuery $component     
             ;
         ";
 
@@ -308,7 +308,8 @@ class LearnerModel{
         $addTimePeriodToQuery = self::$addTimePeriodToQuery;
         $query_course_records = "
             SELECT
-                contextinstanceid
+                contextinstanceid,
+                component
             FROM {logstore_standard_log}
             WHERE 
                 courseid = :course_id AND
@@ -368,9 +369,15 @@ class LearnerModel{
             $last_record_time = $singleRecord->timecreated;
             $last_day = Date("z", $last_record_time);
         }
-        $recordsCourseAccess_arr = json_decode(json_encode($recordsCourseAccess), true);
-        $first_day =  Date("z", reset($recordsCourseAccess_arr)['timecreated']);
-        $last_day =  Date("z", end($recordsCourseAccess_arr)['timecreated']);
+        $recordsCourseAccess_arr = array_values(json_decode(json_encode($recordsCourseAccess), true));
+        if(count($recordsCourseAccess_arr)>0){
+            $first_day =  Date("z", $recordsCourseAccess_arr[0]['timecreated']);
+            $last_day =  Date("z", end($recordsCourseAccess_arr)['timecreated']);
+        } else{
+            $first_day =  0;
+            $last_day =  0;
+        }
+        
         # consider German winter semester (October - April) and summer semester (April - September)
         $activity_span = $first_day < $last_day ? $last_day - $first_day : (365 - $first_day) + $last_day; 
 
@@ -510,7 +517,7 @@ class LearnerModelLongpage extends LearnerModel{
      * 
      */
     function get_longpage_data(){
-        $addTimePeriodToQuery = parent::$addTimePeriodToQuery;
+        $addTimePeriodToQuery = LearnerModel::$addTimePeriodToQuery;
         // comments are saved in this table
         // 0 = marked text, 1 = annotation, 2 = bookmarks
         $query_longpage_posts = "
@@ -751,18 +758,20 @@ class LearnerModelQuestionnaire extends LearnerModel{
         foreach($data as $item) {
             $item = (array)$item;
             $item_result = $item;
-            if(!$qi['questionnaire-'.$item['questionnaire_id']]){
-                $qi['questionnaire-'.$item['questionnaire_id']]['questionnaire_id'] = $item_result['questionnaire_id'];
+            //if(!$qi['questionnaire-'.$item['questionnaire_id']]){
+                $qi['questionnaire-'.$item['questionnaire_id']] = [];
+                $qi['questionnaire-'.$item['questionnaire_id']]['questionnaire_id'] = (int)$item_result['questionnaire_id'];
                 $qi['questionnaire-'.$item['questionnaire_id']]['questionnaire_name'] = $item_result['questionnaire_name'];
                 $qi['questionnaire-'.$item['questionnaire_id']]['questions'] = [];
-            }
-            if(! $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]){
-                $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_id'] = $item_result['question_id'];
+            //}
+            //if($qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']] == U_UNDEFINED_VARIABLE){
+                $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']] = [];
+                $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_id'] = (int)$item_result['question_id'];
                 $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_title'] = $item_result['question_title'];
                 $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_type_id'] = $item_result['question_type'];
                 $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['question_type_name'] = $item_result['questiontype'];
                 $qi['questionnaire-'.$item['questionnaire_id']]['questions']['question-'.$item['question_id']]['items'] = [];
-            }
+            //}
             unset($item_result['uid']);
             unset($item_result['userid']);
             unset($item_result['questionnaire_id']);
@@ -808,7 +817,7 @@ class LearnerModelCourse extends LearnerModel{
      * Determine how often a course-related goal has been changed be the user
      */
     function get_goal_changes(){
-        $addTimePeriodToQuery = parent::$addTimePeriodToQuery;
+        $addTimePeriodToQuery = LearnerModel::$addTimePeriodToQuery;
         $query = "
         SELECT
         count(*) as count
@@ -1069,7 +1078,7 @@ class LearnerModelQuiz extends LearnerModel {
             $arr["max_scores"] += $item->max_score;
             
             // per section
-            if($arr["sections"]["section-" . $item->section] == null){
+            //if($arr["sections"]["section-" . $item->section] == null){
                 $arr["sections"]["section-" . $item->section] = [
                     "title" => $item->section_title,
                     "first_submission" => $item->submission_time,
@@ -1079,10 +1088,11 @@ class LearnerModelQuiz extends LearnerModel {
                     "max_scores" => 0,
                     "achieved_scores" => 0,
                     "mean_relative_score" => 0,
+                    "first_attempt" => 0,
                 ];
-            }
-            if($arr["sections"]["section" . $item->section]["first_attempt"] > $item->submission_time){
-                $arr["sections"]["section" . $item->section]["first_attempt"] = $item->submission_time;
+            //}
+            if($arr["sections"]["section-" . $item->section]["first_attempt"] > $item->submission_time){
+                $arr["sections"]["section-" . $item->section]["first_attempt"] = $item->submission_time;
             }
             $arr["sections"]["section-" . $item->section]["total_performed_unique_quizes"]++;
             //$arr["sections"]["section-" . $item->section]["rel_submissions"] = $arr["sections"]["section-" . $item->section]["total_submissions"] / $item->number_of_quizes;
@@ -1281,6 +1291,7 @@ class LearnerModelHypervideo extends LearnerModel {
                         SELECT val, COUNT(*) as occurances FROM {hypervideo_log} WHERE actions='playback' AND hypervideo=hl.hypervideo GROUP BY val 
                         ) as o) as complete_playbacks,
                     (MAX(hl.timemodified) - MIN(hl.timemodified)) / 1000 / 60 as time_spent,
+                    hl.timemodified as submission_time,
                     cm.id module_id,
                     cm.section,
                     cs.name as section_title
@@ -1335,7 +1346,7 @@ class LearnerModelHypervideo extends LearnerModel {
             $arr["time_spent"] += $item->time_spent;
 
             // per section
-            if($arr["sections"]["section-" . $item->section] == null){
+            //if($arr["sections"]["section-" . $item->section] == null){
                 $arr["sections"]["section-" . $item->section] = [
                     "title" => $item->section_title,
                     "count_videos" => 0,
@@ -1348,10 +1359,11 @@ class LearnerModelHypervideo extends LearnerModel {
                     "total_ended_events" => 0,
                     "complete_playbacks" => 0,
                     "time_spent" => 0,
+                    "first_attempt" => 0,
                 ];
-            }
-            if($arr["sections"]["section" . $item->section]["first_attempt"] > $item->submission_time){
-                $arr["sections"]["section" . $item->section]["first_attempt"] = $item->submission_time;
+            //}
+            if($arr["sections"]["section-" . $item->section]["first_attempt"] > $item->submission_time){
+                $arr["sections"]["section-" . $item->section]["first_attempt"] = $item->submission_time;
             }
             $arr["sections"]["section-" . $item->section]["count_videos"]++;
             $arr["sections"]["section-" . $item->section]["total_playback_time"] += $item->total_playback_time;

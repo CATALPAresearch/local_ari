@@ -6,6 +6,8 @@ import {
   ETargetContext,
   EOperators,
   ERuleActor,
+  EActionType,
+  ETiming,
   IRule,
   IRuleCondition,
   EActionCategory,
@@ -104,6 +106,37 @@ const store = new Vuex.Store({
         state.newRules = [...state.newRules];
       }
     },
+    createActionOfNewRule(state, rule_id) {
+        // @ts-ignore comment
+        let rule_index: number = state.newRules.findIndex(
+          (rule) => (rule.id = rule_id)
+        );
+        if (state.newRules[rule_index].Action != null) {
+          let newAction: IRuleAction = {
+            id: Math.round(Math.random() * 947),
+            actor: ERuleActor.StoredPrompt,
+            type: EActionType.SCOME_COURSE_UNIT,
+            category: EActionCategory.COMPETENCY,
+            action_title: '',
+            action_text: '',
+            augmentations: [] as EActionAugmentation[],
+            target_context: ETargetContext.COURSE_OVERVIEW_PAGE,
+            moodle_course?: 2, // FIXIT THIS
+            dom_content_selector: "",
+            dom_indicator_selector: "",
+            viewport_selector: "", 
+            timing: ETiming.NOW,
+            delay: 0,
+            priority: 0,
+            repetitions: 0,
+          } as IRuleAction;
+          state.newRules[rule_index].Action = [
+            ...state.newRules[rule_index].Action,
+            newAction,
+          ];
+          state.newRules = [...state.newRules];
+        }
+      },
     deleteConditionOfNewRule(state, rule_id, condition_id) {
       let rule_index: number = state.newRules.findIndex(
         (rule) => (rule.id = rule_id)
@@ -115,6 +148,17 @@ const store = new Vuex.Store({
         1
       );
     },
+    deleteActionOfNewRule(state, rule_id, action_id) {
+        let rule_index: number = state.newRules.findIndex(
+          (rule) => (rule.id = rule_id)
+        );
+        state.newRules[rule_index].Action.splice(
+          state.newRules[rule_index].Action.find(
+            (action) => action.id === action_id
+          ),
+          1
+        );
+      },
   },
   getters: {
     existingRules(state) {

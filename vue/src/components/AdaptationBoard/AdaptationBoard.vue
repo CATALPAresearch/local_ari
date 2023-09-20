@@ -113,13 +113,19 @@
               </select>
               <input v-model="condition.value" class="w-50"
                 title="Type in a value to compared with the Learniner Model key using the selected operator">
-              <button class="btn btn-secondary right" title="Delete condition"
-                @click="$store.commit('deleteConditionOfNewRule', rule.id, condition.id)"><i
-                  class="fa fa-trash"></i></button>
+              <button class="btn btn-secondary right" title="Delete condition" @click="$store.commit('deleteConditionOfNewRule', rule.id, condition.id)">
+                <i class="fa fa-trash"></i>
+              </button>
             </li>
           </ol>
-          <button class="btn btn-secondary" title="Add a condition to the rule"
-            @click="$store.commit('createConditionOfNewRule', rule.id)"><i class="fa fa-plus"></i></button>
+          <div v-if="rule.Condition.length == 0">
+            <button class="btn btn-secondary" title="Add a condition to the rule"
+            @click="$store.commit('createConditionOfNewRule', rule.id)"><i class="fa fa-plus"> Add condition</i>
+            </button>
+          </div>
+          <button v-if="rule.Condition.length > 0" class="btn btn-secondary" title="Add a condition to the rule"
+            @click="$store.commit('createConditionOfNewRule', rule.id)"><i class="fa fa-plus"></i>
+          </button>
         </td>
         <td class="align-text-top">
           <ol class="p-0 m-0">
@@ -135,12 +141,14 @@
                   v-model="action.target_context">
                   <option v-for="context in action_target_context" :value="context">{{ context }}</option>
                 </select>
+                <button class="btn btn-secondary right" title="Delete action" @click="$store.commit('deleteActionOfNewRule', rule.id, action.id)">
+                  <i class="fa fa-trash"></i>
+                </button>
               </span>
               <span class="row mb-2">
                 <b class="col-2">Text:</b>
                 <textarea class="col-8 action-text" v-model="action.action_text"></textarea>
               </span>
-              <hr>
               <span class="row mb-2">
                 <b class="col-2">Type:</b>
                 <select class="filter-select-edit col-4" name="action_context" id="action_type" v-model="action.type">
@@ -161,8 +169,10 @@
               </span>
               <hr>
               <div class="mb-2" @click="show=!show">
-                <span v-if="show">Hide</span>
-                <span v-if="!show">Show</span> advanced settings
+                <b>
+                  <span v-if="show">Hide</span>
+                  <span v-if="!show">Show</span> advanced settings
+                </b>
               </div>
               <div v-if="show">
                 <span class="row mb-2">
@@ -200,8 +210,17 @@
                   <input v-model="action.repetitions" id="action_repetitions" name="action_repetitions" />
                 </span>
               </div>
+              <hr>
             </li>
           </ol>
+          <div v-if="rule.Action.length == 0">
+            <button class="btn btn-secondary" title="Add an action to the rule"
+            @click="$store.commit('createActionOfNewRule', rule.id)"><i class="fa fa-plus"> Add action</i>
+            </button>
+          </div>
+          <button v-if="rule.Action.length > 0" class="btn btn-secondary" title="Add an action to the rule"
+            @click="$store.commit('createActionOfNewRule', rule.id)"><i class="fa fa-plus"></i>
+          </button>
         </td>
         <td class="align-text-top">
           <button class="rule-controls right btn btn-primary"
@@ -212,7 +231,8 @@
         </td>
       </tr>
     </table>
-    <button class="btn btn-info" @click="$store.commit('addEmptyNewRule')">+ add new rule</button>
+    <button class="btn btn-secondary" @click="$store.commit('addEmptyNewRule')">
+      <i class="fa fa-plus"></i> add new rule</button>
   </div>
 </template>
 
