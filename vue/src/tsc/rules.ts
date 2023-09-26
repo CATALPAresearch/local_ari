@@ -27,25 +27,26 @@ export class Rules {
         Condition: [
             {
                 source_context: "mod_assign",
-                key: 'mean_rel_submissions',
-                value: 0.5,
-                operator: EOperators.Smaller,
+                key: 'last_access_days_ago',
+                value: 10,
+                operator: EOperators.Greater,
             },
-            {
+            /*{
                 source_context: "mod_quiz",
                 key: 'mean_rel_submissions',
                 value: 0.5,
                 operator: EOperators.Smaller,
-            }
+            }*/
           ],
         Action: [
             {
+                id: 999,
                 actor: ERuleActor.StoredPrompt,
                 type: EActionType.SCOPE_COURSE, 
                 category: EActionCategory.TIME_MANAGEMENT,
                 action_title: 'Titel der Empfehlung',
                 action_text:   'Hallo Herr {user.firstname} {user.lastname}, Sie haben bislang weniger als die Hälfte der Einsende- und Quizaufgaben bearbeitet. ',
-                target_context: ETargetContext.TEST,
+                target_context: ETargetContext.COURSE_OVERVIEW_PAGE,
                 moodle_course: 2,
                 dom_content_selector: ".page-header-headings",//".testbed",//".page-header-headings",
                 //dom_indicator_selector: ".completion-item-quiz-6",
@@ -83,6 +84,7 @@ export class Rules {
           ],
         Action: [
             {
+                id: 989,
                 actor: ERuleActor.StoredPrompt,
                 type: EActionType.SCOPE_COURSE, 
                 category: EActionCategory.TIME_MANAGEMENT,
@@ -152,7 +154,7 @@ export interface IRuleCondition {
 };
 
 export interface IRuleAction {
-    id?: number,
+    id: number,
     actor: ERuleActor,
     type: EActionType,
     category: EActionCategory,

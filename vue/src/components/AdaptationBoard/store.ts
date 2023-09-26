@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import Vue from "vue";
 import Vuex from "vuex";
 import {
@@ -16,6 +15,7 @@ import {
 
 Vue.use(Vuex);
 
+/*
 interface RootState {
   message: string;
 }
@@ -23,6 +23,7 @@ interface RootState {
 const state: RootState = {
   message: "olleH",
 };
+*/
 
 const store = new Vuex.Store({
   state: {
@@ -175,6 +176,6 @@ const store = new Vuex.Store({
   modules: {},
 });
 
-export type HelloStore = typeof store; // ??
+//export type HelloStore = typeof store; // ??
 
 export default store;

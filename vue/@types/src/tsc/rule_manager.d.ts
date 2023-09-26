@@ -20,7 +20,7 @@ export declare class RuleManager {
     static processAugmentation(augmentations: EActionAugmentation[], text: string): string;
     static getNestedKeys(arr: Object, prefix?: string): string[];
     storeActorStats(id: string, params: IRuleActorStats): void;
-    static initiateActorStoredPrompt(type: EActionType, category: EActionCategory, title: string, message: string, indicator?: string): boolean;
+    static initiateActorStoredPrompt(action_id: number, type: EActionType, category: EActionCategory, title: string, message: string, indicator?: string): boolean;
     static initiateActorHtmlPrompt(hook: string, message: string, indicatorhook?: string): boolean;
     static initiateActorAlert(message: string): void;
     static initiateActorStyle(selector: string): void;

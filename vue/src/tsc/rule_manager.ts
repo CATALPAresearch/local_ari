@@ -272,6 +272,7 @@ export class RuleManager {
         for (let i = 0; i < actions.length; i++) {
             this.actionQueue.push(actions[i]);
         }
+        console.log('ARI::ActionQueu length', this.actionQueue)
         this._processActionQueue();
     }
 
@@ -330,7 +331,7 @@ export class RuleManager {
      * @param tmp
      */
     public static _executeAction(tmp: IRuleAction): void {
-        console.log("ARI:Select action type to be executed");
+        console.log("ARI::Select action type to be executed");
         //if (tmp.repetitions < 1) { return; }
         // mixin augmentations to preprocess the output text, e.g. to include links
         tmp.augmentations = [];
@@ -344,8 +345,8 @@ export class RuleManager {
         //let _this = this;
         switch (tmp.actor) {
             case ERuleActor.StoredPrompt:
-                console.log("Execute StoredPrompt", tmp.action_text);
-                RuleManager.initiateActorStoredPrompt(tmp.type, tmp.category, tmp.action_title, tmp.action_text, tmp.dom_indicator_selector)
+                console.log("ARI::Execute StoredPrompt", tmp.action_text);
+                RuleManager.initiateActorStoredPrompt(tmp.id, tmp.type, tmp.category, tmp.action_title, tmp.action_text, tmp.dom_indicator_selector)
                 break;
             case ERuleActor.HtmlPrompt:
                 console.log("Execute HhtmlPrompt", tmp.action_text);
@@ -499,9 +500,9 @@ export class RuleManager {
      * @param title 
      * @param message Message body
      */
-    public static initiateActorStoredPrompt(type: EActionType, category: EActionCategory, title:string, message: string, indicator?: string): boolean {
+    public static initiateActorStoredPrompt(action_id:number, type: EActionType, category: EActionCategory, title:string, message: string, indicator?: string): boolean {
         let config = <IStoredPromptConfig>{
-            id: "storedprompt-" + uniqid(),
+            id: "storedprompt-" + this.lm.user.user_id + '-' + action_id, //uniqid(),
             type: type,
             category: category,
             indicatorhook: indicator !== undefined ? indicator : 'nix',
@@ -510,7 +511,7 @@ export class RuleManager {
             timecreated: Date.now(),
         };
         new StoredPrompt(config);
-        return true;//action.run();
+        return true;
     }
 
     /**

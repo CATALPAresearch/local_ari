@@ -24,7 +24,7 @@ export interface IRuleCondition {
     operator: EOperators;
 }
 export interface IRuleAction {
-    id?: number;
+    id: number;
     actor: ERuleActor;
     type: EActionType;
     category: EActionCategory;
