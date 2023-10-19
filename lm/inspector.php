@@ -59,7 +59,7 @@ echo "
                 
             }
         };
-        xmlhttp.open('GET', 'lm/get_users.php?course_id=' + cID, true);
+        xmlhttp.open('GET', 'get_users.php?course_id=' + cID, true);
         xmlhttp.send();
     }
 
@@ -77,7 +77,7 @@ echo "
 
             }
         };
-        xmlhttp.open('GET', 'lm/get_user_data.php?user_id=' + userID + '&course_id=' + cID + '&period=' + timePeriod + '&format=html', true);
+        xmlhttp.open('GET', 'learner_model.php?user_id=' + userID + '&course_id=' + cID + '&period=' + timePeriod + '&format=html', true);
         xmlhttp.send();
 
     }
@@ -100,9 +100,10 @@ foreach ($records_courseIDs as $singleRecord) {
     $courses[$singleRecord->id] = $singleRecord->fullname;
 }
 
-echo "<strong>Course Activities</strong><br>";
+echo "<h3>Course Activities</h3>";
+echo "<div></div>";
 echo "<div><strong>Select Course:</strong></div>";
-echo "<select id='courseSelect'>";
+echo "<select class='form-select mr-2' id='courseSelect' style='color: #222; background-color: lightblue; appearance: menulist!important;'>";
 foreach ($courses as $key => $singleCourse) {
     echo "<option value =" . $key . ">" . $key . ": " . $singleCourse . "</option>";
 }
@@ -113,7 +114,7 @@ echo "<button id='fetchUsers' onclick='fetchUsers()'>FetchUsers</button>";
 
 # Select semester periods
 $periods = [
-    #"WS24" => "WS 2024/25",
+    "WS24" => "WS 2024/25",
     #"SS24" => "SS 2024",
     "WS23" => "WS 2023/24",
     "SS23" => "SS 2023",
@@ -129,7 +130,7 @@ $periods = [
     "SS18" => "SS 2018",
 ];
 echo "<div><strong>Filter by period:</strong></div>";
-echo "<select id='periodSelect'>";
+echo "<select id='periodSelect' class='form-select' style='color: #222; background-color: lightblue; appearance: menulist!important;'>";
 echo "<option value='none'>No Filter </option>";
 foreach ($periods as $key => $singleEntry) {
     echo "<option value =" . $key . ">" . $singleEntry . "</option>";
@@ -140,21 +141,9 @@ echo "</select>";
 
 # Select user 
 echo "<div><strong>Select Users:</strong></div>";
-echo "<select id='userSelect'>";
+echo "<select id='userSelect' class='form-select mr-2' id='courseSelect' style='color: #222; background-color: lightblue; appearance: menulist!important;'>";
 echo "</select>";
 echo "<button id='fetchUserData' onclick='fetchUserData()'>FetchUserData</button>";
-
-
-
-# Explaination
-echo "
-<strong>How the learner model is created</strong>
-<ol>
-    <li>...</li>
-    <li>xxx todo</li>
-    <li>...</li>
-</ol>
-";
 
 
 # Content
