@@ -14,7 +14,7 @@
     function local_ari_extend_navigation() {
         global $PAGE, $CFG, $USER, $COURSE;
         $PAGE->requires->js_call_amd("local_ari/app-lazy", "initAdaptations", array($CFG->wwwroot, $USER->id, $COURSE->id));
-        $PAGE->requires->js_call_amd('local_ari/app-lazy', 'initPromptPanel');
+        //$PAGE->requires->js_call_amd('local_ari/app-lazy', 'initPromptPanel');
     }    
 
 ?>
