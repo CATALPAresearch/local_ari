@@ -34,3 +34,6 @@
 * Communicate with moodle over a standard communication class
 * Change the style of any DOM object
 
+# Dev notes
+`git tag -d ws2223 && git push --delete origin ws2223 && git tag ws2223 && git push origin ws2223`
+

@@ -24,17 +24,19 @@ import {
     ETiming,
     ERuleActor,
     EActionType,
-    EActionCategory
+    EActionCategory,
 } from "./rules";
 import { Modal, IModalConfig, EModalSize } from "./actor_bs_modal";
 import { HtmlPrompt, IHtmlPromptConfig } from "./actor_js_html_prompt";
-import { StoredPrompt, IStoredPromptConfig} from "./actor_stored_prompt";
+import { StoredPrompt, IStoredPromptConfig } from "./actor_stored_prompt";
 import { Alert } from "./actor_js_alert";
 import { StyleHandler } from "./actor_style";
 import { uniqid } from "./core_helper";
 import { DOMVPTracker } from "./sensor_viewport";
 import { getTabID } from "./sensor_tab";
 import { sensor_idle } from "./sensor_idle";
+
+import Communication from "../../scripts/communication";
 //import { IndexedDB } from './core_indexeddb'; // replace by dexie
 //import { JSONPath } from "jsonpath-plus";
 //import { JSONPath } from "jsonpath/lib";
@@ -53,9 +55,10 @@ export class RuleManager {
     public activeActors: Array<object>;
 
     constructor(lm: ILearnerModel) {
-        //let t = new IndexedDB('milestones'); // buggy
-        //t.open();
-
+        const production_mode = false;
+        if(production_mode) {
+            console.log = function() {} 
+        }
         RuleManager.lm = lm;
         this.actionQueue = [];
         //this.sourceContext:ESourceContext;
@@ -71,41 +74,42 @@ export class RuleManager {
             this.browserTabID
         );
 
+        // reset existing (stored) rules in order to update their status later on
+        this.resetStoredPrompts();
+
         // initial rule as an example, only for testing
         // later on the set of rules could be filtered by the current moodleContext
         this.rules = new Rules().getAll();
 
         // FIXME: locale-plugins load before course-format plugins. If we do not wait some seconds the prompts cannot be attached to DOM elements.
         setTimeout(() => {
-            // checks all rules
             this._checkRules();
-        }, 5000);
+        }, 500);
     }
 
-
     /**
-       * Should this become a sensor of its own?
-       * /login/index.php ... Login Page
-          / ... home page
-          /user/profile.php?id=4
-          /user/index.php?id=5 ... user overview
-          /course/view.php?id=5
-          /mod/page/view.php?id=248 ... longpage
-          /mod/assign/view.php?id=249 ... EA
-          /mod/quiz/view.php?id=259 ... self-assessment
-          https://aple.fernuni-hagen.de/mod/quiz/attempt.php?attempt=7753&cmid=259 ... start of a quiz
-          https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
-          https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
-       */
+         * Should this become a sensor of its own?
+         * /login/index.php ... Login Page
+            / ... home page
+            /user/profile.php?id=4
+            /user/index.php?id=5 ... user overview
+            /course/view.php?id=5
+            /mod/page/view.php?id=248 ... longpage
+            /mod/assign/view.php?id=249 ... EA
+            /mod/quiz/view.php?id=259 ... self-assessment
+            https://aple.fernuni-hagen.de/mod/quiz/attempt.php?attempt=7753&cmid=259 ... start of a quiz
+            https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
+            https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
+         */
     private _determineTargetContext(): ETargetContext {
         let path = window.location.pathname;
         path = path.replace("/moodle311", "").replace("/moodle", ""); // FIXME: bad fix for my local installation
-        // path = path.split('#')[0]; // cut-off DOM paths and vue router routs
+        path = path.split('#')[0]; // cut-off DOM paths and vue router routes
         path =
             path.charAt(path.length - 1) === "/"
                 ? path.substring(0, path.length - 1)
                 : path; // remove trailling slash
-        console.log("ARI::moodle context", path);
+        console.log("ARI::moodle context path: ", path);
         switch (path) {
             case "/login/index.php":
                 return ETargetContext.LOGIN_PAGE;
@@ -136,11 +140,10 @@ export class RuleManager {
             case "/mod/safran/view.php":
                 return ETargetContext.MOD_SAFRAN_REVIEW;
             case "/local/ari/index.php":
-                    return ETargetContext.TEST;
-                    case "/local/ari":
-                        return ETargetContext.TEST;
+                return ETargetContext.TEST;
+            case "/local/ari":
+                return ETargetContext.TEST;
         }
-        console.log('ARI:: path ', path)
         return ETargetContext.UNKNOWN;
     }
 
@@ -169,16 +172,36 @@ export class RuleManager {
      */
     private _checkRules(): void {
         console.log(
-            "ARI::Check rules for a given learner model",
+            "ARI::Check rules against the Learner Model",
             this.rules,
             RuleManager.lm
         );
         for (var i = 0; i < this.rules.length; i++) {
-            let result = this.evaluateConditions(this.rules[i].Condition);
-            console.log("ARI::check individual rules: ", this.rules[i].title, result);
-            if (result) {
-                this._addToActionQueue(this.rules[i].Action);
+            let results:object = this.evaluateConditions(this.rules[i].Condition, this.rules[i].isPerSectionRule);
+            console.log("ARI::--check individual rules: ", this.rules[i].title, results);
+            for(let section in results){
+                if (results[section] == true) {
+                    // inject section to actions
+                    let action = this.rules[i].Action;
+                    for(let i in action){
+                        action[i].section = section;
+                    }
+                    this._addToActionQueue(action);
+                }
             }
+            
+            // Update DB that the rule condition has been fullfilled for the current user
+            Communication.webservice("set_rule_execution", {
+                data: {
+                    rule_id: this.rules[i].id,
+                    course_id: new Rules().course_id,
+                    status: results ? "condition_met" : "condition_not_met",
+                },
+            })
+            //.then((response) => {//console.log("RESPONSE", response);})
+            .catch((error) => {
+                console.error("Error@rule_manager/set_rule_execution: ", error);
+            });
         }
     }
 
@@ -187,15 +210,15 @@ export class RuleManager {
      * @param context
      * @param key
      */
-    public getLearnerModelKey(context: string, key: string): any {
-        let result = '';
-        if(RuleManager.lm[context] != null){
-            if(RuleManager.lm[context][key] != null){
-                result = RuleManager.lm[context][key]
+    public getLearnerModelKey(context: string, key: string, section:string=""): any {
+        let result = "";
+        if (RuleManager.lm[context] != null) {
+            if(section!="" && RuleManager.lm[context].sections[section][key] != null) {
+                result = RuleManager.lm[context].sections[section][key];
+            } else if (RuleManager.lm[context][key] != null) {
+                result = RuleManager.lm[context][key];
             }
         }
-        console.log("+++++++++++++++++++++++++++++++++++++++++++");
-        console.log(result);
         // @ts-ignore
         return result;
     }
@@ -204,63 +227,69 @@ export class RuleManager {
      * Evaluate each condition of a rule considering the data stored in the learner model
      * @param cons
      */
-    public evaluateConditions(cons: IRuleCondition[]) {
-        console.log("ARI::evaluate rule conditions");
-        let result = true;
-
-        // iterate over all conditions and conjugate them
-        for (var i = 0; i < cons.length; i++) {
-            let condition = cons[i];
-            // console.log(this.getLearnerModelKey(condition.source_context, condition.key), condition.value, condition.operator)
-            switch (condition.operator) {
-                case EOperators.Equal:
-                    result =
-                        result &&
-                            this.getLearnerModelKey(condition.source_context, condition.key) ===
-                            condition.value
-                            ? true
-                            : false;
-                    break;
-                case EOperators.Greater:
-                    result =
-                        result &&
-                            this.getLearnerModelKey(condition.source_context, condition.key) >
-                            condition.value
-                            ? true
-                            : false;
-                    break;
-                case EOperators.Smaller:
-                    result =
-                        result &&
-                            this.getLearnerModelKey(condition.source_context, condition.key) <
-                            condition.value
-                            ? true
-                            : false;
-                    break;
-                case EOperators.Contains:
-                    //result = result && this.getLearnerModelKey(condition.source_context, condition.key) > condition.value ? true : false;
-                    // TODO:
-                    let mkey = this.getLearnerModelKey(condition.source_context, condition.key);
-                    if (typeof mkey == "string") {
-                        //result = result && mkey.includes(condition.value);
-                    } else if (typeof mkey == "object") {
-                        //result = result && mkey.includes(condition.value);
-                    }
-                    result = false;
-                    break;
-                case EOperators.Has:
-                    // has child element
-                    result = false;
-                    break;
-                case EOperators.Similar:
-                    // text similarity
-                    result = false;
-                    break;
-                default:
-                    result = false;
+    public evaluateConditions(cons: IRuleCondition[], isPerSectionRule:boolean = true):object {
+        console.log("ARI::evaluate rule conditions", isPerSectionRule);
+        let sections = ['main'];
+        let result = {'main': false};
+        if(isPerSectionRule == true){
+            // get all section
+            for (var i = 0; i < cons.length; i++) {
+                let condition = cons[i];
+                // FIXME: add rubric in the LM about all existing sections
+                if(RuleManager.lm[condition.source_context] == undefined){
+                    console.warn('ARI::source_context undefined at evaluateConditions.', condition.source_context);
+                    continue;
+                }
+                if(RuleManager.lm[condition.source_context].sections != null){
+                    console.log('ARICU-section: ',i, RuleManager.lm[condition.source_context].sections);
+                    sections = sections.concat( Object.keys(RuleManager.lm[condition.source_context].sections) );
+                }
             }
+            console.log('ARICU-sections: ',sections)
         }
-        console.log("ARI::rule conditions result", result);
+        // iterate over all sections
+        for (var j = 0; j < sections.length; j++){
+            // iterate over all conditions and conjugate them
+            for (var i = 0; i < cons.length; i++) {
+                let condition = cons[i];
+                let mkey = this.getLearnerModelKey(
+                    condition.source_context,
+                    condition.key,
+                    sections[j] == "main" ? "" : sections[j] 
+                    );
+                switch (condition.operator) {
+                    case EOperators.Equal:
+                        result[sections[j]] = result[sections[j]] && mkey === condition.value ? true : false;
+                        break;
+                    case EOperators.Greater:
+                        result[sections[j]] = result[sections[j]] && mkey > condition.value ? true : false;
+                        break;
+                    case EOperators.Smaller:
+                        result[sections[j]] = result[sections[j]] && mkey < condition.value ? true : false;
+                        break;
+                    case EOperators.Contains:
+                        // TODO:
+                        if (typeof mkey == "string") {
+                            //result = result && mkey.includes(condition.value);
+                        } else if (typeof mkey == "object") {
+                            //result = result && mkey.includes(condition.value);
+                        }
+                        result[sections[j]] = false;
+                        break;
+                    case EOperators.Has:
+                        // has child element
+                        result[sections[j]] = false;
+                        break;
+                    case EOperators.Similar:
+                        // text similarity
+                        result[sections[j]] = false;
+                        break;
+                    default:
+                        result[sections[j]] = false;
+                }
+            }
+        }    
+        console.log("ARI::rule conditions result: ", result);
         return result;
     }
 
@@ -272,7 +301,7 @@ export class RuleManager {
         for (let i = 0; i < actions.length; i++) {
             this.actionQueue.push(actions[i]);
         }
-        console.log('ARI::ActionQueu length', this.actionQueue)
+        console.log("ARI::ActionQueue length: ", this.actionQueue);
         this._processActionQueue();
     }
 
@@ -283,7 +312,6 @@ export class RuleManager {
         let _this = this;
         // filter by current location/page
         let localActions: IRuleAction[] = this.actionQueue.filter(function (d) {
-            console.log("test", d.target_context, _this.targetContext);
             return d.target_context === _this.targetContext;
         });
         //let localActions: IRuleAction[] = this.actionQueue;
@@ -304,9 +332,9 @@ export class RuleManager {
                 new DOMVPTracker(tmpLocalAction.viewport_selector, 0)
                     .get()
                     .then((resolve) => {
-                        //console.log('z217 ',tmpLocalAction.moodle_context)
+                        console.log('ARI::DOMVPTracker ',tmpLocalAction, resolve)
                         RuleManager._executeAction(tmpLocalAction);
-                        console.log("z217 ", resolve);
+                        
                     });
             } else if (
                 tmpLocalAction.timing === ETiming.WHEN_IDLE &&
@@ -320,7 +348,6 @@ export class RuleManager {
                 );
             } else {
                 // === ETiming.NOW
-                console.log("HHHH", ETiming.NOW);
                 RuleManager._executeAction(tmpLocalAction);
             }
         }
@@ -331,22 +358,30 @@ export class RuleManager {
      * @param tmp
      */
     public static _executeAction(tmp: IRuleAction): void {
-        console.log("ARI::Select action type to be executed");
         //if (tmp.repetitions < 1) { return; }
         // mixin augmentations to preprocess the output text, e.g. to include links
         tmp.augmentations = [];
         tmp.augmentations[0] = EActionAugmentation.USER_DATA; // for testing
-        tmp.augmentations[1] = EActionAugmentation.LEARNER_MODEL
-        if (tmp.augmentations.length > 0){
-          tmp.action_text = this.processAugmentation(tmp.augmentations, tmp.action_text);
+        tmp.augmentations[1] = EActionAugmentation.LEARNER_MODEL;
+        // TODO: add augmentation for course unit/section name
+        if (tmp.augmentations.length > 0) {
+            tmp.action_text = this.processAugmentation(
+                tmp.augmentations,
+                tmp.action_text
+            );
         }
-        console.log("ARI::MIxin ", tmp.action_text);
-
         //let _this = this;
         switch (tmp.actor) {
             case ERuleActor.StoredPrompt:
                 console.log("ARI::Execute StoredPrompt", tmp.action_text);
-                RuleManager.initiateActorStoredPrompt(tmp.id, tmp.type, tmp.category, tmp.action_title, tmp.action_text, tmp.dom_indicator_selector)
+                RuleManager.initiateActorStoredPrompt(
+                    tmp.id,
+                    tmp.section,
+                    tmp.type,
+                    tmp.category,
+                    tmp.action_title,
+                    tmp.action_text,
+                );
                 break;
             case ERuleActor.HtmlPrompt:
                 console.log("Execute HhtmlPrompt", tmp.action_text);
@@ -377,39 +412,47 @@ export class RuleManager {
         tmp.repetitions--;
     }
 
-
     /**
      * Process the assignes augmentation types to inject parameters into the action prompt or message presented to the student
      */
-    public static processAugmentation(augmentations:EActionAugmentation[], text:string):string {
-        
-        for(let i = 0; i < augmentations.length; i++){
-            switch(augmentations[i]){
-                case EActionAugmentation.USER_DATA: 
+    public static processAugmentation(
+        augmentations: EActionAugmentation[],
+        text: string
+    ): string {
+        for (let i = 0; i < augmentations.length; i++) {
+            switch (augmentations[i]) {
+                case EActionAugmentation.USER_DATA:
                     // Include standard variables about the user
                     const allowed_user_keys = ["user.firstname", "user.lastname"];
-                    const user_values = { // @FIXME load data from DB
-                        "user.firstname": "Hans", 
-                        "user.lastname": "Meyer"
-                    }; 
-                    for(let key = 0; key < allowed_user_keys.length; key=key+1) {
-                        let ree = "\{"+ allowed_user_keys[key] + "\}";
-                        let re = new RegExp(ree,"gi");
+                    const user_values = {
+                        // @FIXME load data from DB
+                        "user.firstname": "Hans",
+                        "user.lastname": "Meyer",
+                    };
+                    for (let key = 0; key < allowed_user_keys.length; key = key + 1) {
+                        let ree = "{" + allowed_user_keys[key] + "}";
+                        let re = new RegExp(ree, "gi");
                         text = text.replace(re, user_values[allowed_user_keys[key]]);
                     }
                     break;
-                case EActionAugmentation.LEARNER_MODEL: 
+                case EActionAugmentation.LEARNER_MODEL:
                     // Include values from LM, e.g. You've achived {lm.mod_assign.total_scores} so fare.
-                    let allowed_lm_keys:string[] = RuleManager.getNestedKeys(RuleManager.lm, 'lm');
-                    for(let key = 0; key < allowed_lm_keys.length; key=key+1) {
-                        let ree = "\{"+ allowed_lm_keys[key] + "\}";
-                        let re = new RegExp(ree,"gi");
-                        if(allowed_lm_keys[key] != null){
-                            let lm_value = allowed_lm_keys[key].split('.');
-                            if(lm_value.length == 2){
+                    let allowed_lm_keys: string[] = RuleManager.getNestedKeys(
+                        RuleManager.lm,
+                        "lm"
+                    );
+                    for (let key = 0; key < allowed_lm_keys.length; key = key + 1) {
+                        let ree = "{" + allowed_lm_keys[key] + "}";
+                        let re = new RegExp(ree, "gi");
+                        if (allowed_lm_keys[key] != null) {
+                            let lm_value = allowed_lm_keys[key].split(".");
+                            if (lm_value.length == 2) {
                                 text = text.replace(re, RuleManager.lm[lm_value[1]]);
-                            } else if(lm_value.length == 3){
-                                text = text.replace(re, RuleManager.lm[lm_value[1]][lm_value[2]]);
+                            } else if (lm_value.length == 3) {
+                                text = text.replace(
+                                    re,
+                                    RuleManager.lm[lm_value[1]][lm_value[2]]
+                                );
                             }
                         }
                     }
@@ -418,42 +461,106 @@ export class RuleManager {
                     // @TODO .. conceptional not finished
                     // Include ressources related to the one in the condition: So fare, you've achieved only a low scores in the assignement tasks. We recommend you to try the following self assessments first: {related.mod_safran}
                     /*const allowed_rel_resource_keys = ["related.safran_to_assign"];
-                     
-                    for(let key = 0; key < allowed_rel_resource_keys.length; key=key+1) {
-                        let ree = "\{"+ allowed_rel_resource_keys[key] + "\}";
-                        let re = new RegExp(ree,"gi");
-                        //text = text.replace(re, user_values[allowed_rel_resource_keys[key]]);
-                    }*/
+                               
+                              for(let key = 0; key < allowed_rel_resource_keys.length; key=key+1) {
+                                  let ree = "\{"+ allowed_rel_resource_keys[key] + "\}";
+                                  let re = new RegExp(ree,"gi");
+                                  //text = text.replace(re, user_values[allowed_rel_resource_keys[key]]);
+                              }*/
                     break;
-                    
-                case EActionAugmentation.NEXT_STEP: 
+
+                case EActionAugmentation.NEXT_STEP:
                     // Include next learning steps, e.g. by using q-matrix
                     break;
-                case EActionAugmentation.LLM_PROMPT: 
+                case EActionAugmentation.LLM_PROMPT:
                     //Define a Prompt for an LLM.
                     break;
                 //case 3: Sugest activity type in section: Your reading activity is high, but assessment attempts are low. We suggest to do more assessments {link_to_safran}
             }
-        
         }
         return text;
     }
 
-    /**
-     * 
-     * @param arr Returns the keys of the first two nested levels of the Learner Model
-     * @returns 
-     */
-    public static getNestedKeys(arr:Object, prefix:string=''):string[]{
-        let res:Array<string> = [];
-        Object.keys(arr).forEach((item) => {
-            if (typeof arr[item] != 'object'){
-                res.push(prefix + '.' + item);
+    private resetStoredPrompts(): void {
+        let _this = this;
+        let openRequest = indexedDB.open("ari_prompts", 2);
+
+        openRequest.onupgradeneeded = function () {
+            let db = openRequest.result;
+            if (!db.objectStoreNames.contains("prompts")) {
+                db.createObjectStore("prompts", { keyPath: "id" });
             }
-            if (typeof arr[item] == 'object' && Object.keys(arr[item]) != null){
-                Object.keys(arr[item]).forEach((iitem) => { 
-                    if (typeof arr[item][iitem] != 'object'){
-                        res.push(prefix + '.' + item + '.' + iitem); 
+        };
+
+        openRequest.onsuccess = function () {
+            let db = openRequest.result;
+            if (!db.objectStoreNames.contains("prompts")) {
+                db.createObjectStore("prompts", { keyPath: "id" });
+            }
+            db.onversionchange = function () {
+                db.close();
+                console.error("IndexedDB is outdated, please reload the page. See RuleManager /resetStoredPrompts/");
+            };
+            let transaction = db.transaction("prompts", "readonly");
+            let promptsStore = transaction.objectStore("prompts");
+            let result = promptsStore.getAll();
+            result.onsuccess = function (success) {
+                // @ts-ignore
+                let allKeys:IStoredPromptConfig[] = success.target.result as IStoredPromptConfig[];
+                for(let i = 0; i < allKeys.length; i++){
+                    console.log('ARI::Reseted rule in indexeddb: ', allKeys[i].id)
+                    _this.updatePromptAtDB(db, allKeys[i], 'valid', false);
+                }
+            };
+        };
+    }
+
+    // @ts-ignore
+    private updatePromptAtDB(db, dbkey, key:string, value:any):void {
+        let _this = this;
+        const objectStore = db.transaction('prompts', 'readwrite').objectStore('prompts');
+        const objectStoreRequest = objectStore.get(dbkey.id);
+        objectStoreRequest.onsuccess = ()=> {
+            const item = objectStoreRequest.result;
+            item[key] = value;
+            const updateRequest = objectStore.put(item);
+            updateRequest.onsuccess = () => {
+                //console.log(`ARIX 4 updated: ${updateRequest.result}`);
+                _this.getPromptFromDB(db, updateRequest.result);
+            }
+            updateRequest.onerror = (e) => {
+                console.error(`ARI:: indexdeb read/update error @ updatePromptAtDB: ${e}`)
+            }
+        }
+    }
+
+    // @ts-ignore
+    private getPromptFromDB(db, dbkey):void {
+        const objectStore = db.transaction('prompts', 'readonly').objectStore('prompts');
+        const objectStoreRequest = objectStore.get(dbkey);
+        objectStoreRequest.onsuccess = () => {
+            console.log('ARI::got prompt from store: ',dbkey, objectStoreRequest.result);
+        }
+        objectStoreRequest.onerror = (e) => {
+            console.error(`ARI:: indexdeb read error @ getPromptFromDB: ${e}`)
+        }
+    }
+
+    /**
+     *
+     * @param arr Returns the keys of the first two nested levels of the Learner Model
+     * @returns
+     */
+    public static getNestedKeys(arr: Object, prefix: string = ""): string[] {
+        let res: Array<string> = [];
+        Object.keys(arr).forEach((item) => {
+            if (typeof arr[item] != "object") {
+                res.push(prefix + "." + item);
+            }
+            if (typeof arr[item] == "object" && Object.keys(arr[item]) != null) {
+                Object.keys(arr[item]).forEach((iitem) => {
+                    if (typeof arr[item][iitem] != "object") {
+                        res.push(prefix + "." + item + "." + iitem);
                     }
                     // TODO iterate on the third level
                 });
@@ -462,19 +569,18 @@ export class RuleManager {
         return res;
     }
 
-
     /**
-       * duration?: number;
-          opened?:number;
-          closed?: number;
-          viewportAccessed?: number;
-          hovered?: number;
-          agreed?: number;
-          dismissed?: number;
-          dived?: number;
-       * @param id 
-       * @param params 
-       */
+         * duration?: number;
+            opened?:number;
+            closed?: number;
+            viewportAccessed?: number;
+            hovered?: number;
+            agreed?: number;
+            dismissed?: number;
+            dived?: number;
+         * @param id 
+         * @param params 
+         */
     public storeActorStats(id: string, params: IRuleActorStats) {
         // @ts-ignore
         let instance = this.activeActors[id];
@@ -494,19 +600,28 @@ export class RuleManager {
             params.duration === undefined ? undefined : params.duration;
     }
 
-
     /**
      * Triggers a promp for local storage
-     * @param title 
+     * @param title
      * @param message Message body
      */
-    public static initiateActorStoredPrompt(action_id:number, type: EActionType, category: EActionCategory, title:string, message: string, indicator?: string): boolean {
+    public static initiateActorStoredPrompt(
+        action_id: number,
+        section: string,
+        type: EActionType,
+        category: EActionCategory,
+        title: string,
+        message: string,
+        indicator?: string
+    ): boolean {
         let config = <IStoredPromptConfig>{
-            id: "storedprompt-" + this.lm.user.user_id + '-' + action_id, //uniqid(),
+            id: "storedprompt-" + this.lm.user.user_id + "-" + action_id, //uniqid(),
+            section: section,
             type: type,
             category: category,
-            indicatorhook: indicator !== undefined ? indicator : 'nix',
+            indicatorhook: indicator !== undefined ? indicator : "nix",
             title: title,
+            valid: true,
             message: message,
             timecreated: Date.now(),
         };
@@ -519,7 +634,11 @@ export class RuleManager {
      * @param title Modal title
      * @param message Message body
      */
-    public static initiateActorHtmlPrompt(hook: string, message: string, indicatorhook?: string): boolean {
+    public static initiateActorHtmlPrompt(
+        hook: string,
+        message: string,
+        indicatorhook?: string
+    ): boolean {
         let config = <IHtmlPromptConfig>{
             id: "htmlprompt-" + uniqid(),
             hook: hook,
@@ -527,8 +646,8 @@ export class RuleManager {
             content: {
                 message: message,
                 /*urgency?:EHtmlPromptUrgency;
-                        html?:string;
-                        style?:string;*/
+                                html?:string;
+                                style?:string;*/
             },
         };
         let action = new HtmlPrompt(config);

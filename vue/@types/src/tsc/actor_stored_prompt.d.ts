@@ -3,9 +3,6 @@ import { EActionType, EActionCategory } from "./rules";
 export declare class StoredPrompt {
     private _id;
     constructor(config: IStoredPromptConfig);
-    show(): void;
-    hide(): void;
-    toggle(): void;
     update(): void;
     destroy(): void;
     getID(): string;
@@ -25,11 +22,13 @@ export declare enum EStoredPromptUrgency {
 }
 export interface IStoredPromptConfig {
     id: string;
+    section?: string;
     type: EActionType;
     category: EActionCategory;
     indicator?: string;
     title: string;
     message: string;
+    valid: boolean;
     timecreated: number;
     urgency?: EStoredPromptUrgency;
     options?: {};

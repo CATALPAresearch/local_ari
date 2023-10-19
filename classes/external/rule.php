@@ -34,7 +34,7 @@ use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/externallib.php');
+require_once($CFG->libdir . '/externallib.php');
 
 /**
  * Class rule
@@ -43,127 +43,109 @@ require_once($CFG->libdir.'/externallib.php');
  * @copyright   2022 Chiara Sandführ <chiara.sandfuehr@fernuni-hagen.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class rule extends external_api {
-    /**
-     * Function to fetch rule executions from database
-     * @return array
-     * @throws required_capability_exception
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws invalid_parameter_exception
-     * @throws moodle_exception
-     * @throws restricted_context_exception
-     */
-    public static function get_rule_execution($data) {
-        global $CFG, $DB;
-
-        // Define WHERE if optional data is set
-        $query_where = '';
-        if($data != null) {
-            $query_where = ' WHERE rule_id = ' . $data['rule_id'];
-        }
-
-        // Define query
-        $query = '
-            SELECT *
-            FROM '.$CFG->prefix.'ari_rule_execution'
-            . $query_where . ';';
-
-        // Execute query and fetch results
-        $transaction = $DB->start_delegated_transaction();
-        $data = $DB->get_records_sql($query, array(
-            'id' => $data['id'],
-            'rule_id' => $data['rule_id'],
-            'execution_date' => $data['execution_date'],
-            'user_id' => $data['user_id']
-        ));
-        $transaction->allow_commit();
-        return array('data' => json_encode($data));
-    }
-
-
-    /**
-     * Function to save rule executions to database
-     * @param $data
-     * @return array
-     */
-    public static function save_rule_execution($data) {
-        global $USER, $CFG, $DB;
-
-        // Define query data
-        $rule_execution = new stdClass();
-        $rule_execution->rule_id = $data["rule_id"];
-        $rule_execution->execution_date = $data["execution_date"];
-        $rule_execution->user_id = $data["user_id"];
-
-        // Insert data into database
-        $transaction = $DB->start_delegated_transaction();
-        $result = $DB->insert_record("ari_rule_execution", (array)$rule_execution);
-        $transaction->allow_commit();
-
-        return array('response'=> json_encode([$result, $data]));
-    }
-
-
-    /**
-     * Function to define parameters for get_rule_execution query
-     * @return external_function_parameters
-     */
-    public static function get_rule_execution_parameters() {
+class rule extends external_api
+{
+    public static function get_rule_execution_parameters()
+    {
         return new external_function_parameters(
             array('data' => new external_single_structure(
                 array('rule_id' => new external_value(PARAM_INTEGER, '', VALUE_OPTIONAL),)
-            )));
+            ))
+        );
+    }
+    public static function get_rule_execution_returns()
+    {
+        return new external_single_structure(
+            array('data' => new external_value(PARAM_RAW, ''))
+        );
+    }
+    public static function get_rule_execution_is_allowed_from_ajax()
+    {
+        return true;
+    }
+    public static function get_rule_execution($data)
+    {
+        global $DB;
+
+        $query = "SELECT rule_id, count FROM {ari_response_rule_execution}";// WHERE rule_id = :rule_id ;";
+        $res = $DB->get_records_sql($query, array(
+            //'rule_id' => $data['rule_id'],
+            //'execution_date' => $data['execution_date'],
+        ));
+        return array('data' => json_encode($res));
     }
 
 
-    /**
-     * Function to define parameters for save_rule_execution query
-     * @return external_function_parameters
-     */
-    public static function save_rule_execution_parameters() {
+    public static function set_rule_execution_parameters()
+    {
         return new external_function_parameters(
             array('data' => new external_single_structure(
                 array(
-                    'rule_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
-                    'execution_date' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
-                    'user_id' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
-                ))));
+                    'rule_id' => new external_value(PARAM_INT, ''),
+                    'course_id' => new external_value(PARAM_INT, ''),
+                    'status' => new external_value(PARAM_TEXT, ''),
+                )
+            ))
+        );
     }
-
-    /**
-     * Function to define return type for get_rule_execution query
-     * @return external_single_structure
-     */
-    public static function get_rule_execution_returns() {
-        return new external_single_structure(
-            array( 'data' => new external_value(PARAM_RAW, '') ));
-    }
-
-    /**
-     * Function to define return type for save_rule_execution query
-     * @return external_single_structure
-     */
-    public static function save_rule_execution_returns() {
+    public static function set_rule_execution_returns()
+    {
         return new external_single_structure(
             array('response' => new external_value(PARAM_RAW, ''))
         );
     }
-
-    /**
-     * Function to enable ajax calls for get_rule_execution
-     * @return bool
-     */
-    public static function get_rule_execution_is_allowed_from_ajax() {
+    public static function set_rule_execution_is_allowed_from_ajax()
+    {
         return true;
     }
+    public static function set_rule_execution($data)
+    {
+        global $USER, $CFG, $DB;
+        $date = new \DateTime('now');
+    
+        $rule_exec = $DB->get_record('ari_response_rule_execution', [
+            "user_id" => (int)$USER->id,
+            "course_id" => (int)$data["course_id"],
+            "rule_id" => (int)$data["rule_id"]
+        ]);
+        if ($rule_exec) {
+            if($data["status"] != $rule_exec->status){
+                if($data["status"] == 'condition_met'){
+                    $rule_exec->count = $rule_exec->count + 1;
+                }
+                $rule_exec->status = $data["status"];
+                $DB->update_record('ari_response_rule_execution', $rule_exec);
+            }
+        } else{
+            $params = new stdClass();
+            $params->user_id = $USER->id;
+            $params->course_id = $data["course_id"];
+            $params->rule_id = $data["rule_id"];
+            $params->status = $data["status"];
+            $params->count = 1;
+            $DB->insert_record('ari_response_rule_execution', $params);
+        }
 
-    /**
-     * Function to enable ajax calls for save_rule_execution
-     * @return bool
-     */
-    public static function save_rule_execution_is_allowed_from_ajax() {
-        return true;
+        // trigger event if rule condition is met
+        /* TODO
+        if($data["status"] == 'condition_met'){
+            $params = array(
+                'context' => 999,
+                'objectid' => $data["rule_id"]
+            );
+
+            $event = \local_ari\event\rule_condition_met::create($params);
+            $event->add_record_snapshot('course_modules', 0);
+            $event->add_record_snapshot('course', $data["course_id"]);
+            //$event->add_record_snapshot('longpage', $page);
+            $event->trigger();
+        }
+        */
+
+        return array('response' => json_encode([
+            $rule_exec,
+            $data["status"] == 'condition_met',
+            
+        ]));
     }
 }
-

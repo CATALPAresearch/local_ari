@@ -6,14 +6,14 @@
     <div class="mb-3" id="tools">
       <span class="mr-3">
         <label for="context-filter">Context filter</label>
-        <select class="filter-select" v-model="contextFilter" name="context-filter" id="context-filter">
+        <select class="form-select filter-select-edit" v-model="contextFilter" name="context-filter" id="context-filter">
           <option value="None">All</option>
           <option v-for="context in contexts" :value="context">{{ context }}</option>
         </select>
       </span>
       <span class="mr-3">
         <label for="time-range-filter-executions">Executions</label>
-        <select class="filter-select" v-model="chosenTimeRangeFilter" name="time-range-filter-executions"
+        <select class="filter-select filter-select-edit" v-model="chosenTimeRangeFilter" name="time-range-filter-executions"
           id="time-range-filter-executions">
           <option v-for="range in timeRangeFilterExecutions" :value="range.value">{{ range.name }}</option>
         </select>
@@ -31,13 +31,12 @@
         <th>Actions</th>
       </tr>
       <tr v-for="rule in ruleInFilter" :key="rule.id">
-        <th class="align-text-top"><input type="checkbox" v-model="rule.isActive"></th>
+        <th class="align-text-top"><input type="checkbox" v-model="rule.isActive" /></th>
         <td class="align-text-top">
           {{ rule.title }}
-          <br>
-          (ID: {{ rule.id }})
+          <div>(ID: {{ rule.id }})</div>
           <div v-if="rule.isPerSectionRule">
-            <span>[per section]</span>
+            <span><i class="fa fa-check pr-1"></i>Applied to each section</span>
           </div>
         </td>
         <td class="align-text-top text-center">
@@ -47,8 +46,7 @@
           <ol class="p-0 m-0">
             <li v-for="(condition, condInd) in rule.Condition">
               <b hidden>{{ condInd }}:</b>
-              {{ condition.source_context }}
-              {{ condition.key }}
+              {{ 'lm.'+condition.source_context+'.'+condition.key }}
               {{ condition.operator }}
               {{ getConditionValue(condition) }}
             </li>
@@ -78,10 +76,6 @@
                 <span class="col-2">Text:</span>
                 <span class="col-10">{{ action.action_text }}</span>
               </div>
-              <div class="row">
-                <span class="col-2">Augmentation:</span>
-                <span class="col-10">{{ action.augmentations }}</span>
-              </div>
             </li>
           </ol>
         </td>
@@ -93,25 +87,36 @@
         </td>
       </tr>
       <tr class="edit-mode" v-for="rule in $store.getters.newRules" :key="rule.id">
-        <th class="align-text-top"><input type="checkbox" v-model="rule.isActive"></th>
+        <th class="align-text-top">
+          <input type="checkbox" v-model="rule.isActive">
+        </th>
         <td class="align-text-top">
-          <input v-model="rule.title"><br />(ID: {{ rule.id }})
+          <input v-model="rule.title" class="form-input-text"><br />(ID: {{ rule.id }})<br>Apply to each sections? <input type="checkbox" v-model="rule.isPerSectionRule" />
         </td>
         <td></td>
         <td class="align-text-top">
           <ol class="p-0 m-0">
             <li class="mb-2" v-for="(condition, condInd) in rule.Condition">
               <b hidden>{{ condInd }}:</b>
-              <select class="filter-select-edit w-100" title="Select a key from the Learner Model" name="condition_key"
-                id="condition_key" v-model="condition.key">
-                <option v-for="condition_key in conditionsKeys" :value="condition_key">{{ condition_key }}</option>
+              <select 
+                class="filter-select-edit w-100 form-select" 
+                title="Select a key from the Learner Model" 
+                name="condition_key"
+                id="condition_key" 
+                @change="$store.commit('splitContextAndKey', {event:$event, rule_id: rule.id, condition_id: condition.id})" 
+                >
+                <option v-for="condition_key in conditionsKeys" 
+                  :value="condition_key"
+                  :selected="'lm.'+condition.source_context+'.'+condition.key == condition_key ? 'selected' : ''"
+                  >
+                  {{ condition_key }}</option>
               </select><br>
-              <select class="filter-select-edit w-25"
+              <select class="filter-select-edit w-25 form-select"
                 title="Select an operator for comparing the Learner Model key with the value" name="condition_operator"
                 id="condition_operator" v-model="condition.operator">
                 <option v-for="operator in operators" :value="operator">{{ operator }}</option>
               </select>
-              <input v-model="condition.value" class="w-50"
+              <input v-model="condition.value" class="w-50 form-input-text"
                 title="Type in a value to compared with the Learniner Model key using the selected operator">
               <button class="btn btn-secondary right" title="Delete condition" @click="$store.commit('deleteConditionOfNewRule', rule.id, condition.id)">
                 <i class="fa fa-trash"></i>
@@ -132,18 +137,23 @@
             <li class="mb-2" v-for="(action, actInd) in rule.Action">
               <b hidden>{{ actInd }}:</b>
               <span class="row mb-2">
+                  <b class="col-2">Title:</b>
+                  <input v-model="action.action_title" id="action_title"
+                    name="action_title" class="form-input-text" />
+                  <button class="btn btn-secondary right" title="Delete action" @click="$store.commit('deleteActionOfNewRule', rule.id, action.id)">
+                  <i class="fa fa-trash"></i>
+                </button>
+                </span>
+              <span class="row mb-2">
                 <b class="col-2">Method:</b>
-                <select class="filter-select-edit col-4" name="action_actor" id="action_actor" v-model="action.method">
+                <select class="filter-select-edit col-4 form-select" name="action_actor" id="action_actor" v-model="action.actor">
                   <option v-for="actor in action_actors" :value="actor">{{ actor }}</option>
                 </select>
                 @
-                <select class="filter-select-edit col-4" name="action_context" id="action_context"
+                <select class="filter-select-edit col-4 form-select" name="action_context" id="action_context"
                   v-model="action.target_context">
                   <option v-for="context in action_target_context" :value="context">{{ context }}</option>
                 </select>
-                <button class="btn btn-secondary right" title="Delete action" @click="$store.commit('deleteActionOfNewRule', rule.id, action.id)">
-                  <i class="fa fa-trash"></i>
-                </button>
               </span>
               <span class="row mb-2">
                 <b class="col-2">Text:</b>
@@ -151,63 +161,62 @@
               </span>
               <span class="row mb-2">
                 <b class="col-2">Type:</b>
-                <select class="filter-select-edit col-4" name="action_context" id="action_type" v-model="action.type">
+                <select class="filter-select-edit col-4 form-select" name="action_type" id="action_type" v-model="action.type">
                   <option v-for="atype in action_type" :value="atype">{{ atype }}</option>
                 </select>
               </span>
               <span class="row mb-2">
                 <b class="col-2">Category:</b>
-                <select class="filter-select-edit col-4" name="action_category" id="action_category"
+                <select class="filter-select-edit col-4 form-select" name="action_category" id="action_category"
                   v-model="action.category">
                   <option v-for="acategory in action_category" :value="acategory">{{ acategory }}</option>
                 </select>
               </span>
-              <span class="row mb-2">
+              <span hidden class="row mb-2">
                 <b class="col-2">Augmentations:</b>
                 <multiselect class="col-10" v-model="action.augmentations" :options="action_augmentation" :multiple="true"
                   label="" title="Pick augmentations to process the text"></multiselect>
               </span>
-              <hr>
               <div class="mb-2" @click="show=!show">
                 <b>
-                  <span v-if="show">Hide</span>
-                  <span v-if="!show">Show</span> advanced settings
+                  <span v-if="show"><i class="fa fa-caret-down pr-1"></i>Hide</span>
+                  <span v-if="!show"><i class="fa fa-caret-right pr-1"></i>Show</span> advanced settings
                 </b>
               </div>
               <div v-if="show">
                 <span class="row mb-2">
                   <b class="col-2">DOM selector:</b>
                   <input v-model="action.dom_content_selector" id="action_dom_content_selector"
-                    name="action_dom_content_selector" />
+                    name="action_dom_content_selector" class="form-input-text"/>
                 </span>
                 <span class="row mb-2">
                   <b class="col-2">DOM indicator:</b>
                   <input v-model="action.dom_indicator_selector" id="action_dom_indicator_selector"
-                    name="action_dom_indicator_selector" />
+                    name="action_dom_indicator_selector" class="form-input-text"/>
                 </span>
                 <span class="row mb-2">
                   <b class="col-2">Viewport selector:</b>
                   <input v-model="action.viewport_selector" id="action_viewport_selector"
-                    name="action_viewport_selector" />
+                    name="action_viewport_selector" class="form-input-text" />
                 </span>
                 <span class="row mb-2">
                   <b class="col-2">Timing:</b>
-                  <select class="filter-select-edit col-4" name="action_category" id="action_category"
+                  <select class="filter-select-edit col-4 form-control form-select" name="action_category" id="action_category"
                   v-model="action.category">
                   <option v-for="timing in action_timing" :value="timing">{{ timing }}</option>
                 </select>
                 </span>
                 <span class="row mb-2">
                   <b class="col-2">Delay:</b>
-                  <input v-model="action.delay" id="" name="action_delay" />
+                  <input v-model="action.delay" id="action_delay" name="action_delay" class="form-input-text"/>
                 </span>
                 <span class="row mb-2">
                   <b class="col-2">Priority:</b>
-                  <input v-model="action.priority" id="action_priority" name="action_priority" />
+                  <input v-model="action.priority" id="action_priority" name="action_priority" class="form-input-text"/>
                 </span>
                 <span class="row mb-2">
                   <b class="col-2">Repetitions:</b>
-                  <input v-model="action.repetitions" id="action_repetitions" name="action_repetitions" />
+                  <input v-model="action.repetitions" id="action_repetitions" name="action_repetitions" class="form-input-text"/>
                 </span>
               </div>
               <hr>
@@ -239,6 +248,7 @@
 <script lang="ts" src="./AdaptationBoard.ts"></script>
 
 <style>
+
 #table_nav {
   border-collapse: collapse;
   width: 100%;
@@ -262,7 +272,18 @@ td {
 .filter-select-edit {
   color: #222;
   background-color: lightblue;
+  -webkit-appearance: menulist!important;
+  -moz-appearance: menulist!important;
+  -ms-appearance: menulist!important;
+  -o-appearance: menulist!important;
+  appearance: menulist!important;
 }
+
+input.form-input-text {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+}
+
 
 .action-text {
   padding: 2px;

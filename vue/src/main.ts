@@ -1,25 +1,17 @@
 import Vue from "vue";
-//import VueRouter from "vue-router";
-//import { store } from "./store";
 import AdaptationDashboardApp from "./adaptationBoardApp.vue";
 import Communication from "../scripts/communication";
 import { Controller } from "./tsc/controller";
 
 
-function initAdaptationDashboard() {
+function initAdaptationDashboard() { 
     // __webpack_public_path__ = M.cfg.wwwroot + "/local/ari/build/";
     Communication.setPluginName("local_ari");
+    console.log('board ', 0);
     new Vue({ el: "#adaptationDashboardApp", render: (h) => h(AdaptationDashboardApp) });
-    
 }
 
-/*function initPromptPanel() {
-    // __webpack_public_path__ = M.cfg.wwwroot + "/local/ari/build/";
-    Communication.setPluginName("local_ari");
-}*/
-
 function initAdaptations(path:string, user_id:number, course_id:number){
-    console.log(user_id, course_id);
     if(user_id == null){
         return;
     }
@@ -30,10 +22,9 @@ function initAdaptations(path:string, user_id:number, course_id:number){
 	try{	
 		new Controller(path, user_id, course_id);
 	} catch(error){
-		console.log(error);
+		console.error('Could not initiate the ARI controler at main.ts. ', error);
 	}
 }
 
 export { initAdaptationDashboard };
-//export { initPromptPanel };
 export { initAdaptations };

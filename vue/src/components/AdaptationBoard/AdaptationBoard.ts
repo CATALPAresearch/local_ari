@@ -4,7 +4,7 @@ import { ETargetContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules, E
 import Communication from '../../../scripts/communication';
 import { RuleManager } from '@/tsc/rule_manager';
 
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 import store  from "./store";
 import 'vue-multiselect/dist/vue-multiselect.min.css';
 
@@ -25,13 +25,17 @@ export default defineComponent({
         }
     },
     mounted: function ():void {
+        this.$store.commit('setCourseId', 0);
+        console.log('board ', 1);
         // @ts-expect-error
         this.fetchRules();
+        console.log('board ', 2);
         // @ts-expect-error
         this.fetchAllRuleExecutions();
     },
 
     store: store as any,
+
     components: {
         Multiselect: Multiselect
       },
@@ -44,10 +48,10 @@ export default defineComponent({
                 data: {},
             }).then((response) => {
                 let json = JSON.parse(response.data);
-                // format JSON to array
-                Object.keys(json).forEach((key) => {
-                    this.executions.push(json[key]);
-                });
+                this.executions = json;
+                //Object.keys(json).forEach((key) => {
+                    //this.executions.push(json[key]);
+                //});
             }).catch((error) => {
                 console.log("Error: ", error);
             });
@@ -63,15 +67,12 @@ export default defineComponent({
                 // Count executions in given time range
                 return this.executions.filter((execution) => parseInt(execution.rule_id) === id && (execution.execution_date >= chosenDate.getTime())).length;
             }
-            else {
-                // Count all executions
-                return this.executions.filter((execution) => parseInt(execution.rule_id) === id).length;
-            }
+            return this.executions[id] ? this.executions[id].count : 0;
             
         },
 
         // Get condition as date or numerical value
-        getConditionValue: function (condition: IRuleCondition):number {
+        getConditionValue: function (condition: IRuleCondition):any {
             // TODO check if date or duration
             //return ((<any>Object).values(EConditionDate).includes(condition.key) ? this.convertTimestampToDate(condition.value) : condition.value)
             return condition.value;
@@ -86,7 +87,6 @@ export default defineComponent({
         fetchRules: function() {
             store.commit('createExistingRules', (new Rules()).getAll());
             this.rulesLoaded = true;
-            
         },
 
         // Edit Rule
@@ -100,6 +100,7 @@ export default defineComponent({
     },
     computed: {
         ...mapGetters([]),
+        ...mapMutations(['setCourseId']),
 
         operators() {
             return EOperators;

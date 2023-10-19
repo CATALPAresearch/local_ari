@@ -1,5 +1,6 @@
 export declare class Rules {
     constructor();
+    course_id: number;
     rule: IRule;
     rule_long_absense: IRule;
     the_rules: IRule[];
@@ -28,6 +29,7 @@ export interface IRuleAction {
     actor: ERuleActor;
     type: EActionType;
     category: EActionCategory;
+    section: string;
     action_title: string;
     action_text: string;
     augmentations?: EActionAugmentation[];

@@ -18,18 +18,21 @@ export class Rules {
         this.loadRules();
     }
 
+    public course_id:number = 2;
+
     // Wie kann ich eine Condition definieren, die je section geprüft wird und je section eine action auslöst?
     // basic example
     public rule:IRule = {
         id: 100,
         isActive: true,
+        isPerSectionRule: true,
         title: "Course-Progress",
         Condition: [
             {
                 source_context: "mod_assign",
                 key: 'last_access_days_ago',
                 value: 10,
-                operator: EOperators.Greater,
+                operator: EOperators.Smaller,
             },
             /*{
                 source_context: "mod_quiz",
@@ -42,7 +45,8 @@ export class Rules {
             {
                 id: 999,
                 actor: ERuleActor.StoredPrompt,
-                type: EActionType.SCOPE_COURSE, 
+                type: EActionType.SCOPE_COURSE,
+                section: '', 
                 category: EActionCategory.TIME_MANAGEMENT,
                 action_title: 'Titel der Empfehlung',
                 action_text:   'Hallo Herr {user.firstname} {user.lastname}, Sie haben bislang weniger als die Hälfte der Einsende- und Quizaufgaben bearbeitet. ',
@@ -85,6 +89,7 @@ export class Rules {
         Action: [
             {
                 id: 989,
+                section: '',
                 actor: ERuleActor.StoredPrompt,
                 type: EActionType.SCOPE_COURSE, 
                 category: EActionCategory.TIME_MANAGEMENT,
@@ -110,16 +115,16 @@ export class Rules {
 
     public async loadRules():Promise<void> {
         await Communication.webservice("get_rules", {
-            data: { course_id: 2 }, // FIXME: static param 
+            data: { course_id: this.course_id }, // FIXME: static param 
         }).then((response:any) => {
             try{
                 const json:IRule = <IRule>JSON.parse(response.data)["rule1"];
                 this.the_rules.push(json); 
             }catch(e){
-                console.error('Error at get_rules. Cast to IRules failed', response);
+                console.error('Error at get_rules. Cast to IRules failed. ', response);
             }
         }).catch((error) => {
-            console.log("Error at get_rules. Could not load rules from database. ", error);
+            console.error("Error at get_rules. Could not load rules from database. ", error);
         });
     }
 
@@ -158,6 +163,7 @@ export interface IRuleAction {
     actor: ERuleActor,
     type: EActionType,
     category: EActionCategory,
+    section: string,
     action_title: string,
     action_text: string,
     augmentations?: EActionAugmentation[],
