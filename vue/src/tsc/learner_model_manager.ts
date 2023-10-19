@@ -46,7 +46,7 @@ export class LearnerModelManager {
             }
         };
         // FIXME: add the current semester as a parameter of the path
-        var path:string = this.wwwroot + '/local/ari/lm_get_user_data.php?format=json&&period=SS23&course_id=' + this.course_id + '&user_id=' + this.user_id;
+        var path:string = this.wwwroot + '/local/ari/lm/get_user_data.php?format=json&&period=SS23&course_id=' + this.course_id + '&user_id=' + this.user_id;
         //console.log(path);
         xmlhttp.open('GET', path, true);
         xmlhttp.send();
