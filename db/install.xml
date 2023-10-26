@@ -1,8 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/ari/db" VERSION="20221208" COMMENT="XMLDB file for Moodle local/ari"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
->
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLDB PATH="local/ari/db" VERSION="20221208" COMMENT="XMLDB file for Moodle local/ari" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
     <TABLES>
         <TABLE NAME="local_ari" COMMENT="Default comment for local_ari, please edit me">
             <FIELDS>
@@ -15,7 +12,7 @@
         <TABLE NAME="ari_rule_operator" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="title" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -24,7 +21,7 @@
         <TABLE NAME="ari_rule_actor" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="title" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -33,7 +30,7 @@
         <TABLE NAME="ari_rule_timing" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="title" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -42,7 +39,7 @@
         <TABLE NAME="ari_rule_source_context" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="title" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -51,7 +48,35 @@
         <TABLE NAME="ari_rule_target_context" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="title" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ari_rule_action_category" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ari_rule_action_type" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ari_rule_action_augmentations" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="action_id" TYPE="int" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="augmentation_id" TYPE="int" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -61,19 +86,41 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="title" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="action_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="isActive" TYPE="binary" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="isPerSectionRule" TYPE="binary" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="action_id" TYPE="foreign" FIELDS="action_id" REFTABLE="ari_rule_action" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
-        <TABLE NAME="ari_rule_execution" COMMENT="Default comment for the table, please edit me">
+        <TABLE NAME="ari_response_rule_action" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="rule_id" TYPE="int" LENGTH="10"  NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="execution_date" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="action_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="response_type" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="response" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <KEYS>
+                    <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                    <KEY NAME="action_id" TYPE="foreign" FIELDS="action_id" REFTABLE="ari_rule_action" REFFIELDS="id"/>
+                </KEYS>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="rule_id" TYPE="foreign" FIELDS="rule_id" REFTABLE="ari_rule" REFFIELDS="id"/>
+                <KEY NAME="user_id" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ari_response_rule_execution" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="rule_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="count" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -84,26 +131,33 @@
         <TABLE NAME="ari_rule_condition" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="context" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="key" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="value" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="operator_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="rule_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="source_context_id" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="lm_key" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="lm_value" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="operator_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
                 <KEY NAME="operator_id" TYPE="foreign" FIELDS="operator_id" REFTABLE="ari_rule_operator" REFFIELDS="id"/>
                 <KEY NAME="rule_id" TYPE="foreign" FIELDS="rule_id" REFTABLE="ari_rule" REFFIELDS="id"/>
+                <KEY NAME="source_context_id" TYPE="foreign" FIELDS="source_context_id" REFTABLE="ari_rule_source_context" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
         <TABLE NAME="ari_rule_action" COMMENT="Default comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="method_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="text" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="moodle_context_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="moodle_course" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="dom_selector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="course_id" TYPE="int" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="rule_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="section" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="actor_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="action_title" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="action_text" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="action_type_id" TYPE="int" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="action_category_id" TYPE="int" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="target_context_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="dom_content_selector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="dom_indicator_selector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="viewport_selector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="timing_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="delay" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
@@ -112,9 +166,13 @@
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="method_id" TYPE="foreign" FIELDS="method_id" REFTABLE="ari_rule_actor" REFFIELDS="id"/>
-                <KEY NAME="moodle_context_id" TYPE="foreign" FIELDS="moodle_context_id" REFTABLE="ari_rule_moodle_context" REFFIELDS="id"/>
+                <KEY NAME="course_id" TYPE="foreign" FIELDS="course_id" REFTABLE="course" REFFIELDS="id"/>
+                <KEY NAME="rule_id" TYPE="foreign" FIELDS="rule_id" REFTABLE="ari_rule" REFFIELDS="id"/>
+                <KEY NAME="actor_id" TYPE="foreign" FIELDS="method_id" REFTABLE="ari_rule_actor" REFFIELDS="id"/>
+                <KEY NAME="target_context_id" TYPE="foreign" FIELDS="moodle_context_id" REFTABLE="ari_rule_target_context" REFFIELDS="id"/>
                 <KEY NAME="timing_id" TYPE="foreign" FIELDS="timing_id" REFTABLE="ari_rule_timing" REFFIELDS="id"/>
+                <KEY NAME="action_category_id" TYPE="foreign" FIELDS="action_category_id" REFTABLE="ari_rule_action_category" REFFIELDS="id"/>
+                <KEY NAME="action_type_id" TYPE="foreign" FIELDS="action_type_id" REFTABLE="ari_rule_action_type" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
         <TABLE NAME="ari_content_model" COMMENT="Default comment for the table, please edit me">
@@ -132,18 +190,18 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
-        <TABLE NAME="ari_user_enrollments" COMMENT="Default comment for the table, please edit me">
+        <TABLE NAME="ari_user_enrollments" COMMENT="xxxDefault comment for the table, please edit me">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="username" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="enrolled_course__id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="enrolled_course_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="enrolled_course_title" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="enrolled_repeated" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="enrollment_repeated" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="credits" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="semesteryear" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="semester" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="year" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="credits" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="booked_weekly_hours" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>

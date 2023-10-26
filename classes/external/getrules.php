@@ -67,8 +67,8 @@ class getrules extends external_api
         $query_conditions = "
             SELECT rc.id, rc.rule_id, rc.source_context_id, rc.lm_key, rc.lm_value, o.name as operator
             FROM {ari_rule_condition} rc
-            JOIN {ari_rule_source_context} sc ON rc.source_context_id = sc.id
-            JOIN {ari_rule_operator} o ON o.id = rc.operator_id
+            JOIN {ari_rule_source_context} sc ON (rc.source_context_id)::integer = (sc.id)::integer
+            JOIN {ari_rule_operator} o ON (o.id)::integer = (rc.operator_id)::integer
             ;";
         $query_actions = "
             SELECT 

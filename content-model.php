@@ -52,24 +52,24 @@ SELECT DISTINCT
     a2.instance_id,
     a2.instance_url_id,
     a2.component,
-    aa1.document_frequency AS freq1,
-    a2.document_frequency AS freq2
+    aa1.document_frequency AS score1,
+    a2.document_frequency AS score2
 FROM (
-    SELECT course_id, keyword, id, document_frequency, instance_url_id
-    FROM {ari_content_model}  a1
+    SELECT a1.course_id, a1.keyword, a1.id, a1.document_frequency, a1.instance_url_id
+    FROM {ari_content_model} a1
     WHERE 
-        course_id=:course_id AND
-        instance_url_id = :url_id 
-    ORDER BY document_frequency DESC
-    LIMIT 10
+        a1.course_id=2 AND
+        a1.instance_url_id = 185
+    ORDER BY a1.document_frequency DESC
+    LIMIT 20
     ) as aa1
 JOIN {ari_content_model} a2 ON a2.keyword = aa1.keyword
 WHERE 
     aa1.id <> a2.id AND
     a2.course_id=aa1.course_id AND
     aa1.instance_url_id <> a2.instance_url_id
-ORDER BY 
-    aa1.document_frequency DESC
+ORDER BY aa1.document_frequency, a2.document_frequency DESC
+LIMIT 5
 ;";
 $records = $DB->get_records_sql($query, array("course_id"=>2, "url_id"=>224,));   
     echo 'res: ' . count($records) .' instances <br>';
