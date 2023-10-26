@@ -55,7 +55,7 @@ class LearnerModelHypervideo extends LearnerModel {
                     hl.timemodified > :period_start * 1000 AND
                     hl.timemodified < :period_end * 1000
                 GROUP BY hl.hypervideo
-                -- ORDER BY qsub.timemodified
+                ORDER BY hl.timemodified
             ;";
 
         $res = $GLOBALS["DB"]->get_records_sql($query, array(
@@ -76,8 +76,10 @@ class LearnerModelHypervideo extends LearnerModel {
             "total_ended_events" => 0,
             "complete_playbacks" => 0,
             "time_spent" => 0,
+            "first_attempt" => 0,
             "sections" => [],
         ];
+        $first_run = true;
         foreach($res as $key => $item){
             $arr["count_videos"]++;
             $arr["total_playback_time"] += $item->total_playback_time;
@@ -90,25 +92,26 @@ class LearnerModelHypervideo extends LearnerModel {
             $arr["complete_playbacks"] += $item->complete_playbacks;
             $arr["time_spent"] += $item->time_spent;
 
-            // per section
-            //if($arr["sections"]["section-" . $item->section] == null){
-                $arr["sections"]["section-" . $item->section] = [
-                    "title" => $item->section_title,
-                    "count_videos" => 0,
-                    "total_playback_time" => 0,
-                    "relative_playback_time" => 0,
-                    "duration" => 0,
-                    "total_pause_events" => 0,
-                    "total_play_events" => 0,
-                    "total_seeked_events" => 0,
-                    "total_ended_events" => 0,
-                    "complete_playbacks" => 0,
-                    "time_spent" => 0,
-                    "first_attempt" => 0,
-                ];
-            //}
-            if($arr["sections"]["section-" . $item->section]["first_attempt"] > $item->submission_time){
-                $arr["sections"]["section-" . $item->section]["first_attempt"] = $item->submission_time;
+            if($arr["first_attempt"] == 0 ){
+                $arr["first_attempt"] = (int)$item->submission_time;
+            }
+            $arr["sections"]["section-" . $item->section] = [
+                "title" => $item->section_title,
+                "count_videos" => 0,
+                "total_playback_time" => 0,
+                "relative_playback_time" => 0,
+                "duration" => 0,
+                "total_pause_events" => 0,
+                "total_play_events" => 0,
+                "total_seeked_events" => 0,
+                "total_ended_events" => 0,
+                "complete_playbacks" => 0,
+                "time_spent" => 0,
+                "first_attempt" => 0,
+            ];
+            
+            if($arr["sections"]["section-" . $item->section]["first_attempt"] == 0){
+                $arr["sections"]["section-" . $item->section]["first_attempt"] = (int)$item->submission_time;
             }
             $arr["sections"]["section-" . $item->section]["count_videos"]++;
             $arr["sections"]["section-" . $item->section]["total_playback_time"] += $item->total_playback_time;
