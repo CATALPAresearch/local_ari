@@ -4,7 +4,7 @@ require('../../config.php');
 require_once('lib.php');
 require_login();
 
-$title = get_string('pluginname', 'local_ari') . ": Simplified content model";
+$title = get_string('pluginname', 'local_ari') . ": Content Model";
 $PAGE->set_url($CFG->wwwroot.'/local/ari/content-model.php');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title($title);
@@ -14,284 +14,69 @@ $PAGE->set_heading($title);
 
 echo $OUTPUT->header();
 
+echo "<h3>Content Model</h3>";
 echo "
-<strong>How the simplified content model is created</strong>
+<strong>How is the content model for a course created?</strong>
 <ol>
-    <li>Chose a course and the activity plugins to be considers in the model</li>
-    <li>Compile a CSV file containing all text content from the activity plugins</li>
-    <li>Run a python script to extract keywords per plugin instance: python3.9 scripts/keyword_extraction.py --method ner --input 0</li>
-    <li>Upload the resulting content-model.csv file conatining keywords for each plugin instance and store it in the Moodle database</li>
-    <li>Run queries on the content model using SQL</li>
+    <li>All text content from the activity plugins mod_page, mod_longpage, mod_assign, and mod_quiz are extracted. The text sections from mod_page and mod_longpage are split up at the H3 headings.</li>
+    <li>For every instance of an activity plugin (and text sections) keywords are computed using Python Rake. This step is performed in the university-api backend.</li>
+    <li>The resulting keywords are stored in the Moodle database</li>
 </ol>
+<strong>How is the content model used?</strong>
+<ul>
+    <li>Find similare instances of activity plugins: ...</li>
+    <li>...</li>
+</ul>
+<strong>What are the limitations of this approach?</strong>
+<ul>
+    <li>Semantical meaning: ...</li>
+    <li>Mixed language: ...</li>
+</ul>
 ";
 
 global $USER, $PAGE, $DB, $CFG;
-// select course
-$course_id = 2;
 
-// select activities to be considered
-$selected_course_activities = [
-    'mod_longpage',
-    'mod_page',
-    'mod_assign',
-    'mod_safran'
-];
-
-// 
-$csv = "course_id;component;instance_url_id; instance_id; instance_section_num; text; <br>";
-
-// Longpage
-if(in_array('mod_longpage', $selected_course_activities)){
-    $query = "
-    SELECT 
-        cm.id AS instance_url_id,
-        p.id AS instance_id, 
-        p.name, 
-        p.intro, 
-        p.content
-    FROM {course_modules} AS cm
-    JOIN {modules} AS m 
-        ON m.id = cm.module
-    JOIN {course_sections} AS cs 
-        ON cs.id = cm.section
-    RIGHT OUTER JOIN {longpage} AS p
-        ON cm.instance = p.id 
-    WHERE 
-        m.name = 'longpage' AND
-        m.visible = 1 AND
-        cm.visible = 1 AND
-        p.course = ?
-    ";
-    $records = $DB->get_records_sql($query, array($course_id));   
-    echo 'mod_longpage: ' . count($records) .' instances <br>';
-    foreach($records as $record){    
-        if(isset($record->instance_id)) {
-            $text = $record->name . ' ' . $record->intro . ' ' . $record->content;
-            // Strip HTML but leave H3 headings
-            $text = str_replace(array("\r", "\n"), ' ', $text);
-            $text = strip_tags($text, '<h3>');
-            $text = str_replace(array(";", ",", "'", '"', "</h3>"), ' ', $text);
-            $text = str_replace(";", ' ', $text);
-            $text = preg_replace('/\s+/', ' ', $text);
-            // Split longpage / page content by H2 and H3 tag
-            $text_sections = explode("<h3>", $text);
-            print('-  <a href="'. new moodle_url('/mod/longpage/view.php', array('id' => $record->instance_url_id)) .'">instance_id '.$record->instance_id . '</a> has ' . sizeof($text_sections) . 'sections <br>');
-            foreach($text_sections as $section_num=>$section){
-                if(isset($section)) {
-                    $csv .= $course_id . "; " ."mod_longpage;" . $record->instance_url_id . "; " . $record->instance_id . "; " . $section_num . "; " . $section . " <br>";
-                }
-            }
-        }
-    }       
-}
-
-
-// PAGE
-if(in_array('mod_page', $selected_course_activities)){
-    $query = "
-    SELECT 
-        cm.id AS instance_url_id,
-        p.id AS instance_id, 
-        p.name, 
-        p.intro, 
-        p.content
-    FROM {course_modules} AS cm
-    JOIN {modules} AS m 
-        ON m.id = cm.module
-    JOIN {course_sections} AS cs 
-        ON cs.id = cm.section
-    RIGHT OUTER JOIN {page} AS p
-        ON cm.instance = p.id 
-    WHERE 
-        m.name = 'page' AND
-        m.visible = 1 AND
-        cm.visible = 1 AND
-        p.course = ?
-    ";
-    $records = $DB->get_records_sql($query, array($course_id));   
-    echo 'mod_page: ' . count($records) .' instances <br>';
-    foreach($records as $record){    
-        if(isset($record->instance_id)) {
-            $text = $record->name . ' ' . $record->intro . ' ' . $record->content;
-            // Strip HTML but leave H3 headings
-            $text = strip_tags($text, '<h3>');
-            $text = str_replace(array("\r", "\n"), ' ', $text);
-            $text = str_replace(array(";", "'", '"', "</h3>"), ' ', $text);
-            $text = preg_replace('/\s+/', ' ', $text);
-            // Split page / page content by H2 and H3 tag
-            $text_sections = explode("<h3>", $text);
-            print('-  <a href="'. new moodle_url('/mod/page/view.php', array('id' => $record->instance_url_id)) .'">instance_id '.$record->instance_id . '</a> has ' . sizeof($text_sections) . 'sections <br>');
-            // print($text_sections[1]);
-            foreach($text_sections as $section_num=>$section){
-                //print($section_num);
-                if(isset($section)) {
-                    $csv .= $course_id . "; " ."mod_page;" . $record->instance_url_id . "; " . $record->instance_id . "; " . $section_num . "; " . $section . " <br>";
-                }
-            }
-        }
-    }     
-}
-
-// ASSIGNMENTS
-if(in_array('mod_assign', $selected_course_activities)){
-    $query = "
-    SELECT 
-        cm.id AS instance_url_id,
-        p.id AS instance_id, 
-        p.name, 
-        p.intro
-    FROM {course_modules} AS cm
-    JOIN {modules} AS m 
-        ON m.id = cm.module
-    JOIN {course_sections} AS cs 
-        ON cs.id = cm.section
-    RIGHT OUTER JOIN {assign} AS p
-        ON cm.instance = p.id 
-    WHERE 
-        m.name = 'assign' AND
-        m.visible = 1 AND
-        cm.visible = 1 AND
-        p.course = ?
-    ";
-    $records = $DB->get_records_sql($query, array($course_id));   
-    echo 'mod_assign: ' . count($records) .' instances <br>';
-    foreach($records as $record){    
-        if(isset($record->instance_id)) {
-            $text = $record->name . ' ' . $record->intro;
-            // Strip HTML but leave H3 headings
-            $text = strip_tags($text, '<h3>');
-            $text = str_replace(array("\r", "\n"), ' ', $text);
-            $text = str_replace(array(";", "'", '"'), ' ', $text);
-            $text = trim(preg_replace('/\s+/', ' ', $text));
-            $section_num = 0;
-            $csv .= $course_id . "; " ."mod_assign; " . $record->instance_url_id . "; " . $record->instance_id . "; " . $section_num . "; " . $text . " <br>";
-            print('-  <a href="'. new moodle_url('/mod/assign/view.php', array('id' => $record->instance_url_id)) .'">instance_id '.$record->instance_id . '</a> <br>');
-        }
-    }
-} 
-
-// SAFRAN
-if(in_array('mod_safran', $selected_course_activities)){
-   $query = "
-    SELECT 
-        cm.id AS instance_url_id,
-        q.id AS instance_id, 
-        q.question_title, 
-        q.question_text, 
-        q.solution,
-        f.feedbacktext,
-        c.criteria
-    FROM {course_modules} AS cm
-    JOIN {modules} AS m 
-        ON m.id = cm.module
-    JOIN {course_sections} AS cs 
-        ON cs.id = cm.section
-    RIGHT OUTER JOIN {safran_question} AS q
-        ON cm.instance = q.id 
-    JOIN {safran_feedback} f 
-        ON q.id = f.taskid 
-    JOIN {safran_criteria} c 
-        ON q.id = c.taskid
-    WHERE 
-        m.name = 'safran' AND
-        m.visible = 1 AND
-        cm.visible = 1 AND
-        q.course = ?
-    ";
-    $records = $DB->get_records_sql($query, array($course_id));   
-    echo 'mod_safran: ' . count($records) .' instances <br>';
-    foreach($records as $record){    
-        if(isset($record->instance_id)) {
-            $text = $record->question_title . ' ' . $record->question_text . ' ' . $record->solution . ' ' . $record->feedbacktext . ' ' . $record->criteria;
-            // Strip HTML but leave H3 headings
-            $text = strip_tags($text, '<h3>');
-            $text = str_replace(array("\r", "\n"), ' ', $text);
-            $text = str_replace(array(";", "'", '"'), ' ', $text);
-            $text = trim(preg_replace('/\s+/', ' ', $text));
-            $section_num = 0;
-            $csv .= $course_id . "; " ."mod_safran; " . $record->instance_url_id . "; " . $record->instance_id . "; " . $section_num . "; " . $text . " <br>";
-            print('-  <a href="'. new moodle_url('/mod/safran/view.php', array('id' => $record->instance_url_id)) .'">instance_id '.$record->instance_id . '</a> <br>');
-        }
-    }
-}
-
-
-// write text data to file
-//echo '<textarea style="width:800px;">'.$csv.'</textarea>';
-$html_str = "<form id='view_form' action='content-model-text-download.php' method='post' >";
-$html_str .= "<input style='display:none;' name='csv' type='text' value='".$csv."' >";
-$html_str .= "<input id='view_button' type='submit' value='Download CSV file' >";
-$html_str .= "</form>";
-echo $html_str;
-
-
-// upload CSV of instance id and assigned keywords and save it to the database
-$addToDatabase = true;
-$addToDatabase = false;
-$row = 1;
-if ($addToDatabase && ($handle = fopen("./content_model/content-model.csv", "r")) !== FALSE) {
-    while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
-        $num = count($data);
-        //echo "<p> $num fields in line $row: <br /></p>\n";
-        //$row++;
-        for ($c=0; $c < $num; $c++) {
-            //echo explode($data[$c][0], ';') . "<br />\n";
-            $row = explode(',',$data[$c]);
-            //echo $row[5] . "<br>";
-            $DB->insert_record('ari_content_model', array(
-                "course_id" => (int)$row[0],
-                "component" => $row[1], 
-                "instance_url_id" => (int)$row[2], 
-                "instance_id" => (int)$row[3], 
-                "instance_section_num" => (int)$row[4], 
-                "keyword" => $row[5],
-                "document_frequency" => (float)$row[6]
-            ));
-        }
-    }
-    fclose($handle);
-}
-
-// enable editing of the content model (e.g. adding and changing keywords)
-
-echo "<br>";
-echo "<br>";
-echo "<strong>Some query</strong><br>";
-// query
+/*
+TODO: Enable teachers to edit the keywords of their course
+*/
+echo "<h3>[TBA keyword editing]</h3>";
+echo "...";
+/**
+ * Visualize Keywords, e.g. as a tag cloud using D3.js
+ */
+echo "<h3>Visualise Keywords</h3>";
 $query = "
 SELECT DISTINCT
     a2.id,
     aa1.keyword AS search_term,
     a2.instance_id,
-a2.instance_url_id,
+    a2.instance_url_id,
     a2.component,
     aa1.document_frequency AS freq1,
     a2.document_frequency AS freq2
 FROM (
     SELECT course_id, keyword, id, document_frequency, instance_url_id
-    FROM mthreeeleven_ari_content_model  a1
+    FROM {ari_content_model}  a1
     WHERE 
-    course_id=:course_id AND
-    instance_url_id = :url_id 
+        course_id=:course_id AND
+        instance_url_id = :url_id 
     ORDER BY document_frequency DESC
     LIMIT 10
     ) as aa1
-JOIN mthreeeleven_ari_content_model a2 ON a2.keyword = aa1.keyword
+JOIN {ari_content_model} a2 ON a2.keyword = aa1.keyword
 WHERE 
     aa1.id <> a2.id AND
     a2.course_id=aa1.course_id AND
-aa1.instance_url_id <> a2.instance_url_id
+    aa1.instance_url_id <> a2.instance_url_id
 ORDER BY 
     aa1.document_frequency DESC
-
 ;";
-$records = $DB->get_records_sql($query, array("course_id"=>2, "url_id"=>412,));   
+$records = $DB->get_records_sql($query, array("course_id"=>2, "url_id"=>224,));   
     echo 'res: ' . count($records) .' instances <br>';
     foreach($records as $record){    
         echo $record->search_term . ' - freq1=' . $record->freq1 . ' - freq2=' . $record->freq2 .'<br>';
     }
 
-// visualize content model using a D3.js network
 
 /*echo <<<'EOT'
 <div id="app"></div>
