@@ -41,7 +41,7 @@ CREATE TABLE ari_rule (
   id bigint NOT NULL AUTO_INCREMENT,
   title varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '',
   course_id bigint NOT NULL,
-  isActive binary(1) NOT NULL,
+  is_active binary(1) NOT NULL,
   isPerSectionRule binary(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=COMPRESSED COMMENT='Default comment for the table, please edit me';
@@ -72,7 +72,7 @@ CREATE TABLE ari_rule_action (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=COMPRESSED;
 
 
-CREATE TABLE ari_rule_action_augmentations (
+CREATE TABLE ari_rule_action_augment (
   id int NOT NULL,
   action_id int NOT NULL,
   augmentation_id int NOT NULL
