@@ -4,11 +4,14 @@
 class LearnerModelHypervideo extends LearnerModel {
 
     function build_model(){
-        
+        //echo core_plugin_manager::get_enabled_plugins('mod');
         // return if mod_longpage is not installed
-        if(core_plugin_manager::instance()->get_plugins_of_type('mod')['hypervideo']->name != 'hypervideo'){
-            return;
+        if(true){
+            if(core_plugin_manager::instance()->get_plugins_of_type('mod')['hypervideo']->name != 'hypervideo'){
+                return;
+            }
         }
+        
 
         $this->get_default_entries('mod_hypervideo');
 

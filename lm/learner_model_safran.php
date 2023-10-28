@@ -55,7 +55,7 @@ class LearnerModelSafran extends LearnerModel {
             cs.visible = 1 AND
             qa.timecreated > :period_start AND
             qa.timecreated < :period_end
-        GROUP BY cm.id, question.id
+        GROUP BY cm.id, question.id, cs.name, safran.id -- xxx test this!
         -- ORDER BY qa.timecreated
         ";
 

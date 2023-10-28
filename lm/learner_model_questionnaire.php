@@ -44,57 +44,57 @@ class LearnerModelQuestionnaire extends LearnerModel{
                 -- 
                 JOIN (
                     SELECT resp_.id , 'resp_single' as response_type, resp_.response_id, resp_.question_id, 
-                    resp_.choice_id, 
-                    -1 as rankvalue, 
+                    CAST(resp_.choice_id AS CHAR) as choice_id, 
+                    '-1' as rankvalue, 
                     '' as response 
                     FROM {questionnaire_resp_single} resp_
 
                     UNION
 
                     SELECT resp_.id , 'response_text' as response_type, resp_.response_id, resp_.question_id, 
-                    resp_.response, 
-                    -1 as choice_id, 
-                    -1 as rankvalue
+                    CAST(resp_.response AS CHAR) as response, 
+                    '-1' as choice_id, 
+                    '-1' as rankvalue
                     FROM {questionnaire_response_text} resp_ 
 
                     UNION
 
                     SELECT resp_.id , 'resp_multiple' as response_type, resp_.response_id, resp_.question_id, 
-                    resp_.choice_id, 
-                    -1 as rankvalue, 
-                    '' as response 
+                    '' as response, 
+                    CAST(resp_.choice_id AS CHAR) as choice_id, 
+                    '-1' as rankvalue 
                     FROM {questionnaire_resp_multiple} resp_
 
                     UNION 
 
                     SELECT resp_.id , 'response_bool' as response_type, resp_.response_id, resp_.question_id, 
-                    resp_.choice_id, 
-                    -1 as rankvalue, 
-                    '' as response 
+                    '' as response, 
+                    CAST(resp_.choice_id AS CHAR) as choice_id, 
+                    '-1' as rankvalue 
                     FROM {questionnaire_response_bool} resp_
 
                     UNION
 
                     SELECT resp_.id , 'response_date' as response_type, resp_.response_id, resp_.question_id, 
-                    resp_.response, 
-                    -1 as choice_id, 
-                    -1 as rankvalue
+                    CAST(resp_.response AS CHAR) as response, 
+                    '-1' as choice_id, 
+                    '-1' as rankvalue
                     FROM {questionnaire_response_date} resp_ 
 
                     UNION 
 
                     SELECT resp_.id , 'response_other' as response_type, resp_.response_id, resp_.question_id, 
-                    resp_.response, 
-                    -1 as choice_id, 
-                    -1 as rankvalue
+                    CAST(resp_.response AS CHAR) as response, 
+                    '-1' as choice_id, 
+                    '-1' as rankvalue
                     FROM {questionnaire_response_other} resp_ 
 
                     UNION
 
                     SELECT resp_.id , 'response_rank' as response_type, resp_.response_id, resp_.question_id, 
-                    resp_.choice_id, 
-                    resp_.rankvalue, 
-                    '' as response
+                    '' as response, 
+                    CAST(resp_.choice_id AS CHAR) as choice_id, 
+                    CAST(resp_.rankvalue AS CHAR) as rankvalue 
                     FROM {questionnaire_response_rank} resp_ 
 
                 ) resp_results ON  
