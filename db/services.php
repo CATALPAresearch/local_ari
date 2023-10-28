@@ -63,8 +63,18 @@
             'classname'    => 'local_ari\external\rule',
             'classpath'   => 'local/ari/classes/external/rule.php',
             'methodname'   => 'set_rule_execution',
-            'description' => 'Rule execution',
+            'description' => 'Store the execution of a rule',
             'type'        => 'write',
+            'ajax'        => true,
+            'loginrequired' => true
+        ),
+
+        'local_ari_get_content_recommendations' => array(
+            'classname'    => 'local_ari\external\getcontentrecommendations',
+            'classpath'   => 'local/ari/classes/external/getcontentrecommendations.php',
+            'methodname'   => 'get_content_recommendations',
+            'description' => 'Get recommendations for related contents',
+            'type'        => 'read',
             'ajax'        => true,
             'loginrequired' => true
         ),

@@ -67,7 +67,7 @@ class setrule extends external_api
         $r->id = $rule['id'];
         $r->course_id = $param['course_id'];
         $r->title = $rule['title'];
-        $r->isActive = $rule['isActive'] == true ? true : false;
+        $r->is_active = $rule['is_active'] == true ? true : false;
         $r->isPerSectionRule = $rule['isPerSectionRule'] == true ? true : false;
 
         $exists = $DB->record_exists('ari_rule' , [

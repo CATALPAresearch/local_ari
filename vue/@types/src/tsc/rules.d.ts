@@ -12,7 +12,7 @@ export declare class Rules {
 export interface IRule {
     id: number;
     title: string;
-    isActive: boolean;
+    is_active: boolean;
     isPerSectionRule?: boolean;
     Condition: IRuleCondition[];
     Action: IRuleAction[];

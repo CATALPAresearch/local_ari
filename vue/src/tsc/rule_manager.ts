@@ -363,6 +363,7 @@ export class RuleManager {
         tmp.augmentations = [];
         tmp.augmentations[0] = EActionAugmentation.USER_DATA; // for testing
         tmp.augmentations[1] = EActionAugmentation.LEARNER_MODEL;
+        tmp.augmentations[2] = EActionAugmentation.RELATED_RESOURCE;
         // TODO: add augmentation for course unit/section name
         if (tmp.augmentations.length > 0) {
             tmp.action_text = this.processAugmentation(
@@ -457,16 +458,127 @@ export class RuleManager {
                         }
                     }
                     break;
+
+                case EActionAugmentation.REFLECTION_TASK:
+                    // TODO also link to longpage werbevideo
+                    break;
                 case EActionAugmentation.RELATED_RESOURCE:
-                    // @TODO .. conceptional not finished
+                    // @TODO implemente the listed content relations
                     // Include ressources related to the one in the condition: So fare, you've achieved only a low scores in the assignement tasks. We recommend you to try the following self assessments first: {related.mod_safran}
-                    /*const allowed_rel_resource_keys = ["related.safran_to_assign"];
-                               
-                              for(let key = 0; key < allowed_rel_resource_keys.length; key=key+1) {
-                                  let ree = "\{"+ allowed_rel_resource_keys[key] + "\}";
-                                  let re = new RegExp(ree,"gi");
-                                  //text = text.replace(re, user_values[allowed_rel_resource_keys[key]]);
-                              }*/
+                    const allowed_rel_resource_keys:string[] = [
+                        "rec.safran-like-completed-assignments", // vertiefe Wissen mit SA, die ähnlich zu den bereits bearbeiteten EAs sind
+                        "rec.safran-like-not-completed-assignments", // bearbeite SA, die ähnlich zu den noch nicht bearbeiteten EA sind.
+                        // "rec.safran-like-longpage-section-XX",
+                        
+                        "rec.quiz-like-longpage", // Quiz-Aufgaben zu den bereits gelesenen Abschnitten
+                        // "rec.quiz-like-completed-assignments",
+                        // "rec.quiz-like-not-completed-assignments",
+                        // "rec.quiz-like-not-completed-safran",
+                        // "rec.quiz-like-completed-safran",
+                        
+                        "rec.all-longpage-of-course-unit", // alle Longpages (i.d.R. Link zur Longpage)
+                        // "rec.all-safran-of-course-unit",
+                        // "rec.all-assignments-of-course-unit",
+                        // "rec.all-quizz-of-course-unit",
+                        
+                        "rec.not-completed-safran", // noch nicht bearbeitetet SA
+                        // "rec.not-completed-assignments",
+                        // "rec.not-completed-longpage", // longpages that have not been read completly
+                        
+                        "rec.simpler-safran-then-already-completed", // leichtere SA Aufgabe, als die bisher bearbeiteten
+                        // "rec.simpler-assignments-then-already-completed",
+                        // "rec.simpler-quiz-then-already-completed",
+                    ];
+                    // get all rec-tags from text
+                    let rec_tags:object[] = [];
+                    let req = {};
+                    for (let key = 0; key < allowed_rel_resource_keys.length; key = key + 1) {
+                        let ree = "{" + allowed_rel_resource_keys[key] + "}";
+                        let re = new RegExp(ree, "gi");
+                        if(text.match(re)){
+                            switch(allowed_rel_resource_keys[key]){
+                                case "rec.safran-like-completed-assignments": 
+                                    req = {
+                                        input_type: 'mod_assign',
+                                        input_condition: 'completed', // new | completed | ...
+                                        input_type_id: 0,
+                                        input_type_section: 0,
+                                        output_type: 'mod_safran',
+                                        number_of_results: 3
+                                    };
+                                break;
+                                case "rec.safran-like-not-completed-assignments": 
+                                    req = {
+                                        input_type: 'mod_assign',
+                                        input_condition: 'completed', // new | completed | ...
+                                        input_type_id: 0,
+                                        input_type_section: 0,
+                                        output_type: 'mod_safran',
+                                        number_of_results: 3
+                                    };
+                                    break;
+                                case "rec.all-longpage": 
+                                    req = {
+                                        input_type: 'mod_assign',
+                                        input_condition: 'completed', // new | completed | ...
+                                        input_type_id: 0,
+                                        input_type_section: 0,
+                                        output_type: 'mod_safran',
+                                        number_of_results: 3
+                                    };
+                                    break;
+                                case "rec.not-completed-safran": 
+                                    req = {
+                                        input_type: 'mod_assign',
+                                        input_condition: 'completed', // new | completed | ...
+                                        input_type_id: 0,
+                                        input_type_section: 0,
+                                        output_type: 'mod_safran',
+                                        number_of_results: 3
+                                    };
+                                    break;
+                                case "rec.simpler-safran-then-already-completed": 
+                                    req = {
+                                        input_type: 'mod_assign',
+                                        input_condition: 'completed', // new | completed | ...
+                                        input_type_id: 0,
+                                        input_type_section: 0,
+                                        output_type: 'mod_safran',
+                                        number_of_results: 3
+                                    };
+                                    break;
+                                case "rec.quiz-like-longpage": 
+                                    req = {
+                                        input_type: 'mod_assign',
+                                        input_condition: 'completed', // new | completed | none | ...
+                                        input_type_id: 0,
+                                        input_type_section: 0,
+                                        output_type: 'mod_safran',
+                                        number_of_results: 3
+                                    };
+                                    break;
+                            }
+                            rec_tags.push(req);
+                        }
+                        // text = text.replace(re, );
+                    }
+                    // compute links for the rec-tags
+                    Communication.webservice("get_content_recommendations", {
+                        data: {
+                            input_type: 'mod_assign',
+                            input_type_id: 0,
+                            input_type_section: 0,
+                            output_type: 'mod_safran',
+                            number_of_results: 3
+                        },
+                    })
+                    .then((response) => {
+                        console.log("RESPONSE", response);
+                    })
+                    .catch((error) => {
+                        console.error("Error@rule_manager/set_rule_execution: ", error);
+                    });
+                
                     break;
 
                 case EActionAugmentation.NEXT_STEP:

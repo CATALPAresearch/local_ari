@@ -31,7 +31,7 @@
         <th>Actions</th>
       </tr>
       <tr v-for="rule in ruleInFilter" :key="rule.id">
-        <th class="align-text-top"><input type="checkbox" v-model="rule.isActive" /></th>
+        <th class="align-text-top"><input type="checkbox" v-model="rule.is_active" /></th>
         <td class="align-text-top">
           {{ rule.title }}
           <div>(ID: {{ rule.id }})</div>
@@ -88,7 +88,7 @@
       </tr>
       <tr class="edit-mode" v-for="rule in $store.getters.newRules" :key="rule.id">
         <th class="align-text-top">
-          <input type="checkbox" v-model="rule.isActive">
+          <input type="checkbox" v-model="rule.is_active">
         </th>
         <td class="align-text-top">
           <input v-model="rule.title" class="form-input-text"><br />(ID: {{ rule.id }})<br>Apply to each sections? <input type="checkbox" v-model="rule.isPerSectionRule" />

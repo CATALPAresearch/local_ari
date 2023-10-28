@@ -11,13 +11,16 @@
 * in the folder vue run `npm run watch` and open Moodle in your browser. After saving changes Webpack will run and transpile the source code. The changes will be visible in the browser after a page refresh.
 * run "export NODE_OPTIONS=--openssl-legacy-provider" in a terminal in the vue folder if error "ERR_OSSL_EVP_UNSUPPORTED" appears
 ## Production
-* run `npm run build`
+```
+$ npm run build
+$ php admin/cli/uninstall_plugins.php --plugins=local_ari --run
+$ php admin/cli/upgrade.php
+$ rsync -r ./* aple-test:/var/moodle/htdocs/moodle/local/ari/ --exclude={'.env','node_modules','*.git','.DS_Store','.gitignore','.vscode'}
+```
 
 
 ## To-Do
 * Replace grunt by Webpack
-* add vue.js incl vuex and router
-* Connect ARI to the backend
 * Extend the controller to let the backend access the different classes over the communication
 
 ## Functionalities

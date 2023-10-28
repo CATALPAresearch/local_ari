@@ -77,7 +77,7 @@ const store = new Vuex.Store({
       let newRule: IRule = {
         id: Math.round(Math.random() * 947),
         title: "<title>",
-        isActive: false,
+        is_active: false,
         isPerSectionRule: false, // apply rule on every section of the course
         perType: [EActionCategory.COMPETENCY], // apply rule to all activities of this type
         Condition: [] as IRuleCondition,

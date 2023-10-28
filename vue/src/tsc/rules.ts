@@ -24,7 +24,7 @@ export class Rules {
     // basic example
     public rule:IRule = {
         id: 100,
-        isActive: true,
+        is_active: true,
         isPerSectionRule: true,
         title: "Course-Progress",
         Condition: [
@@ -64,7 +64,7 @@ export class Rules {
 
       public rule_long_absense:IRule = {
         id: 100,
-        isActive: true,
+        is_active: true,
         title: "Long course absense, low progress",
         Condition: [
             {
@@ -143,7 +143,7 @@ export class Rules {
 export interface IRule {
     id: number,
     title: string,
-    isActive: boolean,
+    is_active: boolean,
     isPerSectionRule?: boolean, // apply rule on every section of the course
     // perType: EActionCategory[], // apply rule to all activities of this type
     Condition: IRuleCondition[];
