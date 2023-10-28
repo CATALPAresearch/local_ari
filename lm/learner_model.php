@@ -105,21 +105,28 @@ class LearnerModel{
 
         $lme = new LearnerModelUniversityData();
         $lme->build_model();
-
-        $lml = new LearnerModelLongpage();
-        $lml->build_model();
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='longpage'")){
+            $lml = new LearnerModelLongpage();
+            $lml->build_model();
+        }
         $lma = new LearnerModelAssignment();
         $lma->build_model();
         $lmq = new LearnerModelQuiz();
         $lmq->build_model();
         $lmquest = new LearnerModelQuestionnaire();
         $lmquest->build_model();
-        $lms = new LearnerModelSafran();
-        $lms->build_model();
-        $lmh = new LearnerModelHypervideo();
-        $lmh->build_model();
-        $lmserial = new LearnerModelSerial();
-        $lmserial->build_model();
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='safran'")){
+            $lms = new LearnerModelSafran();
+            $lms->build_model();
+        }
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='hypervideo'")){
+            $lmh = new LearnerModelHypervideo();
+            $lmh->build_model();
+        }
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='serial3'")){
+            $lmserial = new LearnerModelSerial();
+            $lmserial->build_model();
+        }
         $lmc = new LearnerModelCourse();
         $lmc->build_model();
         
