@@ -94,11 +94,11 @@ class setrule extends external_api
             $r->id = (int)$cond['id'];
             $r->rule_id = (int)$rule['id'];
             $context = $DB->get_record_sql("SELECT id FROM {ari_rule_source_context} WHERE name=:name", ['name' => $cond['source_context']]);
-            $r->source_context_id = $context->id;
+            $r->source_context_id = $context->id == null ? 0 : $context->id;
             $r->lm_key = $cond['key'];
             $r->lm_value = $cond['value'];
             $operator = $DB->get_record_sql("SELECT id FROM {ari_rule_operator} WHERE name=:name", ['name' => $cond['operator']]);
-            $r->operator_id = $operator->id; 
+            $r->operator_id = $operator->id == null ? 0 : $operator->id; 
             
             $exists = $DB->record_exists('ari_rule_condition', ['id' => $cond['id']]);
             if ($exists != true) {
@@ -118,25 +118,25 @@ class setrule extends external_api
         $action = $rule['Action'];
         foreach($action as $act){
             $r = new stdClass();
-            
+            $r->id =  (int)$act['id'];
             $r->rule_id =  (int)$rule['id'];
             $r->section = $act['section'] == null ? 'main' : $act['section'];
             $actor = $DB->get_record_sql("SELECT id FROM {ari_rule_actor} WHERE name=:name", ['name' => $act['actor']]);
-            $r->actor_id = $actor->id;
+            $r->actor_id = $actor->id == null ? 0 : $actor->id;
             $r->action_title = $act['action_title'];
             $r->action_text = $act['action_text'];
             $action_type = $DB->get_record_sql("SELECT id FROM {ari_rule_action_type} WHERE name=:name", ['name' => $act['type']]);
-            $r->action_type_id = $action_type->id;
+            $r->action_type_id = $action_type->id == null ? 0 : $action_type->id;
             $category = $DB->get_record_sql("SELECT id FROM {ari_rule_action_category} WHERE name=:name", ['name' => $act['category']]);
-            $r->action_category_id = $category->id;
+            $r->action_category_id = $category->id == null ? 0 : $category->id;
             $r->course_id = $rule['course_id'];
             $context = $DB->get_record_sql("SELECT id FROM {ari_rule_target_context} WHERE name=:name", ['name' => $act['target_context']]);
-            $r->target_context_id = $context->id;
+            $r->target_context_id = $context->id == null ? 0 : $context->id;
             $r->dom_content_selector = $act['dom_content_selector'];
             $r->dom_indicator_selector = $act['dom_indicator_selector'];
             $r->viewport_selector = $act['viewport_selector'];
             $timing = $DB->get_record_sql("SELECT id FROM {ari_rule_timing} WHERE name=:name", ['name' => $act['timing']]);
-            $r->timing_id = $timing->id;
+            $r->timing_id = $timing->id == null ? 0 : $timing->id;
             $r->delay = $act['delay'];
             $r->priority = $act['priority'];
             $r->repetitions = $act['repetitions'];
@@ -156,7 +156,7 @@ class setrule extends external_api
         //return array('data' => json_encode($debug));
         return [
             'success' => true,
-            'data' => json_encode($debug)
+            'data' => json_encode(['res' => $res, 'exists' => $exists])
         ];
     }
 

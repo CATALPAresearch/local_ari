@@ -187,13 +187,12 @@ export enum EActionType {
 }
 
 export enum EActionCategory {
+    UNSPECIFIED = 'unspecified',
     TIME_MANAGEMENT = 'time_management',
     PROGRESS = 'progress',
     SUCCESS = 'success',
     SOCIAL = 'social',
     COMPETENCY = 'competency',
-    
-    // TODO
 }
 
 export enum EActionAugmentation {
@@ -202,6 +201,7 @@ export enum EActionAugmentation {
     RELATED_RESOURCE = 'related_resource',
     NEXT_STEP = 'next_step',
     LLM_PROMPT = 'LLM_prompt',
+    REFLECTION_TASK = 'reflection task',
 }
 
 
@@ -276,6 +276,7 @@ export enum ERuleActor {
 };
 
 export enum ETiming {
+    UNSPECIFIED = 'unspecified',
     NOW = 'now',
     WHEN_VISIBLE = 'when_visible',
     WHEN_IDLE = 'when_idle',

@@ -616,9 +616,12 @@ export class RuleManager {
             let transaction = db.transaction("prompts", "readonly");
             let promptsStore = transaction.objectStore("prompts");
             let result = promptsStore.getAll();
+            console.log('before-success')
             result.onsuccess = function (success) {
+                console.log('in-success')
                 // @ts-ignore
                 let allKeys:IStoredPromptConfig[] = success.target.result as IStoredPromptConfig[];
+                console.log('before-loop')
                 for(let i = 0; i < allKeys.length; i++){
                     console.log('ARI::Reseted rule in indexeddb: ', allKeys[i].id)
                     _this.updatePromptAtDB(db, allKeys[i], 'valid', false);

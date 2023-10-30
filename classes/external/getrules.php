@@ -67,8 +67,8 @@ class getrules extends external_api
         $query_conditions = "
             SELECT rc.id, rc.rule_id, rc.source_context_id, rc.lm_key, rc.lm_value, o.name as operator
             FROM {ari_rule_condition} rc
-            JOIN {ari_rule_source_context} sc ON rc.source_context_id::integer = (sc.id)::integer
-            JOIN {ari_rule_operator} o ON o.id::integer = rc.operator_id::integer
+            JOIN {ari_rule_source_context} sc ON CAST(rc.source_context_id AS float) = CAST(sc.id  AS float)
+            JOIN {ari_rule_operator} o ON CAST(o.id AS float) = CAST(rc.operator_id AS float)
             ;";
         $query_actions = "
             SELECT 
@@ -140,6 +140,7 @@ class getrules extends external_api
         // TODO: Some DB fields are missing
         foreach($actions as $key => $a){
             $action = [    
+                "id" => $a->id,
                 "actor" => $a->actor,
                 "type" => $a->action_type,
                 "category" => $a->action_category,

@@ -51,6 +51,7 @@ export declare enum EActionType {
     NEXT_STEP = "next_step"
 }
 export declare enum EActionCategory {
+    UNSPECIFIED = "unspecified",
     TIME_MANAGEMENT = "time_management",
     PROGRESS = "progress",
     SUCCESS = "success",
@@ -62,7 +63,8 @@ export declare enum EActionAugmentation {
     LEARNER_MODEL = "learner_model",
     RELATED_RESOURCE = "related_resource",
     NEXT_STEP = "next_step",
-    LLM_PROMPT = "LLM_prompt"
+    LLM_PROMPT = "LLM_prompt",
+    REFLECTION_TASK = "reflection task"
 }
 export declare enum ESourceContext {
     MOD_PAGE = "mod_page",
@@ -121,6 +123,7 @@ export declare enum ERuleActor {
     DashboardActivity = "dashboard_activity"
 }
 export declare enum ETiming {
+    UNSPECIFIED = "unspecified",
     NOW = "now",
     WHEN_VISIBLE = "when_visible",
     WHEN_IDLE = "when_idle"

@@ -51,7 +51,6 @@ const store = new Vuex.Store({
         (rule) => (rule.id = rule_id)
       );
       if(rule_index != undefined){
-        console.log('tryy', state.newRules[rule_index].Condition[0]);
         this.dispatch('saveRule', state.newRules[rule_index]);
         this.commit("addExistingRule", state.newRules[rule_index]);
         this.commit("deleteNewRule", state.newRules[rule_index].id);
