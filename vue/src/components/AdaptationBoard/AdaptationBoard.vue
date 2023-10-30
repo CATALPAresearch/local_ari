@@ -201,8 +201,8 @@
                 </span>
                 <span class="row mb-2">
                   <b class="col-2">Timing:</b>
-                  <select class="filter-select-edit col-4 form-control form-select" name="action_category" id="action_category"
-                  v-model="action.category">
+                  <select class="filter-select-edit col-4 form-control form-select" name="action_timing" id="action_timing"
+                  v-model="action.timing">
                   <option v-for="timing in action_timing" :value="timing">{{ timing }}</option>
                 </select>
                 </span>

@@ -97,16 +97,11 @@ class getrules extends external_api
             JOIN {ari_rule_timing} t ON t.id = ra.timing_id
             ;";
 
-        $transaction = $DB->start_delegated_transaction();
+        
         $rules = $DB->get_records_sql($query_rules, array('course_id' => $param['course_id']));
-        $transaction->allow_commit();
-        $transaction = $DB->start_delegated_transaction();
         $conditions = $DB->get_records_sql($query_conditions);
-        $transaction->allow_commit();
-        $transaction = $DB->start_delegated_transaction();
         $actions = $DB->get_records_sql($query_actions);
-        $transaction->allow_commit();
-
+        
         // transform resulting data
         $result = [];
         foreach($rules as $key => $r){
@@ -148,6 +143,7 @@ class getrules extends external_api
                 "action_title" => $a->action_title,
                 "target_context" => $a->target_context,
                 "moodle_course" => $a->course_id,
+                "viewport_selector" => $a->viewport_selector,
                 "dom_content_selector" => $a->dom_content_selector,
                 "dom_indicator_selector" => $a->dom_indicator_selector,
                 "timing" => $a->timing,

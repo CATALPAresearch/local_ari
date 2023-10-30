@@ -105,7 +105,7 @@ class LearnerModel{
 
         $lme = new LearnerModelUniversityData();
         $lme->build_model();
-        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='longpage'")){
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='longpage' LIMIT 1")){
             $lml = new LearnerModelLongpage();
             $lml->build_model();
         }
@@ -115,15 +115,15 @@ class LearnerModel{
         $lmq->build_model();
         $lmquest = new LearnerModelQuestionnaire();
         $lmquest->build_model();
-        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='safran'")){
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='safran' LIMIT 1")){
             $lms = new LearnerModelSafran();
             $lms->build_model();
         }
-        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='hypervideo'")){
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='hypervideo' LIMIT 1")){
             $lmh = new LearnerModelHypervideo();
             $lmh->build_model();
         }
-        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='serial3'")){
+        if($GLOBALS["DB"]->get_record_sql("SELECT 1 FROM {config_plugins} WHERE plugin='serial3' LIMIT 1")){
             $lmserial = new LearnerModelSerial();
             $lmserial->build_model();
         }

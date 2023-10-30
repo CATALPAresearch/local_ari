@@ -58,7 +58,7 @@ class getcontentrecommendations extends external_api
         $debug = 'nix';
         $query = '';
         $transaction = $DB->start_delegated_transaction();
-        $actions = $DB->get_records_sql($query);
+        //$actions = $DB->get_records_sql($query);
         $transaction->allow_commit();
 
         //return array('data' => json_encode($debug));

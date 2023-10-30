@@ -41,7 +41,8 @@ class LearnerModelCourse extends LearnerModel{
     function get_course_completion(){
         $query_course_sections = "
         SELECT 
-            id, sequence, 
+            id, 
+            sequence, 
             CASE WHEN name IS NULL
             THEN 'NoName'
             ELSE name
@@ -52,8 +53,8 @@ class LearnerModelCourse extends LearnerModel{
         ";
         $query_course_modules_completion = "
             SELECT
-                coursemoduleid,
-                completionstate
+                cmc.coursemoduleid,
+                cmc.completionstate
             FROM {course_modules_completion} AS cmc,
                 {course_modules} AS cm,
                 {modules} AS m
