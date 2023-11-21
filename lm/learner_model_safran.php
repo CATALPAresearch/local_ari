@@ -31,7 +31,7 @@ class LearnerModelSafran extends LearnerModel {
         (SELECT count(sa.id) FROM {safran_q_attempt} sa WHERE sa.status='request_feedback' AND sa.questionid = question.id) as attempts,
         
         (SELECT count(sa.id) FROM {safran_q_attempt} sa WHERE sa.status='request_feedback' AND sa.questionid = question.id) as max_score,
-        (SELECT SUM(sa.achived_points_percentage) FROM {safran_q_attempt} sa WHERE sa.status='request_feedback') as achieved_score,
+        (SELECT SUM(sa.achived_points_percentage) FROM {safran_q_attempt} sa WHERE sa.status='request_feedback') as achieved_scores,
         
         -- (SELECT count(cmm.id) from mthreeeleven_course_modules cmm JOIN mthreeeleven_modules m ON m.id = cmm.module WHERE m.name = 'safran' AND cmm.course=cm.course AND cmm.section = cm.section AND cmm.visible = 1 AND cm.visible = 1) number_of_quizes,
         (SELECT COUNT(id) FROM  {safran_question} WHERE safranid=safran.id) AS number_of_tasks,
@@ -89,11 +89,11 @@ class LearnerModelSafran extends LearnerModel {
                 $arr["total_repeated_unique_tasks"]++;
             }
             $arr["total_existing_unique_tasks"] += $item->number_of_tasks;
-            $arr["achieved_scores"] += $item->achieved_score;
+            $arr["achieved_scores"] += $item->achieved_scores;
             $arr["max_scores"] += $item->max_score;
 
             // per section
-            if($arr["sections"]["section-" . $item->section] == null){
+            if(isset($arr["sections"]["section-" . $item->section]) == false){
                 $arr["sections"]["section-" . $item->section] = [
                     "title" => $item->section_title,
                     "first_attempt" => $item->first_attempt,
@@ -114,7 +114,7 @@ class LearnerModelSafran extends LearnerModel {
                 $arr["sections"]["section-" . $item->section]["total_repeated_unique_tasks"]++;
             }
             $arr["sections"]["section-" . $item->section]["total_existing_unique_tasks"] += $item->number_of_tasks;
-            $arr["sections"]["section-" . $item->section]["achieved_scores"] += $item->achieved_score;
+            $arr["sections"]["section-" . $item->section]["achieved_scores"] += $item->achieved_scores;
             $arr["sections"]["section-" . $item->section]["max_scores"] += $item->max_score;
             $arr["sections"]["section-" . $item->section]["mean_relative_score"] = $item->achieved_scores;
         }

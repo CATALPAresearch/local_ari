@@ -72,6 +72,7 @@ class LearnerModelQuiz extends LearnerModel {
         $arr = [
             "first_attempt" => 0,
             "total_attempts" => 0,
+            "rel_attempts" => 0,
             "total_performed_unique_quizes" => 0,
             "total_repeated_unique_quizes" => 0,
             "total_existing_unique_quizes" => 0,
@@ -93,22 +94,25 @@ class LearnerModelQuiz extends LearnerModel {
             $arr["total_attempts"] += $item->number_of_attempts;
             $arr["achieved_scores"] += $item->achieved_score;
             $arr["max_scores"] += $item->max_score;
-            $arr["rel_submissions"] = $item->number_of_quizes > 0 ? $arr["total_submissions"] / $item->number_of_quizes : 0;
+            $arr["rel_attempts"] = $item->number_of_quizes > 0 ? $arr["total_attempts"] / $item->number_of_quizes : 0;
             
-            $arr["sections"]["section-" . $item->section] = [
-                "title" => $item->section_title,
-                "first_attempt" => 0,
-                "total_attempts" => 0,
-                "total_performed_unique_quizes" => 0,
-                "total_repeated_unique_quizes" => 0,
-                "total_existing_unique_quizes" => 0,
-                "rel_quizes" => 0,
-                "achieved_scores" => 0,
-                "max_scores" => 0,
-                "mean_relative_score" => 0,
-            ];
+            if(isset($arr["sections"]["section-" . $item->section]) == false){
+                $arr["sections"]["section-" . $item->section] = [
+                    "title" => $item->section_title,
+                    "first_attempt" => 0,
+                    "total_attempts" => 0,
+                    "rel_attempts" => 0,
+                    "total_performed_unique_quizes" => 0,
+                    "total_repeated_unique_quizes" => 0,
+                    "total_existing_unique_quizes" => 0,
+                    "rel_quizes" => 0,
+                    "achieved_scores" => 0,
+                    "max_scores" => 0,
+                    "mean_relative_score" => 0,
+                ];
+            }
             $arr["sections"]["section-" . $item->section]["title"] = $item->section_title;
-            $arr["sections"]["section-" . $item->section]["total_existing_unique_quizes"] = $item->number_of_quizes;
+            $arr["sections"]["section-" . $item->section]["total_existing_unique_quizes"] += $item->number_of_quizes;
             
             if($arr["sections"]["section-" . $item->section]["first_attempt"] == 0){
                 $arr["sections"]["section-" . $item->section]["first_attempt"] = $item->submission_time;
@@ -118,6 +122,7 @@ class LearnerModelQuiz extends LearnerModel {
             $arr["sections"]["section-" . $item->section]["achieved_scores"] += $item->achieved_score;
             $arr["sections"]["section-" . $item->section]["max_scores"] += $item->max_score;
             $arr["sections"]["section-" . $item->section]["total_attempts"] += $item->number_of_attempts;
+            $arr["sections"]["section-" . $item->section]["rel_attempts"] = $arr["sections"]["section-" . $item->section]["total_existing_unique_quizes"] > 0 ? $arr["sections"]["section-" . $item->section]["total_attempts"] / $arr["sections"]["section-" . $item->section]["total_existing_unique_quizes"] : 0;
             if($item->number_of_attempts > 1){
                 $arr["sections"]["section-" . $item->section]["total_repeated_unique_quizes"]++;
             }

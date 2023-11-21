@@ -15,6 +15,7 @@ class LearnerModelAssignment extends LearnerModel {
         $query = "  SELECT
                         asub.id,
                         a.id activity_id,
+                        a.duedate, 
                         m.name activity,
                         cm.id module_id,
                         cm.section, 
@@ -59,6 +60,7 @@ class LearnerModelAssignment extends LearnerModel {
             "max_scores" => 0,
             "mean_relative_score" => 0,
             "sections" => [],
+            "duedate" => 0,
         ];
         foreach($res as $key => $item){
             
@@ -70,18 +72,23 @@ class LearnerModelAssignment extends LearnerModel {
             $arr["rel_submissions"] = $item->number_of_assignments > 0 ? $arr["total_submissions"] / $item->number_of_assignments : 0; 
             $arr["achieved_scores"] += $item->achieved_score;
             $arr["max_scores"] += $item->max_score;
+            if($arr["duedate"] < $item->duedate){
+                $arr["duedate"] = $item->duedate;
+            }
             
             // per section
-           
-            $arr["sections"]["section-" . $item->section] = [
-                "title" => $item->section_title,
-                "first_submission" => 0,
-                "total_submissions" => 0,
-                "rel_submissions" => 0,
-                "achieved_scores" => 0,
-                "max_scores" => 0,
-                "mean_relative_score" => 0,
-            ];
+            if(isset($arr["sections"]["section-" . $item->section]) == false){
+                $arr["sections"]["section-" . $item->section] = [
+                    "title" => $item->section_title,
+                    "first_submission" => 0,
+                    "total_submissions" => 0,
+                    "rel_submissions" => 0,
+                    "achieved_scores" => 0,
+                    "max_scores" => 0,
+                    "mean_relative_score" => 0,
+                    "duedate" => 0,
+                ];
+            }
         
             if($arr["sections"]["section-" . $item->section]["first_submission"] == 0){
                 $arr["sections"]["section-" . $item->section]["first_submission"] = (int)$item->submission_time;
@@ -90,7 +97,10 @@ class LearnerModelAssignment extends LearnerModel {
             $arr["sections"]["section-" . $item->section]["rel_submissions"] = $item->number_of_assignments > 0 ? $arr["total_submissions"] / $item->number_of_assignments : 0;
             $arr["sections"]["section-" . $item->section]["achieved_scores"] += $item->achieved_score;
             $arr["sections"]["section-" . $item->section]["max_scores"] += $item->max_score;
-            
+            // get the max due date
+            if($arr["sections"]["section-" . $item->section]["duedate"] < $item->duedate){
+                $arr["sections"]["section-" . $item->section]["duedate"] = $item->duedate;
+            }
         }
         if($arr["max_scores"] > 0){
             $arr["mean_relative_score"] = $arr["max_scores"] > 0 ? $arr["achieved_scores"] / $arr["max_scores"] : 0;

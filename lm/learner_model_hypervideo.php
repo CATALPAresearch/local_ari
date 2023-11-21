@@ -98,20 +98,22 @@ class LearnerModelHypervideo extends LearnerModel {
             if($arr["first_attempt"] == 0 ){
                 $arr["first_attempt"] = (int)$item->submission_time;
             }
-            $arr["sections"]["section-" . $item->section] = [
-                "title" => $item->section_title,
-                "count_videos" => 0,
-                "total_playback_time" => 0,
-                "relative_playback_time" => 0,
-                "duration" => 0,
-                "total_pause_events" => 0,
-                "total_play_events" => 0,
-                "total_seeked_events" => 0,
-                "total_ended_events" => 0,
-                "complete_playbacks" => 0,
-                "time_spent" => 0,
-                "first_attempt" => 0,
-            ];
+            if(isset($arr["sections"]["section-" . $item->section]) == false){
+                $arr["sections"]["section-" . $item->section] = [
+                    "title" => $item->section_title,
+                    "count_videos" => 0,
+                    "total_playback_time" => 0,
+                    "relative_playback_time" => 0,
+                    "duration" => 0,
+                    "total_pause_events" => 0,
+                    "total_play_events" => 0,
+                    "total_seeked_events" => 0,
+                    "total_ended_events" => 0,
+                    "complete_playbacks" => 0,
+                    "time_spent" => 0,
+                    "first_attempt" => 0,
+                ];
+            }
             
             if($arr["sections"]["section-" . $item->section]["first_attempt"] == 0){
                 $arr["sections"]["section-" . $item->section]["first_attempt"] = (int)$item->submission_time;
