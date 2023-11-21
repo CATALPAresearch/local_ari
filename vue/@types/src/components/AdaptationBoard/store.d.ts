@@ -1,5 +1,6 @@
 import { IRule } from "@/tsc/rules";
 declare const store: import("vuex").Store<{
+    courses: never[];
     existingRules: IRule[];
     newRules: IRule[];
     backupRules: IRule[];

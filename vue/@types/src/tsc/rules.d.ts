@@ -1,19 +1,19 @@
 export declare class Rules {
-    constructor();
     course_id: number;
-    rule: IRule;
-    rule_long_absense: IRule;
     the_rules: IRule[];
+    constructor(course_id: number);
     getAll(): IRule[];
     loadRules(): Promise<void>;
+    loadTestingRules(): void;
     ruleConsistencyCheck(): Boolean;
     modelConsistencyCheck(): Boolean;
 }
 export interface IRule {
     id: number;
     title: string;
+    course_id?: number;
     is_active: boolean;
-    isPerSectionRule?: boolean;
+    is_per_section_rule?: boolean;
     Condition: IRuleCondition[];
     Action: IRuleAction[];
 }
@@ -99,13 +99,16 @@ export declare enum ETargetContext {
     UNKNOWN = "action context unknown"
 }
 export declare enum EOperators {
+    Equal = "==",
+    Modolo = "%",
     Smaller = "<",
+    SmallerEqual = "<=",
+    Greater = ">",
+    GreaterEqual = ">=",
     SumSmaller = "sum()<",
     SumRecursiveSmaller = "sumR()<",
-    Greater = ">",
     SumGreater = "sum()>",
     SumRecursiveGreater = "sumR()>",
-    Equal = "==",
     Contains = "contains",
     Similar = "similar",
     Has = "has"

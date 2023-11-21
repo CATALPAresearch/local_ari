@@ -1,7 +1,7 @@
 export declare class LearnerModelManager {
-    private wwwroot;
+    private static wwwroot;
     private user_id;
-    private course_id;
+    private static course_id;
     static model: ILearnerModel;
     constructor(wwwroot: string, user_id: number, course_id: number);
     checkRules(): void;

@@ -28,6 +28,7 @@ const state: RootState = {
 
 const store = new Vuex.Store({
   state: {
+    courses: [],
     existingRules: [] as IRule[],
     newRules: [] as IRule[],
     backupRules: [] as IRule[],
@@ -37,6 +38,12 @@ const store = new Vuex.Store({
     setCourseId(state, course_id:Number){
       state.course_id = course_id;
     },
+
+    setCourses(state, courses:Array){
+      console.log('list');
+      state.courses = courses;
+    },
+    
     moveExistingToNewRules(state, id) {
       let ruleToEdit = state.existingRules.splice(
         state.existingRules.findIndex((rule) => rule.id === id),
@@ -44,7 +51,7 @@ const store = new Vuex.Store({
       );
       this.commit("addNewRule", ruleToEdit[0]);
       this.commit("addBackupRule", ruleToEdit[0]);
-      return ruleToEdit[0];
+      //return ruleToEdit[0];
     },
     moveNewRuleToExistingRules(state, rule_id) {
       let rule_index:number = state.newRules.findIndex(
@@ -76,9 +83,10 @@ const store = new Vuex.Store({
       let newRule: IRule = {
         id: Math.round(Math.random() * 947),
         title: "<title>",
+        course_id: this.$store.getters.getCourseId,
         is_active: false,
-        isPerSectionRule: false, // apply rule on every section of the course
-        perType: [EActionCategory.COMPETENCY], // apply rule to all activities of this type
+        is_per_section_rule: false, // apply rule on every section of the course
+        // perType: [EActionCategory.COMPETENCY], // apply rule to all activities of this type
         Condition: [] as IRuleCondition,
         Action: [] as IRuleAction,
       } as IRule;
@@ -143,6 +151,7 @@ const store = new Vuex.Store({
         if (state.newRules[rule_index].Action != null) {
           let newAction: IRuleAction = {
             id: Math.round(Math.random() * 947),
+            section: 0,
             actor: ERuleActor.StoredPrompt,
             type: EActionType.SCOME_COURSE_UNIT,
             category: EActionCategory.COMPETENCY,
@@ -204,6 +213,12 @@ const store = new Vuex.Store({
       
   },
   getters: {
+    getCourseId(state){
+      return state.course_id;
+    },
+    getCourses(state){
+      return state.courses;
+    },
     existingRules(state) {
       return state.existingRules;
     },
@@ -212,17 +227,30 @@ const store = new Vuex.Store({
     },
     newRules(state) {
       return state.newRules;
+      //return state.newRules.find((rule) => rule.course_id === state.course_id);
     },
     /*getNewRuleById(state, id){
       return state.newRules.find((rule) => rule.id === id);
     }*/
   },
   actions: {
+    async getAllCourses(context){
+      await Communication.webservice("get_courses", {
+        data: { 'token': 23 }, 
+      }).then((response:any) => {
+        if (response.data) {
+					context.commit('setCourses', JSON.parse(response.data));
+				}
+        console.log('Got course list from DB: ', JSON.parse(response.data));
+      }).catch((error) => {
+          console.error("Error in get_courses webservice. ", error);
+      });
+    },
     async saveRule(state, rule:IRule){
-      console.log('tried to save rule', rule.course_id, rule.id, rule.Condition[0])
+      console.log('tried to save rule', this.getters.getCourseId, rule.id, rule.Condition[0])
       await Communication.webservice("set_rules", {
           data: { 
-            course_id: rule.course_id,
+            course_id: this.getters.getCourseId,
             rule: JSON.stringify(rule) 
           }, 
       }).then((response:any) => {

@@ -10,105 +10,19 @@
  */
 //import * as ruleset from "./rules/test-rule";
 import Communication from '../../scripts/communication';
+import { RulesTesting } from './rules_testing';
 
 export class Rules {
 
-    constructor() {
+    public course_id:number = -1;
+    public the_rules: IRule[] = [];
+
+    constructor(course_id:number) {
+        this.course_id = course_id;
         Communication.setPluginName('local_ari');
         this.loadRules();
     }
-
-    public course_id:number = 2;
-
-    // Wie kann ich eine Condition definieren, die je section geprüft wird und je section eine action auslöst?
-    // basic example
-    public rule:IRule = {
-        id: 100,
-        is_active: true,
-        isPerSectionRule: true,
-        title: "Course-Progress",
-        Condition: [
-            {
-                source_context: "mod_assign",
-                key: 'last_access_days_ago',
-                value: 10,
-                operator: EOperators.Smaller,
-            },
-            /*{
-                source_context: "mod_quiz",
-                key: 'mean_rel_submissions',
-                value: 0.5,
-                operator: EOperators.Smaller,
-            }*/
-          ],
-        Action: [
-            {
-                id: 999,
-                actor: ERuleActor.StoredPrompt,
-                type: EActionType.SCOPE_COURSE,
-                section: '', 
-                category: EActionCategory.TIME_MANAGEMENT,
-                action_title: 'Titel der Empfehlung',
-                action_text:   'Hallo Herr {user.firstname} {user.lastname}, Sie haben bislang weniger als die Hälfte der Einsende- und Quizaufgaben bearbeitet. ',
-                target_context: ETargetContext.COURSE_OVERVIEW_PAGE,
-                moodle_course: 2,
-                dom_content_selector: ".page-header-headings",//".testbed",//".page-header-headings",
-                //dom_indicator_selector: ".completion-item-quiz-6",
-                //delay: 1000, // miliseconds
-                repetitions: 2,
-                timing: ETiming.NOW,
-            }
-        ],
-      };
-
-
-      public rule_long_absense:IRule = {
-        id: 100,
-        is_active: true,
-        title: "Long course absense, low progress",
-        Condition: [
-            {
-                source_context: "course",
-                key: 'last_access_days_ago',
-                value: 14,
-                operator: EOperators.Greater,
-            },
-            {
-                source_context: "mod_assign",
-                key: 'mean_rel_submissions',
-                value: 0.5,
-                operator: EOperators.Smaller,
-            },
-            {
-                source_context: "mod_quiz",
-                key: 'mean_rel_submissions',
-                value: 0.5,
-                operator: EOperators.Smaller,
-            }
-          ],
-        Action: [
-            {
-                id: 989,
-                section: '',
-                actor: ERuleActor.StoredPrompt,
-                type: EActionType.SCOPE_COURSE, 
-                category: EActionCategory.TIME_MANAGEMENT,
-                action_title: 'Willkommen',
-                action_text:   "Hallo Herr {user.firstname} {user.lastname}, Ihr letzter Besuch im Kurs liegt bereits {lm.course.last_access_days_ago} Tage zurück. Bislang haben Sie {lm.course.relative_progress} % der Aufgaben im Kurs mit einer Erfolgsqoute von {lm.course.relative_success} % bearbeitet. Sie haben dafür insgesamt {lm.course.total_time_spent_hms} Stunden aufgewendet.",
-                target_context: ETargetContext.TEST,
-                moodle_course: 2,
-                dom_content_selector: ".page-header-headings",
-                repetitions: 2,
-                timing: ETiming.NOW,
-            }
-        ],
-      };
-
     
-    public the_rules: IRule[] = [
-        this.rule
-    ];
-
     public getAll(): IRule[] {
         return this.the_rules;
     }
@@ -118,14 +32,28 @@ export class Rules {
             data: { course_id: this.course_id }, // FIXME: static param 
         }).then((response:any) => {
             try{
-                const json:IRule = <IRule>JSON.parse(response.data)["rule1"];
-                this.the_rules.push(json); 
+                //console.log('GET RULES   ',response.data)
+                //console.log('GET RULES DEBUG  ',response.debug)
+                for(let rule in JSON.parse(response.data)){
+                    const json:IRule = <IRule>JSON.parse(response.data)[rule];
+                    this.the_rules.push(json); 
+                }
             }catch(e){
                 console.error('Error at get_rules. Cast to IRules failed. ', response);
             }
         }).catch((error) => {
             console.error("Error at get_rules. Could not load rules from database. ", error);
         });
+    }
+
+
+    /**
+     * Testing rules are loaded from a file and enable the user to test featurues of ARI within the Adaptation Rule Dashboard.
+     */
+    public loadTestingRules():void{
+        let tr = new RulesTesting();
+        let testing_rules:IRule[]  = tr.getAll();
+        this.the_rules  = [...this.the_rules, ...testing_rules];
     }
 
     public ruleConsistencyCheck(): Boolean {
@@ -143,9 +71,9 @@ export class Rules {
 export interface IRule {
     id: number,
     title: string,
+    course_id?: number,
     is_active: boolean,
-    isPerSectionRule?: boolean, // apply rule on every section of the course
-    // perType: EActionCategory[], // apply rule to all activities of this type
+    is_per_section_rule?: boolean, // apply rule on every section of the course
     Condition: IRuleCondition[];
     Action: IRuleAction[]; 
 };
@@ -250,16 +178,24 @@ export enum ETargetContext {
 
 
 export enum EOperators {
+    Equal = '==',
+    Modolo = '%',
     Smaller = '<',
+    SmallerEqual = '<=',
+    Greater = '>',
+    GreaterEqual = '>=',
+
     SumSmaller = 'sum()<',
     SumRecursiveSmaller = 'sumR()<',
-    Greater = '>',
     SumGreater = 'sum()>',
     SumRecursiveGreater = 'sumR()>',
-    Equal = '==',
     Contains = 'contains',
     Similar = 'similar',
     Has = 'has',
+    DaysDistanceSmallerThan = 'days distance <',
+    DaysDistanceGreaterThan = 'days distance >',
+
+
 };
 
 export enum ERuleActor {

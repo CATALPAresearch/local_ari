@@ -72,7 +72,7 @@ module.exports = (env, options) => {
         performance: {
             hints: false
         },
-        devtool: '#eval-source-map',
+        devtool: 'source-map', // '#eval-source-map',
         plugins: [
             new VueLoaderPlugin(),
             new FileManagerPlugin({

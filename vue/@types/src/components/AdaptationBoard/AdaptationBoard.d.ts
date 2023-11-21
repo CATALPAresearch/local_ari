@@ -22,7 +22,7 @@ declare const _default: import("vue").DefineComponent<{}, unknown, {
         name: string;
         value: any;
     }[];
-    setCourseId: import("vuex").MutationMethod;
+    getAllCourses: import("vuex").ActionMethod;
 }, {}, import("vue/types/v3-component-options").ComponentOptionsMixin, import("vue/types/v3-component-options").ComponentOptionsMixin, {}, string, Readonly<import("vue").ExtractPropTypes<{}>>, {}>;
 export default _default;
 //# sourceMappingURL=../../../../@maps/src/components/AdaptationBoard/AdaptationBoard.d.ts.map

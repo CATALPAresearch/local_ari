@@ -1,11 +1,13 @@
-
-
 <template>
   <div id="content">
-    <div hidden class="testbed">Getterer form store {{ $store.getters.newRules }}</div>
+    <div hidden class="testbed">Getter form store {{ $store.getters.newRules }}</div>
     <div class="mb-3" id="tools">
       <span class="mr-3">
         <label for="context-filter">Context filter</label>
+        <select class="form-select filter-select-edit" @change="setCourseId($event)" name="context-filter" id="context-filter">
+          <option value="0">Select course</option>
+          <option v-for="course in getCourses()" :value="course.id" :selected="getCourseId() === 2 ? true : false">{{course.id}}: {{ course.fullname }}</option>
+        </select>
         <select class="form-select filter-select-edit" v-model="contextFilter" name="context-filter" id="context-filter">
           <option value="None">All</option>
           <option v-for="context in contexts" :value="context">{{ context }}</option>
@@ -35,7 +37,7 @@
         <td class="align-text-top">
           {{ rule.title }}
           <div>(ID: {{ rule.id }})</div>
-          <div v-if="rule.isPerSectionRule">
+          <div v-if="rule.is_per_section_rule">
             <span><i class="fa fa-check pr-1"></i>Applied to each section</span>
           </div>
         </td>
@@ -87,11 +89,13 @@
         </td>
       </tr>
       <tr class="edit-mode" v-for="rule in $store.getters.newRules" :key="rule.id">
+       
         <th class="align-text-top">
-          <input type="checkbox" v-model="rule.is_active">
+          <input type="checkbox" v-model="rule.is_active"><br>
+          Course ID: <input v-model="rule.course_id" class="form-input-text" style="width:30px;">
         </th>
         <td class="align-text-top">
-          <input v-model="rule.title" class="form-input-text"><br />(ID: {{ rule.id }})<br>Apply to each sections? <input type="checkbox" v-model="rule.isPerSectionRule" />
+          <input v-model="rule.title" class="form-input-text"><br />(ID: {{ rule.id }})<br>Apply to each sections? <input type="checkbox" v-model="rule.is_per_section_rule" />
         </td>
         <td></td>
         <td class="align-text-top">
@@ -123,6 +127,7 @@
               </button>
             </li>
           </ol>
+
           <div v-if="rule.Condition.length == 0">
             <button class="btn btn-secondary" title="Add a condition to the rule"
             @click="$store.commit('createConditionOfNewRule', rule.id)"><i class="fa fa-plus"> Add condition</i>
@@ -132,7 +137,6 @@
             @click="$store.commit('createConditionOfNewRule', rule.id)"><i class="fa fa-plus"></i>
           </button>
         </td>
-        <td class="align-text-top">
           <ol class="p-0 m-0">
             <li class="mb-2" v-for="(action, actInd) in rule.Action">
               <b hidden>{{ actInd }}:</b>

@@ -46,6 +46,9 @@ import Communication from "../../scripts/communication";
  */
 export class RuleManager {
     public static lm: ILearnerModel;
+    public static course_id: number;
+    public static wwwroot: string;
+
     public actionQueue: IRuleAction[];
     private rules: IRule[] = [];
     //private sourceContext: ESourceContext;
@@ -54,12 +57,14 @@ export class RuleManager {
     private browserTabID: string;
     public activeActors: Array<object>;
 
-    constructor(lm: ILearnerModel) {
+    constructor(lm: ILearnerModel, course_id: number, wwwroot: string) {
         const production_mode = false;
-        if(production_mode) {
-            console.log = function() {} 
+        if (production_mode) {
+            console.log = function () { };
         }
         RuleManager.lm = lm;
+        RuleManager.course_id = course_id;
+        RuleManager.wwwroot = wwwroot;
         this.actionQueue = [];
         //this.sourceContext:ESourceContext;
         this.targetContext = this._determineTargetContext();
@@ -79,7 +84,7 @@ export class RuleManager {
 
         // initial rule as an example, only for testing
         // later on the set of rules could be filtered by the current moodleContext
-        this.rules = new Rules().getAll();
+        this.rules = new Rules(RuleManager.course_id).getAll();
 
         // FIXME: locale-plugins load before course-format plugins. If we do not wait some seconds the prompts cannot be attached to DOM elements.
         setTimeout(() => {
@@ -88,23 +93,23 @@ export class RuleManager {
     }
 
     /**
-         * Should this become a sensor of its own?
-         * /login/index.php ... Login Page
-            / ... home page
-            /user/profile.php?id=4
-            /user/index.php?id=5 ... user overview
-            /course/view.php?id=5
-            /mod/page/view.php?id=248 ... longpage
-            /mod/assign/view.php?id=249 ... EA
-            /mod/quiz/view.php?id=259 ... self-assessment
-            https://aple.fernuni-hagen.de/mod/quiz/attempt.php?attempt=7753&cmid=259 ... start of a quiz
-            https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
-            https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
-         */
+           * Should this become a sensor of its own?
+           * /login/index.php ... Login Page
+              / ... home page
+              /user/profile.php?id=4
+              /user/index.php?id=5 ... user overview
+              /course/view.php?id=5
+              /mod/page/view.php?id=248 ... longpage
+              /mod/assign/view.php?id=249 ... EA
+              /mod/quiz/view.php?id=259 ... self-assessment
+              https://aple.fernuni-hagen.de/mod/quiz/attempt.php?attempt=7753&cmid=259 ... start of a quiz
+              https://aple.fernuni-hagen.de/mod/quiz/summary.php?attempt=7753&cmid=259 ... after entering solution
+              https://aple.fernuni-hagen.de/mod/quiz/review.php?attempt=7753&cmid=259 ... after submission
+           */
     private _determineTargetContext(): ETargetContext {
         let path = window.location.pathname;
         path = path.replace("/moodle311", "").replace("/moodle", ""); // FIXME: bad fix for my local installation
-        path = path.split('#')[0]; // cut-off DOM paths and vue router routes
+        path = path.split("#")[0]; // cut-off DOM paths and vue router routes
         path =
             path.charAt(path.length - 1) === "/"
                 ? path.substring(0, path.length - 1)
@@ -177,31 +182,36 @@ export class RuleManager {
             RuleManager.lm
         );
         for (var i = 0; i < this.rules.length; i++) {
-            let results:object = this.evaluateConditions(this.rules[i].Condition, this.rules[i].isPerSectionRule);
-            console.log("ARI::--check individual rules: ", this.rules[i].title, results);
-            for(let section in results){
+            let results: object = this.evaluateConditions(
+                this.rules[i].Condition,
+                this.rules[i].is_per_section_rule
+            );
+            //console.log("ARI::--check individual rules: ", this.rules[i].title, results);
+            for (let section in results) {
                 if (results[section] == true) {
                     // inject section to actions
                     let action = this.rules[i].Action;
-                    for(let i in action){
+                    for (let i in action) {
                         action[i].section = section;
                     }
                     this._addToActionQueue(action);
                 }
             }
-            
-            // Update DB that the rule condition has been fullfilled for the current user
-            Communication.webservice("set_rule_execution", {
-                data: {
-                    rule_id: this.rules[i].id,
-                    course_id: new Rules().course_id,
-                    status: results ? "condition_met" : "condition_not_met",
-                },
-            })
-            //.then((response) => {//console.log("RESPONSE", response);})
-            .catch((error) => {
-                console.error("Error@rule_manager/set_rule_execution: ", error);
-            });
+
+            if (this.rules[i].id) {
+                // Update DB that the rule condition has been fullfilled for the current user
+                Communication.webservice("set_rule_execution", {
+                    data: {
+                        rule_id: this.rules[i].id,
+                        course_id: RuleManager.course_id,
+                        status: results ? "condition_met" : "condition_not_met",
+                    },
+                })
+                    //.then((response) => {//console.log("RESPONSE", response);})
+                    .catch((error) => {
+                        console.error("Error@rule_manager/set_rule_execution: ", error);
+                    });
+            }
         }
     }
 
@@ -210,10 +220,17 @@ export class RuleManager {
      * @param context
      * @param key
      */
-    public getLearnerModelKey(context: string, key: string, section:string=""): any {
+    public getLearnerModelKey(
+        context: string,
+        key: string,
+        section: string = ""
+    ): any {
         let result = "";
         if (RuleManager.lm[context] != null) {
-            if(section!="" && RuleManager.lm[context].sections[section][key] != null) {
+            if (
+                section != "" &&
+                RuleManager.lm[context].sections[section][key] != null
+            ) {
                 result = RuleManager.lm[context].sections[section][key];
             } else if (RuleManager.lm[context][key] != null) {
                 result = RuleManager.lm[context][key];
@@ -227,68 +244,113 @@ export class RuleManager {
      * Evaluate each condition of a rule considering the data stored in the learner model
      * @param cons
      */
-    public evaluateConditions(cons: IRuleCondition[], isPerSectionRule:boolean = true):object {
-        console.log("ARI::evaluate rule conditions", isPerSectionRule);
-        let sections = ['main'];
-        let result = {'main': false};
-        if(isPerSectionRule == true){
+    public evaluateConditions(
+        cons: IRuleCondition[],
+        is_per_section_rule: boolean = true
+    ): object {
+        console.log("ARI::evaluate rule conditions", is_per_section_rule);
+        let sections = ["main"];
+        let result = { main: false };
+        if (is_per_section_rule == true) {
             // get all section
             for (var i = 0; i < cons.length; i++) {
                 let condition = cons[i];
                 // FIXME: add rubric in the LM about all existing sections
-                if(RuleManager.lm[condition.source_context] == undefined){
-                    console.warn('ARI::source_context undefined at evaluateConditions.', condition.source_context);
+                if (RuleManager.lm[condition.source_context] == undefined) {
+                    console.warn(
+                        "ARI::source_context undefined at evaluateConditions.",
+                        condition.source_context
+                    );
                     continue;
                 }
-                if(RuleManager.lm[condition.source_context].sections != null){
-                    console.log('ARICU-section: ',i, RuleManager.lm[condition.source_context].sections);
-                    sections = sections.concat( Object.keys(RuleManager.lm[condition.source_context].sections) );
+                if (RuleManager.lm[condition.source_context].sections != null) {
+                    console.log(
+                        "ARICU-section: ",
+                        i,
+                        RuleManager.lm[condition.source_context].sections
+                    );
+                    sections = sections.concat(
+                        Object.keys(RuleManager.lm[condition.source_context].sections)
+                    );
                 }
             }
-            console.log('ARICU-sections: ',sections)
+            console.log("ARICU-sections: ", sections);
         }
         // iterate over all sections
-        for (var j = 0; j < sections.length; j++){
+        for (var j = 0; j < sections.length; j++) {
             // iterate over all conditions and conjugate them
             for (var i = 0; i < cons.length; i++) {
                 let condition = cons[i];
                 let mkey = this.getLearnerModelKey(
                     condition.source_context,
                     condition.key,
-                    sections[j] == "main" ? "" : sections[j] 
-                    );
+                    sections[j] == "main" ? "" : sections[j]
+                );
                 switch (condition.operator) {
+                    // numeric operators
                     case EOperators.Equal:
-                        result[sections[j]] = result[sections[j]] && mkey === condition.value ? true : false;
+                        result[sections[j]] =
+                            result[sections[j]] && mkey === condition.value ? true : false;
+                        break;
+                    case EOperators.Modolo:
+                        result[sections[j]] = result[sections[j]] % mkey === condition.value ? true : false;
                         break;
                     case EOperators.Greater:
+                        result[sections[j]] = result[sections[j]] && mkey > condition.value ? true : false;
+                        break;
+                    case EOperators.GreaterEqual:
                         result[sections[j]] = result[sections[j]] && mkey > condition.value ? true : false;
                         break;
                     case EOperators.Smaller:
                         result[sections[j]] = result[sections[j]] && mkey < condition.value ? true : false;
                         break;
+                    case EOperators.SmallerEqual:
+                        result[sections[j]] = result[sections[j]] && mkey <= condition.value ? true : false;
+                        break;
+                    
+                    // string operators
                     case EOperators.Contains:
-                        // TODO:
+                        result[sections[j]] = false;
                         if (typeof mkey == "string") {
-                            //result = result && mkey.includes(condition.value);
+                            result[sections[j]] = result && mkey.includes(condition.value) ? true : false;
                         } else if (typeof mkey == "object") {
+                            // TODO
                             //result = result && mkey.includes(condition.value);
                         }
-                        result[sections[j]] = false;
                         break;
                     case EOperators.Has:
                         // has child element
                         result[sections[j]] = false;
+                        if (typeof mkey == "object" || "array") {
+                            for(let i in mkey){
+                                if(mkey[i] == condition.value){
+                                    result[sections[j]] = true;
+                                    break;
+                                }
+                            }
+                        }
                         break;
                     case EOperators.Similar:
-                        // text similarity
+                        // TODO: text similarity, levinstein distance
                         result[sections[j]] = false;
                         break;
+                    
+                    // time operators
+                    case EOperators.DaysDistanceGreaterThan:
+                        result[sections[j]] = false;
+                        if (typeof mkey == "number") {
+                            const now = new Date();
+                            if((now - mkey) < condition.value){
+                                result[sections[j]] = true;
+                            }
+                        }
+                        break;
+
                     default:
                         result[sections[j]] = false;
                 }
             }
-        }    
+        }
         console.log("ARI::rule conditions result: ", result);
         return result;
     }
@@ -332,9 +394,8 @@ export class RuleManager {
                 new DOMVPTracker(tmpLocalAction.viewport_selector, 0)
                     .get()
                     .then((resolve) => {
-                        console.log('ARI::DOMVPTracker ',tmpLocalAction, resolve)
+                        console.log("ARI::DOMVPTracker ", tmpLocalAction, resolve);
                         RuleManager._executeAction(tmpLocalAction);
-                        
                     });
             } else if (
                 tmpLocalAction.timing === ETiming.WHEN_IDLE &&
@@ -381,7 +442,7 @@ export class RuleManager {
                     tmp.type,
                     tmp.category,
                     tmp.action_title,
-                    tmp.action_text,
+                    tmp.action_text
                 );
                 break;
             case ERuleActor.HtmlPrompt:
@@ -465,96 +526,100 @@ export class RuleManager {
                 case EActionAugmentation.RELATED_RESOURCE:
                     // @TODO implemente the listed content relations
                     // Include ressources related to the one in the condition: So fare, you've achieved only a low scores in the assignement tasks. We recommend you to try the following self assessments first: {related.mod_safran}
-                    const allowed_rel_resource_keys:string[] = [
+                    const allowed_rel_resource_keys: string[] = [
                         "rec.safran-like-completed-assignments", // vertiefe Wissen mit SA, die ähnlich zu den bereits bearbeiteten EAs sind
                         "rec.safran-like-not-completed-assignments", // bearbeite SA, die ähnlich zu den noch nicht bearbeiteten EA sind.
                         // "rec.safran-like-longpage-section-XX",
-                        
+
                         "rec.quiz-like-longpage", // Quiz-Aufgaben zu den bereits gelesenen Abschnitten
                         // "rec.quiz-like-completed-assignments",
                         // "rec.quiz-like-not-completed-assignments",
                         // "rec.quiz-like-not-completed-safran",
                         // "rec.quiz-like-completed-safran",
-                        
+
                         "rec.all-longpage-of-course-unit", // alle Longpages (i.d.R. Link zur Longpage)
                         // "rec.all-safran-of-course-unit",
                         // "rec.all-assignments-of-course-unit",
                         // "rec.all-quizz-of-course-unit",
-                        
+
                         "rec.not-completed-safran", // noch nicht bearbeitetet SA
                         // "rec.not-completed-assignments",
                         // "rec.not-completed-longpage", // longpages that have not been read completly
-                        
+
                         "rec.simpler-safran-then-already-completed", // leichtere SA Aufgabe, als die bisher bearbeiteten
                         // "rec.simpler-assignments-then-already-completed",
                         // "rec.simpler-quiz-then-already-completed",
                     ];
                     // get all rec-tags from text
-                    let rec_tags:object[] = [];
+                    let rec_tags: object[] = [];
                     let req = {};
-                    for (let key = 0; key < allowed_rel_resource_keys.length; key = key + 1) {
+                    for (
+                        let key = 0;
+                        key < allowed_rel_resource_keys.length;
+                        key = key + 1
+                    ) {
                         let ree = "{" + allowed_rel_resource_keys[key] + "}";
                         let re = new RegExp(ree, "gi");
-                        if(text.match(re)){
-                            switch(allowed_rel_resource_keys[key]){
-                                case "rec.safran-like-completed-assignments": 
+                        if (text.match(re)) {
+                            switch (allowed_rel_resource_keys[key]) {
+                                case "rec.safran-like-completed-assignments":
                                     req = {
-                                        input_type: 'mod_assign',
-                                        input_condition: 'completed', // new | completed | ...
+                                        input_type: "mod_assign",
+                                        input_condition: "completed", // new | completed | ...
                                         input_type_id: 0,
                                         input_type_section: 0,
-                                        output_type: 'mod_safran',
-                                        number_of_results: 3
-                                    };
-                                break;
-                                case "rec.safran-like-not-completed-assignments": 
-                                    req = {
-                                        input_type: 'mod_assign',
-                                        input_condition: 'completed', // new | completed | ...
-                                        input_type_id: 0,
-                                        input_type_section: 0,
-                                        output_type: 'mod_safran',
-                                        number_of_results: 3
+                                        output_type: "mod_safran",
+                                        number_of_results: 3,
                                     };
                                     break;
-                                case "rec.all-longpage": 
+                                case "rec.safran-like-not-completed-assignments":
                                     req = {
-                                        input_type: 'mod_assign',
-                                        input_condition: 'completed', // new | completed | ...
+                                        input_type: "mod_assign",
+                                        input_condition: "completed", // new | completed | ...
                                         input_type_id: 0,
                                         input_type_section: 0,
-                                        output_type: 'mod_safran',
-                                        number_of_results: 3
+                                        output_type: "mod_safran",
+                                        number_of_results: 3,
                                     };
                                     break;
-                                case "rec.not-completed-safran": 
+                                case "rec.all-longpage":
                                     req = {
-                                        input_type: 'mod_assign',
-                                        input_condition: 'completed', // new | completed | ...
+                                        input_type: "mod_assign",
+                                        input_condition: "completed", // new | completed | ...
                                         input_type_id: 0,
                                         input_type_section: 0,
-                                        output_type: 'mod_safran',
-                                        number_of_results: 3
+                                        output_type: "mod_safran",
+                                        number_of_results: 3,
                                     };
                                     break;
-                                case "rec.simpler-safran-then-already-completed": 
+                                case "rec.not-completed-safran":
                                     req = {
-                                        input_type: 'mod_assign',
-                                        input_condition: 'completed', // new | completed | ...
+                                        input_type: "mod_assign",
+                                        input_condition: "completed", // new | completed | ...
                                         input_type_id: 0,
                                         input_type_section: 0,
-                                        output_type: 'mod_safran',
-                                        number_of_results: 3
+                                        output_type: "mod_safran",
+                                        number_of_results: 3,
                                     };
                                     break;
-                                case "rec.quiz-like-longpage": 
+                                case "rec.simpler-safran-then-already-completed":
                                     req = {
-                                        input_type: 'mod_assign',
-                                        input_condition: 'completed', // new | completed | none | ...
+                                        input_type: "mod_assign",
+                                        input_condition: "completed", // new | completed | ...
                                         input_type_id: 0,
                                         input_type_section: 0,
-                                        output_type: 'mod_safran',
-                                        number_of_results: 3
+                                        output_type: "mod_safran",
+                                        number_of_results: 3,
+                                    };
+                                    break;
+                                case "rec.quiz-like-longpage":
+                                    req = {
+                                        input_type: "mod_assign",
+                                        input_condition: "completed", // new | completed | none | ...
+                                        input_type_id: 0,
+                                        input_type_section: 0,
+                                        output_type: "mod_safran",
+                                        number_of_results: 3,
                                     };
                                     break;
                             }
@@ -565,20 +630,20 @@ export class RuleManager {
                     // compute links for the rec-tags
                     Communication.webservice("get_content_recommendations", {
                         data: {
-                            input_type: 'mod_assign',
+                            input_type: "mod_assign",
                             input_type_id: 0,
                             input_type_section: 0,
-                            output_type: 'mod_safran',
-                            number_of_results: 3
+                            output_type: "mod_safran",
+                            number_of_results: 3,
                         },
                     })
-                    .then((response) => {
-                        console.log("RESPONSE", response);
-                    })
-                    .catch((error) => {
-                        console.error("Error@rule_manager/set_rule_execution: ", error);
-                    });
-                
+                        .then((response) => {
+                            console.log("RESPONSE", response);
+                        })
+                        .catch((error) => {
+                            console.error("Error@rule_manager/set_rule_execution: ", error);
+                        });
+
                     break;
 
                 case EActionAugmentation.NEXT_STEP:
@@ -611,54 +676,67 @@ export class RuleManager {
             }
             db.onversionchange = function () {
                 db.close();
-                console.error("IndexedDB is outdated, please reload the page. See RuleManager /resetStoredPrompts/");
+                console.error(
+                    "IndexedDB is outdated, please reload the page. See RuleManager /resetStoredPrompts/"
+                );
             };
             let transaction = db.transaction("prompts", "readonly");
             let promptsStore = transaction.objectStore("prompts");
             let result = promptsStore.getAll();
-            console.log('before-success')
+            console.log("before-success");
             result.onsuccess = function (success) {
-                console.log('in-success')
+                console.log("in-success");
                 // @ts-ignore
-                let allKeys:IStoredPromptConfig[] = success.target.result as IStoredPromptConfig[];
-                console.log('before-loop')
-                for(let i = 0; i < allKeys.length; i++){
-                    console.log('ARI::Reseted rule in indexeddb: ', allKeys[i].id)
-                    _this.updatePromptAtDB(db, allKeys[i], 'valid', false);
+                let allKeys: IStoredPromptConfig[] = success.target
+                    .result as IStoredPromptConfig[];
+                console.log("before-loop");
+                for (let i = 0; i < allKeys.length; i++) {
+                    console.log("ARI::Reseted rule in indexeddb: ", allKeys[i].id);
+                    _this.updatePromptAtDB(db, allKeys[i], "valid", false);
                 }
             };
         };
     }
 
     // @ts-ignore
-    private updatePromptAtDB(db, dbkey, key:string, value:any):void {
+    private updatePromptAtDB(db, dbkey, key: string, value: any): void {
         let _this = this;
-        const objectStore = db.transaction('prompts', 'readwrite').objectStore('prompts');
+        const objectStore = db
+            .transaction("prompts", "readwrite")
+            .objectStore("prompts");
         const objectStoreRequest = objectStore.get(dbkey.id);
-        objectStoreRequest.onsuccess = ()=> {
+        objectStoreRequest.onsuccess = () => {
             const item = objectStoreRequest.result;
             item[key] = value;
             const updateRequest = objectStore.put(item);
             updateRequest.onsuccess = () => {
                 //console.log(`ARIX 4 updated: ${updateRequest.result}`);
                 _this.getPromptFromDB(db, updateRequest.result);
-            }
+            };
             updateRequest.onerror = (e) => {
-                console.error(`ARI:: indexdeb read/update error @ updatePromptAtDB: ${e}`)
-            }
-        }
+                console.error(
+                    `ARI:: indexdeb read/update error @ updatePromptAtDB: ${e}`
+                );
+            };
+        };
     }
 
     // @ts-ignore
-    private getPromptFromDB(db, dbkey):void {
-        const objectStore = db.transaction('prompts', 'readonly').objectStore('prompts');
+    private getPromptFromDB(db, dbkey): void {
+        const objectStore = db
+            .transaction("prompts", "readonly")
+            .objectStore("prompts");
         const objectStoreRequest = objectStore.get(dbkey);
         objectStoreRequest.onsuccess = () => {
-            console.log('ARI::got prompt from store: ',dbkey, objectStoreRequest.result);
-        }
+            console.log(
+                "ARI::got prompt from store: ",
+                dbkey,
+                objectStoreRequest.result
+            );
+        };
         objectStoreRequest.onerror = (e) => {
-            console.error(`ARI:: indexdeb read error @ getPromptFromDB: ${e}`)
-        }
+            console.error(`ARI:: indexdeb read error @ getPromptFromDB: ${e}`);
+        };
     }
 
     /**
@@ -685,17 +763,17 @@ export class RuleManager {
     }
 
     /**
-         * duration?: number;
-            opened?:number;
-            closed?: number;
-            viewportAccessed?: number;
-            hovered?: number;
-            agreed?: number;
-            dismissed?: number;
-            dived?: number;
-         * @param id 
-         * @param params 
-         */
+           * duration?: number;
+              opened?:number;
+              closed?: number;
+              viewportAccessed?: number;
+              hovered?: number;
+              agreed?: number;
+              dismissed?: number;
+              dived?: number;
+           * @param id 
+           * @param params 
+           */
     public storeActorStats(id: string, params: IRuleActorStats) {
         // @ts-ignore
         let instance = this.activeActors[id];
@@ -761,8 +839,8 @@ export class RuleManager {
             content: {
                 message: message,
                 /*urgency?:EHtmlPromptUrgency;
-                                html?:string;
-                                style?:string;*/
+                                        html?:string;
+                                        style?:string;*/
             },
         };
         let action = new HtmlPrompt(config);

@@ -4,7 +4,11 @@ import { ETargetContext, EOperators, ERuleActor, IRule, IRuleCondition, Rules, E
 import Communication from '../../../scripts/communication';
 import { RuleManager } from '@/tsc/rule_manager';
 
-import { mapGetters, mapMutations } from 'vuex'
+import { 
+    mapGetters, 
+    mapMutations, 
+    mapActions 
+} from 'vuex'
 import store  from "./store";
 import 'vue-multiselect/dist/vue-multiselect.min.css';
 
@@ -25,7 +29,8 @@ export default defineComponent({
         }
     },
     mounted: function ():void {
-        this.$store.commit('setCourseId', 0);
+        this.$store.dispatch('getAllCourses');
+        this.$store.commit('setCourseId', 0); // default
         console.log('board ', 1);
         // @ts-expect-error
         this.fetchRules();
@@ -42,6 +47,9 @@ export default defineComponent({
     
 
     methods: {
+        ...mapGetters(['getCourseId', 'getCourses']), // not working?
+        ...mapMutations(['setCourseId']),
+        
         // Fetch all rule executions from database
         fetchAllRuleExecutions():void {
             Communication.webservice("get_rule_execution", {
@@ -85,7 +93,7 @@ export default defineComponent({
 
         // Fetch all rules from static typescript file
         fetchRules: function() {
-            store.commit('createExistingRules', (new Rules()).getAll());
+            store.commit('createExistingRules', (new Rules(this.$store.getters.getCourseId)).getAll());
             this.rulesLoaded = true;
         },
 
@@ -96,11 +104,13 @@ export default defineComponent({
             console.log(ruleToEdit);
         },
 
+        setCourseId(event){
+            this.$store.commit('setCourseId', event.target.value); 
+        }
         
     },
     computed: {
-        ...mapGetters([]),
-        ...mapMutations(['setCourseId']),
+        ...mapActions(['getAllCourses']),
 
         operators() {
             return EOperators;
@@ -124,8 +134,9 @@ export default defineComponent({
             return ETiming;
         },
         ruleInFilter(): IRule[] {
-            console.log("chosen filter: " + this.contextFilter);
-            return this.contextFilter === "None" ? store.getters.existingRules : store.getters.filter((rule) => rule.Action.some(mc => mc.target_context === this.contextFilter));
+            console.log("chosen filter: " + this.contextFilter +' -- '+ this.$store.getters.getCourseId);
+            let tmp = this.contextFilter === "None" ? store.getters.existingRules : store.getters.filter((rule) => rule.Action.some(mc => mc.target_context === this.contextFilter));
+            return this.$store.getters.getCourseId === undefined ? tmp : tmp.filter((rule) => rule.course_id === this.$store.getters.getCourseId);
         },
         advancedActionOptions(id:number):Boolean{
             return this.advancedActionOptions[id];
