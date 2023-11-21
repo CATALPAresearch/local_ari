@@ -42,7 +42,7 @@ CREATE TABLE ari_rule (
   title varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '',
   course_id bigint NOT NULL,
   is_active binary(1) NOT NULL,
-  isPerSectionRule binary(1) NOT NULL DEFAULT '0',
+  is_per_section_rule binary(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=COMPRESSED COMMENT='Default comment for the table, please edit me';
 

@@ -67,7 +67,7 @@ class rule extends external_api
     {
         global $DB;
 
-        $query = "SELECT rule_id, count FROM {ari_response_rule_execution}";// WHERE rule_id = :rule_id ;";
+        $query = "SELECT rule_id, count, user_id FROM {ari_response_rule_execution}";// WHERE rule_id = :rule_id ;";
         $res = $DB->get_records_sql($query, array(
             //'rule_id' => $data['rule_id'],
             //'execution_date' => $data['execution_date'],

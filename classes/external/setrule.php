@@ -60,28 +60,29 @@ class setrule extends external_api
         global $CFG, $DB, $USER;
         $debug = 'nix';
         $rule = (array)json_decode($param['rule'], true);
+        $rule_id = (int)$rule['id'];
         $res = '';
 
         // store rule
         $r = new stdClass();
         $r->id = $rule['id'];
-        $r->course_id = $param['course_id'];
+        $r->course_id = (int)$param['course_id'];
         $r->title = $rule['title'];
-        $r->is_active = $rule['is_active'] == true ? true : false;
-        $r->isPerSectionRule = $rule['isPerSectionRule'] == true ? true : false;
+        $r->is_active = $rule['is_active'] != true  ? false : true;
+        $r->is_per_section_rule = $rule['is_per_section_rule'] != true ?  false : true;
 
         $exists = $DB->record_exists('ari_rule' , [
             'id' => $rule['id'],
-            'course_id' => $rule['course_id'],
+            'course_id' => $param['course_id']
             ]);
         
         if ($exists != true) {
             $transaction = $DB->start_delegated_transaction();
-            $res = $DB->insert_records("ari_rule", [$r]);
+            $res = $DB->insert_record("ari_rule", $r);
             $transaction->allow_commit();
+            $rule_id = $res != null ? $res : $rule_id;
         } elseif ($exists == true) {
             $transaction = $DB->start_delegated_transaction();
-            //$res = $DB->set_field("ari_rule", 'id', $rule['id'], (array)$r);
             $res = $DB->update_record("ari_rule", $r);
             $transaction->allow_commit();
         }
@@ -92,7 +93,7 @@ class setrule extends external_api
         foreach($condition as $cond){
             $r = new stdClass();
             $r->id = (int)$cond['id'];
-            $r->rule_id = (int)$rule['id'];
+            $r->rule_id = $rule_id;
             $context = $DB->get_record_sql("SELECT id FROM {ari_rule_source_context} WHERE name=:name", ['name' => $cond['source_context']]);
             $r->source_context_id = $context->id == null ? 0 : $context->id;
             $r->lm_key = $cond['key'];
@@ -119,7 +120,7 @@ class setrule extends external_api
         foreach($action as $act){
             $r = new stdClass();
             $r->id =  (int)$act['id'];
-            $r->rule_id =  (int)$rule['id'];
+            $r->rule_id =  $rule_id;
             $r->section = $act['section'] == null ? 'main' : $act['section'];
             $actor = $DB->get_record_sql("SELECT id FROM {ari_rule_actor} WHERE name=:name", ['name' => $act['actor']]);
             $r->actor_id = $actor->id == null ? 0 : $actor->id;
@@ -156,7 +157,12 @@ class setrule extends external_api
         //return array('data' => json_encode($debug));
         return [
             'success' => true,
-            'data' => json_encode(['res' => $res, 'exists' => $exists])
+            'data' => json_encode([
+                'res' => $res, 
+                'exists' => $exists, 
+                'debug' => $rule['is_active'],
+                'rule_id' => $rule['id']
+                ] )
         ];
     }
 

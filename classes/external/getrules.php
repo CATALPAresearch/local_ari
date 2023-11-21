@@ -61,9 +61,9 @@ class getrules extends external_api
         $query_rules = "
             SELECT *
             FROM {ari_rule} r
-            WHERE 
-                r.course_id = :course_id
             ;";
+            //-- WHERE 
+            //-- r.course_id = :course_id
         $query_conditions = "
             SELECT rc.id, rc.rule_id, rc.source_context_id, rc.lm_key, rc.lm_value, o.name as operator
             FROM {ari_rule_condition} rc
@@ -98,7 +98,7 @@ class getrules extends external_api
             ;";
 
         
-        $rules = $DB->get_records_sql($query_rules, array('course_id' => $param['course_id']));
+        $rules = $DB->get_records_sql($query_rules);//, array('course_id' => $param['course_id']));
         $conditions = $DB->get_records_sql($query_conditions);
         $actions = $DB->get_records_sql($query_actions);
         
@@ -107,7 +107,8 @@ class getrules extends external_api
         foreach($rules as $key => $r){
             $result['rule' . $r->id] = [
                 "id" => $r->id,
-                "active" => true,
+                "is_active" => $r->is_active,
+                "is_per_section_rule" => $r->is_per_section_rule,
                 "title" => $r->title,
                 "course_id"  => $r->course_id,
                 "Condition" => [],
@@ -119,13 +120,13 @@ class getrules extends external_api
             $source_context = $DB->get_record_sql("SELECT name FROM {ari_rule_source_context} WHERE id=:id", ['id' => $c->source_context_id]);
             $condition = [
                 "id" => $c->id,
-                "source_context" => $source_context->name,
+                "source_context" => $source_context->name == null ? 0 : $source_context->name,
                 "key" => $c->lm_key,
                 "value" => $c->lm_value,
                 "operator" => $c->operator,
             ];
             
-            if($result['rule' . $c->rule_id]["Condition"] == null){
+            if(isset($result['rule' . $c->rule_id]["Condition"]) == false){
                 $result['rule' . $c->rule_id]["Condition"] = [];
                 array_push($result['rule' . $c->rule_id]["Condition"], $condition);
             }else{
@@ -152,7 +153,7 @@ class getrules extends external_api
                 "repetitions" => $a->repetitions,
             ];
             
-            if($result['rule' . $a->rule_id]["Action"] == null){
+            if(isset($result['rule' . $a->rule_id]["Action"]) == false){
                 $result['rule' . $a->rule_id]["Action"] = [];
                 array_push($result['rule' . $a->rule_id]["Action"], $action);
             }else{
@@ -160,7 +161,10 @@ class getrules extends external_api
             } 
         }
         //return array('data' => json_encode($debug));
-        return array('data' => json_encode($result));
+        return array(
+            'data' => json_encode($result),
+            //'debug' => json_encode($rules)
+        );
         
     }
 
@@ -184,7 +188,10 @@ class getrules extends external_api
      */
     public static function get_rules_returns() {
         return new external_single_structure(
-            array( 'data' => new external_value(PARAM_RAW, '') ));
+            array( 
+                'data' => new external_value(PARAM_RAW, ''), 
+                'debug' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL),
+            ));
     }
 
     

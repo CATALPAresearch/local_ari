@@ -29,6 +29,16 @@
             'loginrequired' => true
         ),
 
+        'local_ari_get_courses' => array(
+            'classname'    => 'local_ari\external\getcourses',
+            'classpath'   => 'local/ari/classes/external/getcourses.php',
+            'methodname'   => 'get_courses',
+            'description' => 'Get all courses',
+            'type'        => 'read',
+            'ajax'        => true,
+            'loginrequired' => true
+        ),
+
         'local_ari_get_rules' => array(
             'classname'    => 'local_ari\external\getrules',
             'classpath'   => 'local/ari/classes/external/getrules.php',

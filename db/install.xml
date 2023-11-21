@@ -88,7 +88,7 @@
                 <FIELD NAME="title" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="is_active" TYPE="binary" LENGTH="1" SEQUENCE="false"/>
-                <FIELD NAME="is_per_section" TYPE="binary" LENGTH="1" SEQUENCE="false"/>
+                <FIELD NAME="is_per_section_rule" TYPE="binary" LENGTH="1" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
