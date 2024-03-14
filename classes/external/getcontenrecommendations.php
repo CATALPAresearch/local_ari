@@ -53,16 +53,120 @@ class getcontentrecommendations extends external_api
      * @throws moodle_exception
      * @throws restricted_context_exception
      */
-    public static function get_content_recommendations($param) {
-        global $CFG, $DB;
+    public static function get_content_recommendations($data) {
+        global $USER, $DB;
+        $course_id = $data['course_id'];
+        $requests = $data['requests'];
+        $result = [];
         $debug = 'nix';
         $query = '';
-        $transaction = $DB->start_delegated_transaction();
-        //$actions = $DB->get_records_sql($query);
-        $transaction->allow_commit();
+        foreach($requests as $type => $req){
+            switch($type){
+                case "rec.safran-like-completed-assignments":  // vertiefe Wissen mit SA, die ähnlich zu den bereits bearbeiteten EAs sind
+                    $query = "
+                    SELECT DISTINCT
+                        -- a2.id,
+                        a2.instance_id,
+                        a2.instance_url_id,
+                        aa1.keyword AS search_term,
+                        a2.component,
+                        aa1.document_frequency AS score1,
+                        a2.document_frequency AS score2
+                    FROM (
+                        SELECT
+                            a1.course_id, a1.keyword, a1.id, a1.document_frequency, a1.instance_url_id
+                        FROM mthreeeleven_assign a
+                            LEFT JOIN mthreeeleven_assign_grades ag ON a.id = ag.assignment
+                            LEFT JOIN mthreeeleven_assign_submission asub ON a.id = asub.assignment
+                            LEFT JOIN mthreeeleven_course_modules cm ON a.id = cm.instance
+                            LEFT JOIN mthreeeleven_modules m ON m.id = cm.module 
+                            LEFT JOIN mthreeeleven_course_sections cs ON cm.section = cs.id
+                            JOIN mthreeeleven_ari_content_model a1 ON a1.instance_id = cm.instance
+                        WHERE 
+                            a1.course_id = :course:id AND
+                            ag.userid = :user_id AND 
+                            -- asub.status = 'submitted' AND 
+                            asub.latest = 1 AND 
+                            m.name = :input_component AND
+                            cm.visibleoncoursepage = 1 AND
+                            m.visible = 1 AND
+                            cs.visible = 1
+                        ORDER BY a1.document_frequency DESC
+                        LIMIT 20
+                        ) as aa1
+                    JOIN mthreeeleven_ari_content_model a2 ON a2.keyword = aa1.keyword
+                    WHERE 
+                        aa1.id <> a2.id AND
+                        a2.course_id=aa1.course_id AND
+                        aa1.instance_url_id <> a2.instance_url_id AND
+                        a2.component = :output_component
+                    ORDER BY aa1.document_frequency, a2.document_frequency DESC
+                    LIMIT :number_of_results
+                    ;";
+                    $transaction = $DB->start_delegated_transaction();
+                    $res = $DB->get_records_sql($query, [
+                        'user_id' => $USER->id,
+                        'course_id' => $course_id,
+                        'input_component' => $req['input_component'],
+                        'output_component' => $req['output_component'],
+                        'number_of_results' => $req['number_of_results']
+                    ]);
+                    $transaction->allow_commit();
+                    
+                    if(isset($res)){
+                        foreach($res as $r){
+
+                        }
+                    }
+                    
+                    break;
+                case "rec.safran-like-not-completed-assignments": // bearbeite SA, die ähnlich zu den noch nicht bearbeiteten EA sind.
+                    break; 
+                case "rec.safran-like-longpage-section-XX": 
+                    break; 
+                case "rec.quiz-like-longpage": // Quiz-Aufgaben zu den bereits gelesenen Abschnitten
+                    break;
+                case "rec.quiz-like-completed-assignments": 
+                    break;
+                case "rec.quiz-like-not-completed-assignments": 
+                    break;
+                case "rec.quiz-like-not-completed-safran": 
+                    break;
+                case "rec.quiz-like-completed-safran": 
+                    break;
+                case "rec.all-longpage-of-course-unit": // alle Longpages (i.d.R. Link zur Longpage)
+                    break;
+                case "rec.all-safran-of-course-unit": 
+                    break;
+                case "rec.all-assignments-of-course-unit": 
+                    break;
+                case "rec.all-quizz-of-course-unit": 
+                    break;
+                case "rec.not-completed-safran": // noch nicht bearbeitetet SA
+                    break;
+                case "rec.not-completed-assignments":
+                    break;
+                case "rec.not-completed-longpage":  // longpages that have not been read completly
+                    break;
+                case "rec.simpler-safran-then-already-completed": // leichtere SA Aufgabe, als die bisher bearbeiteten
+                    break;
+                case "rec.simpler-assignments-then-already-completed": 
+                    break;
+                case "rec.simpler-quiz-then-already-completed": 
+                    break;
+                    
+                default:
+                    // do nothing
+            }
+            
+        }
+        
 
         //return array('data' => json_encode($debug));
-        return array('data' => json_encode($result));
+        return array(
+            'data' => json_encode($result),
+            'debug' => json_encode($debug),
+        );
         
     }
 
@@ -75,8 +179,12 @@ class getcontentrecommendations extends external_api
     public static function get_content_recommendations_parameters() {
         return new external_function_parameters(
             array('data' => new external_single_structure(
-                array('course_id' => new external_value(PARAM_INTEGER, '', VALUE_OPTIONAL),)
-            )));
+                array(
+                    'course_id' => new external_value(PARAM_INTEGER, ''),
+                    'requests' => new external_value(PARAM_RAW, ''),
+                )
+            )
+        ));
     }
 
 
@@ -86,7 +194,11 @@ class getcontentrecommendations extends external_api
      */
     public static function get_content_recommendations_returns() {
         return new external_single_structure(
-            array( 'data' => new external_value(PARAM_RAW, '') ));
+            array( 
+                'data' => new external_value(PARAM_RAW, ''),
+                'debug' => new external_value(PARAM_RAW, '', VALUE_OPTIONAL) 
+            )
+        );
     }
 
     

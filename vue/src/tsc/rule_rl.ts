@@ -8,6 +8,10 @@
  * - https://www.newworldai.com/cs234-reinforcement-learning-lectures-stanford-engineering/
  * - get tensor flow running
  * - build test case for basic rewards
+ * -https://medium.com/@pierrerouhard/reinforcement-learning-in-the-browser-an-introduction-to-tensorflow-js-9a02b143c099
+ * - https://github.com/prouhard/tfjs-mountaincar?source=post_page-----9a02b143c099--------------------------------
+ * https://towardsdatascience.com/policy-gradients-in-a-nutshell-8b72f9743c5d
+ * https://storage.googleapis.com/tfjs-examples/cart-pole/dist/index.html
  */
 
  // @ts-ignore
