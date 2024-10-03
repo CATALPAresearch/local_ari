@@ -277,48 +277,48 @@ export class RuleManager {
       console.log("ARICU-sections: ", sections);
     }
     // iterate over all sections
-    for (var j = 0; j < sections.length; j++) {
+    for (const element of sections) {
       // iterate over all conditions and conjugate them
       for (var i = 0; i < cons.length; i++) {
         let condition = cons[i];
         let mkey = this.getLearnerModelKey(
           condition.source_context,
           condition.key,
-          sections[j] == "main" ? "" : sections[j]
+          element == "main" ? "" : element
         );
         switch (condition.operator) {
           // numeric operators
           case EOperators.Equal:
-            result[sections[j]] =
-              result[sections[j]] && mkey === condition.value ? true : false;
+            result[element] =
+              result[element] && mkey === condition.value ? true : false;
             break;
           case EOperators.Modolo:
-            result[sections[j]] =
-              result[sections[j]] % mkey === condition.value ? true : false;
+            result[element] =
+              result[element] % mkey === condition.value ? true : false;
             break;
           case EOperators.Greater:
-            result[sections[j]] =
-              result[sections[j]] && mkey > condition.value ? true : false;
+            result[element] =
+              result[element] && mkey > condition.value ? true : false;
             break;
           case EOperators.GreaterEqual:
-            result[sections[j]] =
-              result[sections[j]] && mkey > condition.value ? true : false;
+            result[element] =
+              result[element] && mkey > condition.value ? true : false;
             break;
           case EOperators.Smaller:
-            result[sections[j]] =
-              result[sections[j]] && mkey < condition.value ? true : false;
+            result[element] =
+              result[element] && mkey < condition.value ? true : false;
             break;
           case EOperators.SmallerEqual:
-            result[sections[j]] =
-              result[sections[j]] && mkey <= condition.value ? true : false;
+            result[element] =
+              result[element] && mkey <= condition.value ? true : false;
             break;
 
           // string operators
           case EOperators.Contains:
-            result[sections[j]] = false;
+            result[element] = false;
             if (typeof mkey == "string") {
-              result[sections[j]] =
-                result && mkey.includes(condition.value) ? true : false;
+              result[element] =
+                result && mkey.includes(String(condition.value)) ? true : false;
             } else if (typeof mkey == "object") {
               // TODO
               //result = result && mkey.includes(condition.value);
@@ -326,11 +326,11 @@ export class RuleManager {
             break;
           case EOperators.Has:
             // has child element
-            result[sections[j]] = false;
+            result[element] = false;
             if (typeof mkey == "object" || "array") {
               for (let i in mkey) {
                 if (mkey[i] == condition.value) {
-                  result[sections[j]] = true;
+                  result[element] = true;
                   break;
                 }
               }
@@ -338,22 +338,22 @@ export class RuleManager {
             break;
           case EOperators.Similar:
             // TODO: text similarity, levinstein distance
-            result[sections[j]] = false;
+            result[element] = false;
             break;
 
           // time operators
           case EOperators.DaysDistanceGreaterThan:
-            result[sections[j]] = false;
+            result[element] = false;
             if (typeof mkey == "number") {
               const now = new Date();
               if (Number(now) - Number(mkey) < condition.value) {
-                result[sections[j]] = true;
+                result[element] = true;
               }
             }
             break;
 
           default:
-            result[sections[j]] = false;
+            result[element] = false;
         }
       }
     }
@@ -695,8 +695,7 @@ export class RuleManager {
       result.onsuccess = function (success) {
         console.log("in-success");
         // @ts-ignore
-        let allKeys: IStoredPromptConfig[] = success.target
-          .result as IStoredPromptConfig[];
+        let allKeys: IStoredPromptConfig[] = success.target.result as IStoredPromptConfig[];
         console.log("before-loop");
         for (let i = 0; i < allKeys.length; i++) {
           console.log("ARI::Reseted rule in indexeddb: ", allKeys[i].id);

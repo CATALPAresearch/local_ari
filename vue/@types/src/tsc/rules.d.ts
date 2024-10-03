@@ -111,7 +111,9 @@ export declare enum EOperators {
     SumRecursiveGreater = "sumR()>",
     Contains = "contains",
     Similar = "similar",
-    Has = "has"
+    Has = "has",
+    DaysDistanceSmallerThan = "days distance <",
+    DaysDistanceGreaterThan = "days distance >"
 }
 export declare enum ERuleActor {
     Alert = "alert",
