@@ -73,9 +73,7 @@ class LearnerModel{
         self::$activity_array["user"]["user_id"] = (int)self::$user_id;
         self::$activity_array["user"]["course_id"] = (int)self::$course_id;
         self::$activity_array["user"]["semester"] = $this->timePeriod;
-        self::$activity_array["user"]["semester_from"] = $this->periodArray[$this->timePeriod]['from'];
-        self::$activity_array["user"]["semester_to"] = $this->periodArray[$this->timePeriod]['to'];
-
+        
         $query = "
             SELECT 
                 tp.currentversionid
@@ -163,6 +161,21 @@ class LearnerModel{
         
         if (isset($_REQUEST["period"])) {
             $this->timePeriod = $_REQUEST["period"];
+            $spl = explode($this->timePeriod, ':');
+            if(substr($this->timePeriod, 0, 2) == "WS" || substr($this->timePeriod, 0, 2) == "SS"){
+                $period = $this->periodArray[$this->timePeriod];
+                echo $period['from'];
+                //$this->time_period_start = $period['from']->format("U");
+                //$this->time_period_end = $period['to']->format("U");
+            } elseif(count($spl) == 2 && strlen($spl[0]) == 10 && strlen($spl[1]) == 10){
+                $this->time_period_start = (new DateTimeImmutable($spl[0]))->format("U");
+                $this->time_period_end = (new DateTimeImmutable($spl[1]))->format("U");
+            } else{
+                echo "Parameter 'period' is in the wromng format. Provide either a semester short name like WS22 or SS21, or a date range '2021-04-01:2021-09-30'";
+            }
+            self::$activity_array["user"]["semester_from"] = $this->time_period_start;
+            self::$activity_array["user"]["semester_to"] = $this->time_period_end;
+
         }
     }
 
@@ -170,7 +183,8 @@ class LearnerModel{
         self::$activity_array = array("debug" => []);
     }
 
-    function set_time_periods(){
+    
+    private function set_time_periods(){
         $this->periodArray = [
             'WS18' => ['from' => new DateTimeImmutable("2018-10-01"), 'to'=>new DateTimeImmutable("2019-03-31")],
             'SS18' => ['from' => new DateTimeImmutable("2018-04-01"), 'to'=>new DateTimeImmutable("2018-09-30")],
@@ -199,15 +213,16 @@ class LearnerModel{
         ];
     
         # Concat string for filter queries for time ranges
-        if ($this->timePeriod !== "none") {
-            self::$addTimePeriodToQuery = $this->timePeriodToSemesterInterval($this->timePeriod, $this->periodArray);
-            self::$addTimePeriodToQuerySafran = $this->timePeriodToSemesterInterval($this->timePeriod, $this->periodArray, "sqa.");
-        }
+        //if ($this->timePeriod !== "none") {
+        //    self::$addTimePeriodToQuery = $this->timePeriodToSemesterInterval($this->timePeriod);
+        //    self::$addTimePeriodToQuerySafran = $this->timePeriodToSemesterInterval($this->timePeriod, "sqa.");
+        //}
     }
     
-    function timePeriodToSemesterInterval($timePeriod, $periodArray, $timeCreatedPrefix = ""){
-        $this->time_period_start = $periodArray[$timePeriod]["from"]->format("U");
-        $this->time_period_end = $periodArray[$timePeriod]["to"]->format("U");
+    function timePeriodToSemesterInterval($timePeriod, $timeCreatedPrefix = ""){
+        //$this->time_period_start = $this->periodArray[$timePeriod]["from"]->format("U");
+        $this->time_period_start = $this->periodArray[$timePeriod]["from"]->format("U");
+        $this->time_period_end = $this->periodArray[$timePeriod]["to"]->format("U");
 
         
         $addTimePeriodToQuery = " AND " .

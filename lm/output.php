@@ -63,7 +63,7 @@ class LearnerModelOutput{
                     $arrayInTable .= "</div>";
                     $table_data .= "<td>" . $arrayInTable . " </td>";
                 } else {
-                    $table_data .= "<td>" . $entry . " </td>";
+                    $table_data .= "<td>" . $entry . " </td>"; // TODO: Object of class DateTimeImmutable could not be converted to string
                 }
             }
             echo "<div><table>" . $table_headers . "</tr></thead>" . $table_data . "</tr></tbody></table></div><br>";
